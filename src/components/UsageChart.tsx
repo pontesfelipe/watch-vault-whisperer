@@ -1,7 +1,5 @@
-import { Watch } from "@/types/watch";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { monthNames } from "@/data/watchData";
 import { useState } from "react";
 import { TrendingUp, TrendingDown, DollarSign, Info } from "lucide-react";
 import {
@@ -11,8 +9,24 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+interface Watch {
+  id: string;
+  brand: string;
+  model: string;
+  cost: number;
+}
+
+interface WearEntry {
+  watch_id: string;
+  wear_date: string;
+  days: number;
+}
+
 interface UsageChartProps {
   watches: Watch[];
+  wearEntries: WearEntry[];
 }
 
 const WATCH_COLORS = [
@@ -44,19 +58,23 @@ const getSeasonFromMonth = (monthIndex: number): Season => {
   return "Fall";
 };
 
-export const UsageChart = ({ watches }: UsageChartProps) => {
+export const UsageChart = ({ watches, wearEntries }: UsageChartProps) => {
   const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
 
   // Calculate monthly breakdown by watch
   const monthlyBreakdown = Array(12).fill(0).map(() => ({})) as Array<Record<string, number>>;
+  const watchTotals = new Map<string, number>();
   
-  watches.forEach((watch, watchIndex) => {
-    const watchKey = `${watch.brand} ${watch.model}`;
-    watch.monthlyWear.forEach((days, monthIndex) => {
-      if (days > 0) {
-        monthlyBreakdown[monthIndex][watchKey] = days;
-      }
-    });
+  wearEntries.forEach((entry) => {
+    const date = new Date(entry.wear_date);
+    const monthIndex = date.getMonth();
+    const watch = watches.find(w => w.id === entry.watch_id);
+    
+    if (watch) {
+      const watchKey = `${watch.brand} ${watch.model}`;
+      monthlyBreakdown[monthIndex][watchKey] = (monthlyBreakdown[monthIndex][watchKey] || 0) + entry.days;
+      watchTotals.set(watch.id, (watchTotals.get(watch.id) || 0) + entry.days);
+    }
   });
 
   // Calculate seasonal trends
@@ -67,36 +85,42 @@ export const UsageChart = ({ watches }: UsageChartProps) => {
     Fall: { days: 0, cost: 0 },
   };
 
-  watches.forEach(watch => {
-    watch.monthlyWear.forEach((days, monthIndex) => {
-      const season = getSeasonFromMonth(monthIndex);
-      seasonalData[season].days += days;
-      seasonalData[season].cost += (watch.cost / watch.total) * days || 0;
-    });
+  wearEntries.forEach(entry => {
+    const date = new Date(entry.wear_date);
+    const monthIndex = date.getMonth();
+    const season = getSeasonFromMonth(monthIndex);
+    const watch = watches.find(w => w.id === entry.watch_id);
+    
+    if (watch) {
+      const watchTotal = watchTotals.get(watch.id) || 1;
+      seasonalData[season].days += entry.days;
+      seasonalData[season].cost += (watch.cost / watchTotal) * entry.days;
+    }
   });
 
   // Calculate cost per use for each watch
   const watchCostPerUse = watches
+    .map(watch => {
+      const total = watchTotals.get(watch.id) || 0;
+      return {
+        name: `${watch.brand} ${watch.model}`,
+        costPerUse: total > 0 ? watch.cost / total : watch.cost,
+        total,
+        cost: watch.cost,
+      };
+    })
     .filter(w => w.total > 0)
-    .map(watch => ({
-      name: `${watch.brand} ${watch.model}`,
-      costPerUse: watch.cost / watch.total,
-      total: watch.total,
-      cost: watch.cost,
-    }))
     .sort((a, b) => a.costPerUse - b.costPerUse);
 
   const monthlyTotals = Array(12).fill(0);
-  watches.forEach(watch => {
-    watch.monthlyWear.forEach((days, index) => {
-      monthlyTotals[index] += days;
-    });
+  Object.values(monthlyBreakdown).forEach((breakdown, index) => {
+    monthlyTotals[index] = Object.values(breakdown).reduce((sum, days) => sum + days, 0);
   });
 
   const maxValue = Math.max(...monthlyTotals);
 
   // Get unique watches that were worn
-  const wornWatches = watches.filter(w => w.total > 0);
+  const wornWatches = watches.filter(w => (watchTotals.get(w.id) || 0) > 0);
   const watchColorMap = new Map<string, string>();
   wornWatches.forEach((watch, index) => {
     watchColorMap.set(`${watch.brand} ${watch.model}`, WATCH_COLORS[index % WATCH_COLORS.length]);
@@ -130,31 +154,32 @@ export const UsageChart = ({ watches }: UsageChartProps) => {
             return (
               <TooltipProvider key={monthIndex}>
                 <Tooltip>
-                  <TooltipTrigger asChild>
+              <TooltipTrigger asChild>
                     <div 
-                      className="flex-1 flex flex-col items-center gap-2"
+                      className="flex-1 flex flex-col items-center gap-2 cursor-pointer"
                       onMouseEnter={() => setHoveredMonth(monthIndex)}
                       onMouseLeave={() => setHoveredMonth(null)}
                     >
                       <div className="w-full flex flex-col items-center justify-end h-full relative">
-                        <div className="text-xs text-muted-foreground mb-2 font-medium">
-                          {total > 0 ? total : ""}
+                        <div className="text-xs text-foreground font-semibold mb-2">
+                          {total > 0 ? total.toFixed(1) : ""}
                         </div>
                         <div
-                          className="w-full rounded-t-md transition-all duration-300 relative overflow-hidden"
-                          style={{ height: `${height}%`, minHeight: total > 0 ? '8px' : '0' }}
+                          className="w-full rounded-t-md transition-all duration-300 relative overflow-hidden border-2 border-border/50"
+                          style={{ height: `${height}%`, minHeight: total > 0 ? '12px' : '0' }}
                         >
                           {watches.length > 0 ? (
                             <div className="h-full flex flex-col">
-                              {watches.map(([watchName, days], idx) => {
+                              {watches.map(([watchName, days]) => {
                                 const percentage = (days / total) * 100;
                                 return (
                                   <div
                                     key={watchName}
-                                    className={`transition-all duration-300 ${isHovered ? 'opacity-100' : 'opacity-90'}`}
+                                    className={`transition-all duration-300 border-b border-background/20 ${isHovered ? 'opacity-100' : 'opacity-95'}`}
                                     style={{
                                       height: `${percentage}%`,
                                       backgroundColor: watchColorMap.get(watchName),
+                                      minHeight: percentage > 0 ? '2px' : '0',
                                     }}
                                   />
                                 );
@@ -163,29 +188,29 @@ export const UsageChart = ({ watches }: UsageChartProps) => {
                           ) : null}
                         </div>
                       </div>
-                      <span className="text-xs text-muted-foreground font-medium">
+                      <span className="text-xs text-foreground font-semibold">
                         {monthNames[monthIndex]}
                       </span>
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent className="max-w-xs">
-                    <div className="space-y-1">
-                      <p className="font-semibold mb-2">{monthNames[monthIndex]}</p>
+                  <TooltipContent className="max-w-xs bg-card border-2 border-border z-50">
+                    <div className="space-y-2 p-2">
+                      <p className="font-bold text-foreground mb-3">{monthNames[monthIndex]}</p>
                       {watches.length > 0 ? (
                         watches.map(([watchName, days]) => (
-                          <div key={watchName} className="flex items-center justify-between gap-4 text-xs">
-                            <div className="flex items-center gap-2">
+                          <div key={watchName} className="flex items-center justify-between gap-4 text-xs py-1">
+                            <div className="flex items-center gap-2 flex-1 min-w-0">
                               <div 
-                                className="w-3 h-3 rounded-sm"
+                                className="w-3 h-3 rounded-sm flex-shrink-0 border border-border"
                                 style={{ backgroundColor: watchColorMap.get(watchName) }}
                               />
-                              <span className="truncate max-w-[180px]">{watchName}</span>
+                              <span className="truncate text-foreground font-medium">{watchName}</span>
                             </div>
-                            <span className="font-medium">{days}d</span>
+                            <span className="font-bold text-primary flex-shrink-0">{days.toFixed(1)}d</span>
                           </div>
                         ))
                       ) : (
-                        <p className="text-xs text-muted-foreground">No watches worn</p>
+                        <p className="text-xs text-muted-foreground py-2">No watches worn</p>
                       )}
                     </div>
                   </TooltipContent>
