@@ -5,6 +5,7 @@ export interface Watch {
   type: string;
   monthlyWear: number[];
   total: number;
+  cost: number;
 }
 
 export interface Trip {

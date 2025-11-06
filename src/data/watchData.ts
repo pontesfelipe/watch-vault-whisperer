@@ -7,7 +7,8 @@ export const watches: Watch[] = [
     dialColor: "Ivory",
     type: "Chronograph",
     monthlyWear: [1, 2, 2, 3, 0, 2, 1, 1, 3, 1, 0, 0],
-    total: 16
+    total: 16,
+    cost: 1200
   },
   {
     brand: "Breitling",
@@ -15,7 +16,8 @@ export const watches: Watch[] = [
     dialColor: "Ice Blue",
     type: "Pilot/GMT",
     monthlyWear: [1, 3, 2, 4, 1, 4, 2, 1, 2, 2, 0.5, 0],
-    total: 22.5
+    total: 22.5,
+    cost: 8500
   },
   {
     brand: "Breitling",
@@ -23,7 +25,8 @@ export const watches: Watch[] = [
     dialColor: "Green",
     type: "Diver",
     monthlyWear: [1, 3, 6, 3, 2, 1, 2, 2, 3, 3, 1, 0],
-    total: 27
+    total: 27,
+    cost: 5200
   },
   {
     brand: "Casio",
@@ -31,7 +34,8 @@ export const watches: Watch[] = [
     dialColor: "Black",
     type: "Digital/Fun",
     monthlyWear: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1.5, 0],
-    total: 1.5
+    total: 1.5,
+    cost: 45
   },
   {
     brand: "Longines",
@@ -39,7 +43,8 @@ export const watches: Watch[] = [
     dialColor: "Green",
     type: "Diver/Field on NATO",
     monthlyWear: [2, 2, 3, 1, 8, 4, 1.5, 1, 2, 2, 0, 0],
-    total: 26.5
+    total: 26.5,
+    cost: 3800
   },
   {
     brand: "Swatch",
@@ -47,7 +52,8 @@ export const watches: Watch[] = [
     dialColor: "Blue",
     type: "Chronograph/Fun",
     monthlyWear: [0, 0, 1, 1, 1, 0, 0, 0, 2, 0.5, 0, 0],
-    total: 5.5
+    total: 5.5,
+    cost: 260
   },
   {
     brand: "Swatch",
@@ -55,7 +61,8 @@ export const watches: Watch[] = [
     dialColor: "Brown",
     type: "Chronograph/Fun",
     monthlyWear: [1, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0],
-    total: 5
+    total: 5,
+    cost: 260
   },
   {
     brand: "Omega",
@@ -63,7 +70,8 @@ export const watches: Watch[] = [
     dialColor: "White",
     type: "Sport Casual",
     monthlyWear: [0, 0, 2, 3, 3, 2, 7, 7.5, 1, 2.5, 1, 0],
-    total: 29
+    total: 29,
+    cost: 8900
   },
   {
     brand: "Omega",
@@ -71,7 +79,8 @@ export const watches: Watch[] = [
     dialColor: "Black",
     type: "Chronograph",
     monthlyWear: [2, 2, 2, 2, 1, 2, 2, 1, 3, 1, 1, 0],
-    total: 19
+    total: 19,
+    cost: 7100
   },
   {
     brand: "Omega",
@@ -79,7 +88,8 @@ export const watches: Watch[] = [
     dialColor: "Green",
     type: "Chronograph",
     monthlyWear: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    total: 0
+    total: 0,
+    cost: 8200
   },
   {
     brand: "Omega",
@@ -87,7 +97,8 @@ export const watches: Watch[] = [
     dialColor: "Blue",
     type: "Diver",
     monthlyWear: [1, 3, 2, 3, 3, 4, 2.5, 5, 1, 2.5, 0, 0],
-    total: 27
+    total: 27,
+    cost: 7800
   },
   {
     brand: "ORIS",
@@ -95,7 +106,8 @@ export const watches: Watch[] = [
     dialColor: "Grey",
     type: "Business casual",
     monthlyWear: [1, 2, 5, 2, 2, 2, 3, 2.5, 1, 2, 0, 0],
-    total: 22.5
+    total: 22.5,
+    cost: 2400
   },
   {
     brand: "ORIS",
@@ -103,7 +115,8 @@ export const watches: Watch[] = [
     dialColor: "Red",
     type: "Pilot",
     monthlyWear: [1, 4, 2, 3, 4, 2, 1.5, 1, 3, 2, 0, 0],
-    total: 23.5
+    total: 23.5,
+    cost: 2800
   },
   {
     brand: "IWC",
@@ -111,7 +124,8 @@ export const watches: Watch[] = [
     dialColor: "Green",
     type: "Pilot",
     monthlyWear: [0, 0, 3, 4, 6, 5, 3, 3, 2, 5.5, 1, 0],
-    total: 32.5
+    total: 32.5,
+    cost: 5400
   },
   {
     brand: "Trafford",
@@ -119,7 +133,8 @@ export const watches: Watch[] = [
     dialColor: "Orange",
     type: "Sport Casual",
     monthlyWear: [0, 0, 0, 0, 0, 2, 2.5, 1, 2, 1, 0, 0],
-    total: 8.5
+    total: 8.5,
+    cost: 450
   },
   {
     brand: "Panerai",
@@ -127,7 +142,8 @@ export const watches: Watch[] = [
     dialColor: "Blue",
     type: "Sport Casual/GMT",
     monthlyWear: [0, 0, 0, 0, 0, 0, 0, 0, 4, 5, 0, 0],
-    total: 9
+    total: 9,
+    cost: 12500
   },
   {
     brand: "Tag Heuer",
@@ -135,7 +151,8 @@ export const watches: Watch[] = [
     dialColor: "Ivory",
     type: "Business casual",
     monthlyWear: [2, 0, 1, 1, 0, 0, 1, 3, 1, 0, 0, 0],
-    total: 9
+    total: 9,
+    cost: 3200
   }
 ];
 
