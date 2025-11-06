@@ -14,7 +14,77 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      watches: {
+        Row: {
+          brand: string
+          cost: number
+          created_at: string
+          dial_color: string
+          id: string
+          model: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          brand: string
+          cost?: number
+          created_at?: string
+          dial_color: string
+          id?: string
+          model: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          brand?: string
+          cost?: number
+          created_at?: string
+          dial_color?: string
+          id?: string
+          model?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      wear_entries: {
+        Row: {
+          created_at: string
+          days: number
+          id: string
+          notes: string | null
+          updated_at: string
+          watch_id: string
+          wear_date: string
+        }
+        Insert: {
+          created_at?: string
+          days?: number
+          id?: string
+          notes?: string | null
+          updated_at?: string
+          watch_id: string
+          wear_date: string
+        }
+        Update: {
+          created_at?: string
+          days?: number
+          id?: string
+          notes?: string | null
+          updated_at?: string
+          watch_id?: string
+          wear_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wear_entries_watch_id_fkey"
+            columns: ["watch_id"]
+            isOneToOne: false
+            referencedRelation: "watches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
