@@ -14,6 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
+      events: {
+        Row: {
+          created_at: string
+          days: number
+          id: string
+          location: string
+          purpose: string
+          start_date: string
+          updated_at: string
+          watch_model: string
+        }
+        Insert: {
+          created_at?: string
+          days?: number
+          id?: string
+          location: string
+          purpose: string
+          start_date: string
+          updated_at?: string
+          watch_model: string
+        }
+        Update: {
+          created_at?: string
+          days?: number
+          id?: string
+          location?: string
+          purpose?: string
+          start_date?: string
+          updated_at?: string
+          watch_model?: string
+        }
+        Relationships: []
+      }
+      trips: {
+        Row: {
+          created_at: string
+          days: number
+          id: string
+          location: string
+          purpose: string
+          start_date: string
+          updated_at: string
+          watch_model: string
+        }
+        Insert: {
+          created_at?: string
+          days?: number
+          id?: string
+          location: string
+          purpose: string
+          start_date: string
+          updated_at?: string
+          watch_model: string
+        }
+        Update: {
+          created_at?: string
+          days?: number
+          id?: string
+          location?: string
+          purpose?: string
+          start_date?: string
+          updated_at?: string
+          watch_model?: string
+        }
+        Relationships: []
+      }
       watches: {
         Row: {
           brand: string
