@@ -8,7 +8,7 @@ import { AddWatchDialog } from "@/components/AddWatchDialog";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Watch, TrendingUp, Calendar, Search } from "lucide-react";
-import { trips, events } from "@/data/watchData";
+import { Trip, Event } from "@/types/watch";
 
 interface Watch {
   id: string;
@@ -28,17 +28,51 @@ interface WearEntry {
 const Index = () => {
   const [watches, setWatches] = useState<Watch[]>([]);
   const [wearEntries, setWearEntries] = useState<WearEntry[]>([]);
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
-    const [watchesResult, wearResult] = await Promise.all([
+    const [watchesResult, wearResult, tripsResult, eventsResult] = await Promise.all([
       supabase.from("watches").select("*"),
       supabase.from("wear_entries").select("watch_id, wear_date, days"),
+      supabase.from("trips").select("*").order("start_date"),
+      supabase.from("events").select("*").order("start_date"),
     ]);
 
     if (watchesResult.data) setWatches(watchesResult.data);
     if (wearResult.data) setWearEntries(wearResult.data);
+    if (tripsResult.data) {
+      setTrips(
+        tripsResult.data.map((trip) => ({
+          startDate: new Date(trip.start_date).toLocaleDateString("en-US", {
+            month: "numeric",
+            day: "numeric",
+            year: "2-digit"
+          }),
+          location: trip.location,
+          watch: trip.watch_model,
+          days: Number(trip.days),
+          purpose: trip.purpose,
+        }))
+      );
+    }
+    if (eventsResult.data) {
+      setEvents(
+        eventsResult.data.map((event) => ({
+          startDate: new Date(event.start_date).toLocaleDateString("en-US", {
+            month: "numeric",
+            day: "numeric",
+            year: "2-digit"
+          }),
+          location: event.location,
+          watch: event.watch_model,
+          days: Number(event.days),
+          purpose: event.purpose,
+        }))
+      );
+    }
     setLoading(false);
   };
 
