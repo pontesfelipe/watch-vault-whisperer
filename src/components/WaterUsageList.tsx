@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Droplets, Eye, EyeOff } from "lucide-react";
 import { useState, useEffect } from "react";
 import { usePasscode } from "@/contexts/PasscodeContext";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 
 interface WaterUsage {
   id: string;
@@ -22,19 +22,22 @@ interface WaterUsageListProps {
 }
 
 const getActivityColor = (activityType: string) => {
+  const key = activityType?.trim().toLowerCase();
   const colors: Record<string, string> = {
-    Pool: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-    "Hot tub": "bg-red-500/10 text-red-500 border-red-500/20",
-    Lake: "bg-teal-500/10 text-teal-500 border-teal-500/20",
-    Ocean: "bg-cyan-500/10 text-cyan-500 border-cyan-500/20",
-    Beach: "bg-amber-500/10 text-amber-500 border-amber-500/20",
-    Swimming: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-    Diving: "bg-indigo-500/10 text-indigo-500 border-indigo-500/20",
-    Snorkeling: "bg-cyan-500/10 text-cyan-500 border-cyan-500/20",
-    Shower: "bg-slate-500/10 text-slate-500 border-slate-500/20",
-    Rain: "bg-gray-500/10 text-gray-500 border-gray-500/20",
+    pool: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+    "hot tub": "bg-red-500/10 text-red-500 border-red-500/20",
+    hottub: "bg-red-500/10 text-red-500 border-red-500/20",
+    "hot-tub": "bg-red-500/10 text-red-500 border-red-500/20",
+    lake: "bg-teal-500/10 text-teal-500 border-teal-500/20",
+    ocean: "bg-cyan-500/10 text-cyan-500 border-cyan-500/20",
+    beach: "bg-amber-500/10 text-amber-500 border-amber-500/20",
+    swimming: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+    diving: "bg-indigo-500/10 text-indigo-500 border-indigo-500/20",
+    snorkeling: "bg-cyan-500/10 text-cyan-500 border-cyan-500/20",
+    shower: "bg-slate-500/10 text-slate-500 border-slate-500/20",
+    rain: "bg-gray-500/10 text-gray-500 border-gray-500/20",
   };
-  return colors[activityType] || "bg-primary/10 text-primary border-primary/20";
+  return colors[key] || "bg-primary/10 text-primary border-primary/20";
 };
 
 export const WaterUsageList = ({ usages, watches }: WaterUsageListProps) => {
@@ -126,7 +129,6 @@ export const WaterUsageList = ({ usages, watches }: WaterUsageListProps) => {
                   <h4 className="font-semibold text-foreground">
                     {watch.brand} {watch.model}
                   </h4>
-                  <p className="text-sm text-muted-foreground mt-1">Purpose: <span className="text-foreground font-medium">{entry.activity_type}</span></p>
                 </div>
               </div>
               
