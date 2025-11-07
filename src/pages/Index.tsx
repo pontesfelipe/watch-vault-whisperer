@@ -11,6 +11,7 @@ import { AddWaterUsageDialog } from "@/components/AddWaterUsageDialog";
 import { WaterUsageList } from "@/components/WaterUsageList";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Watch, TrendingUp, Calendar, Search, Lock, Unlock } from "lucide-react";
 import { Trip, Event } from "@/types/watch";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,7 @@ const Index = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [waterUsages, setWaterUsages] = useState<WaterUsage[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedBrand, setSelectedBrand] = useState<string>("all");
   const [loading, setLoading] = useState(true);
   const { isVerified, requestVerification } = usePasscode();
 
@@ -104,11 +106,17 @@ const Index = () => {
     fetchData();
   }, []);
 
+  // Get unique brands for filter
+  const uniqueBrands = Array.from(new Set(watches.map(w => w.brand))).sort();
+
   const filteredWatches = watches.filter(
-    (watch) =>
-      watch.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      watch.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      watch.type.toLowerCase().includes(searchQuery.toLowerCase())
+    (watch) => {
+      const matchesSearch = watch.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        watch.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        watch.type.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesBrand = selectedBrand === "all" || watch.brand === selectedBrand;
+      return matchesSearch && matchesBrand;
+    }
   );
 
   // Calculate stats
@@ -309,15 +317,30 @@ const Index = () => {
               </div>
             ) : (
               <>
-                {/* Search */}
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                  <Input
-                    placeholder="Search by brand, model, or type..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 bg-card border-border"
-                  />
+                {/* Search and Filter */}
+                <div className="flex gap-4">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                    <Input
+                      placeholder="Search by brand, model, or type..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10 bg-card border-border"
+                    />
+                  </div>
+                  <Select value={selectedBrand} onValueChange={setSelectedBrand}>
+                    <SelectTrigger className="w-[200px] bg-card border-border">
+                      <SelectValue placeholder="Filter by brand" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-card border-border z-50">
+                      <SelectItem value="all">All Brands</SelectItem>
+                      {uniqueBrands.map((brand) => (
+                        <SelectItem key={brand} value={brand}>
+                          {brand}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 {/* Watch Grid */}
