@@ -16,7 +16,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
 interface WatchCardProps {
@@ -37,6 +36,7 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
   const { toast } = useToast();
   const { requestVerification, isVerified } = usePasscode();
   const [showCost, setShowCost] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const handleToggleCost = () => {
     if (!showCost) {
@@ -59,6 +59,16 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
     }
   }, [isVerified]);
 
+  const handleDeleteClick = () => {
+    if (!isVerified) {
+      requestVerification(() => {
+        setShowDeleteDialog(true);
+      });
+    } else {
+      setShowDeleteDialog(true);
+    }
+  };
+
   const handleDelete = async () => {
     const { error } = await supabase.from("watches").delete().eq("id", watch.id);
 
@@ -76,6 +86,7 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
       description: "Watch removed from collection",
     });
 
+    setShowDeleteDialog(false);
     onDelete();
   };
 
@@ -159,12 +170,16 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
             Details
           </Button>
 
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2 hover:bg-destructive hover:text-destructive-foreground">
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            </AlertDialogTrigger>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="gap-2 hover:bg-destructive hover:text-destructive-foreground"
+            onClick={handleDeleteClick}
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
+
+          <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
             <AlertDialogContent className="bg-card border-border">
               <AlertDialogHeader>
                 <AlertDialogTitle className="text-foreground">Delete Watch</AlertDialogTitle>
