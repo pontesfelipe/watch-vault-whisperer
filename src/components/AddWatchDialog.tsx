@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
@@ -60,52 +60,77 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
     requestVerification(() => setOpen(true));
   };
 
-  const handleLookupReference = () => {
-    const searchBrand = formValues.brand.trim().toLowerCase();
-    const searchRef = modelRef.trim().toUpperCase();
+  const handleLookupReference = async () => {
+    const searchBrand = formValues.brand.trim();
+    const searchRef = modelRef.trim();
     
-    // Strategy 1: Exact model reference match
-    let found = WATCH_REFERENCES[searchRef] || WATCH_REFERENCES[modelRef];
+    if (!searchBrand || !searchRef) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter both Brand and Model Reference",
+        variant: "destructive"
+      });
+      return;
+    }
     
-    // Strategy 2: Verify brand if entered
-    if (found && searchBrand) {
-      if (!found.brand.toLowerCase().includes(searchBrand)) {
-        found = undefined; // Brand doesn't match, ignore this result
+    setLoading(true);
+    
+    try {
+      // First, try local database for instant results
+      const localMatch = WATCH_REFERENCES[searchRef.toUpperCase()];
+      if (localMatch && localMatch.brand.toLowerCase().includes(searchBrand.toLowerCase())) {
+        setFormValues({
+          brand: localMatch.brand,
+          model: localMatch.model,
+          dialColor: localMatch.dialColor,
+          type: localMatch.type,
+          cost: localMatch.cost.toString(),
+        });
+        toast({
+          title: "Watch Found",
+          description: `Loaded ${localMatch.brand} ${localMatch.model}`
+        });
+        setLoading(false);
+        return;
       }
-    }
-    
-    // Strategy 3: Partial match search if no exact match
-    if (!found && (searchRef || searchBrand)) {
-      const entries = Object.entries(WATCH_REFERENCES);
-      const match = entries.find(([ref, data]) => {
-        const refMatch = searchRef ? ref.toUpperCase().includes(searchRef) : true;
-        const brandMatch = searchBrand ? data.brand.toLowerCase().includes(searchBrand) : true;
-        return refMatch && brandMatch;
+      
+      // If not found locally, search the internet
+      const { data, error } = await supabase.functions.invoke('search-watch-info', {
+        body: { brand: searchBrand, modelReference: searchRef }
       });
-      found = match?.[1];
-    }
-    
-    // Populate or show error
-    if (found) {
+      
+      if (error || data?.error) {
+        toast({
+          title: "Not Found",
+          description: `Could not find ${searchBrand} ${searchRef} online. Please enter details manually.`,
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Auto-populate the form with internet search results
       setFormValues({
-        brand: found.brand,
-        model: found.model,
-        dialColor: found.dialColor,
-        type: found.type,
-        cost: found.cost.toString(),
+        brand: searchBrand,
+        model: data.model,
+        dialColor: data.dialColor,
+        type: data.type,
+        cost: data.cost.toString(),
       });
+      
       toast({
-        title: "Watch Found",
-        description: `Loaded ${found.brand} ${found.model}`,
+        title: "Watch Found Online",
+        description: `Loaded ${searchBrand} ${data.model} from web search`
       });
-    } else {
+      
+    } catch (error) {
+      console.error('Search error:', error);
       toast({
-        title: "Not Found",
-        description: searchBrand 
-          ? `No ${searchBrand} watch found with reference "${modelRef}". Enter details manually.`
-          : "Model reference not found. Enter brand first for better results, or fill manually.",
-        variant: "destructive",
+        title: "Search Error",
+        description: "Failed to search for watch information. Please try again.",
+        variant: "destructive"
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -179,7 +204,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         
         <div className="bg-muted/50 p-3 rounded-lg border border-border">
           <p className="text-sm text-muted-foreground">
-            <strong className="text-foreground">Quick Add:</strong> Enter Brand and Model Reference, then click Search to auto-fill details.
+            <strong className="text-foreground">Quick Add:</strong> Enter Brand and Model Reference, then click Search to auto-fill details from the web.
           </p>
         </div>
 
@@ -211,11 +236,15 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
                 type="button"
                 variant="outline"
                 onClick={handleLookupReference}
-                disabled={!modelRef}
+                disabled={!modelRef || !formValues.brand || loading}
                 className="shrink-0"
               >
-                <Search className="w-4 h-4 mr-1" />
-                Search
+                {loading ? (
+                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                ) : (
+                  <Search className="w-4 h-4 mr-1" />
+                )}
+                {loading ? "Searching..." : "Search"}
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
