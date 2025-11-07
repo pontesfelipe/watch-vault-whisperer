@@ -144,66 +144,6 @@ const Index = () => {
   const trendingWatch = watches.find(w => w.id === trendingWatchId);
   const trendingDays = trendingWatchId ? recentWearTotals.get(trendingWatchId) || 0 : 0;
 
-  // Calculate most used watch in trips (by days), parsing models with per-watch allocations
-  const tripWatchDays = new Map<string, number>();
-  trips.forEach((trip) => {
-    const watchText = (trip.watch || "").trim();
-    if (!watchText) return;
-    const totalDays = Number(trip.days) || 0;
-
-    // Normalize separators: handle "," and " and " between models
-    const normalized = watchText.replace(/\s+and\s+/gi, ", ").trim();
-    const tokens = normalized.split(",").map((t) => t.trim()).filter(Boolean);
-
-    let hasExplicitAllocations = false;
-
-    tokens.forEach((token) => {
-      // Match watch name and optional days in final parentheses: "Watch Name (3.5)"
-      // Handles watches with existing parentheses like "Watch (Sapphire)" correctly
-      const match = token.match(/^(.*?)(?:\s*\(([-+]?\d*\.?\d+)\)\s*)?$/);
-      if (!match) return;
-      
-      const model = match[1].trim();
-      const daysStr = match[2];
-      
-      if (daysStr !== undefined && model) {
-        hasExplicitAllocations = true;
-        const d = parseFloat(daysStr);
-        if (!isNaN(d)) {
-          tripWatchDays.set(model, (tripWatchDays.get(model) || 0) + d);
-        }
-      }
-    });
-
-    // If no explicit allocations were found, use trip's total days
-    if (!hasExplicitAllocations) {
-      if (tokens.length === 1) {
-        const model = tokens[0];
-        if (model) {
-          tripWatchDays.set(model, (tripWatchDays.get(model) || 0) + totalDays);
-        }
-      } else if (tokens.length > 1) {
-        const per = totalDays / tokens.length;
-        tokens.forEach((model) => {
-          if (model) {
-            tripWatchDays.set(model, (tripWatchDays.get(model) || 0) + per);
-          }
-        });
-      }
-    }
-  });
-
-  console.log("Trip watch days breakdown:", 
-    Array.from(tripWatchDays.entries())
-      .sort((a, b) => b[1] - a[1])
-      .map(([name, days]) => `${name}: ${days.toFixed(1)} days`)
-  );
-
-  const mostTripWatch = Array.from(tripWatchDays.entries()).sort((a, b) => b[1] - a[1])[0];
-  const tripWatchName = mostTripWatch?.[0] || "N/A";
-  const tripWatchDaysTotal = mostTripWatch?.[1] || 0;
-  
-  console.log("Most worn trip watch:", tripWatchName, "with", tripWatchDaysTotal.toFixed(1), "days");
 
   if (loading) {
     return (
@@ -235,7 +175,7 @@ const Index = () => {
 
       <main className="container mx-auto px-4 py-8">
         {/* Stats Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4 mb-8">
           <StatsCard
             title="Total Watches"
             value={totalWatches}
@@ -277,12 +217,6 @@ const Index = () => {
             value={trendingDays.toFixed(1)}
             icon={TrendingUp}
             subtitle={trendingWatch ? `${trendingWatch.model}` : "N/A"}
-          />
-          <StatsCard
-            title="Trip Watch"
-            value={tripWatchDaysTotal.toFixed(1)}
-            icon={Calendar}
-            subtitle={tripWatchName}
           />
         </div>
 
