@@ -151,38 +151,40 @@ const Index = () => {
     if (!watchText) return;
     const totalDays = Number(trip.days) || 0;
 
-    const parts = watchText.split(",").map((p) => p.trim()).filter(Boolean);
+    // Normalize separators: handle "," and " and " between models
+    const normalized = watchText.replace(/\s+and\s+/gi, ", ").trim();
+    const tokens = normalized.split(",").map((t) => t.trim()).filter(Boolean);
+
     let hasExplicitAllocations = false;
 
-    parts.forEach((part) => {
-      const match = part.match(/^(.*?)(?:\s*\(([-+]?\d*\.?\d+)\))?$/);
+    tokens.forEach((token) => {
+      // Capture a trailing numeric in parentheses, leave other parentheses (e.g., (Sapphire)) in the name
+      const match = token.match(/^(.*?)(?:\s*\(([-+]?\d*\.?\d+)\))?$/);
       if (!match) return;
       const model = match[1].trim();
       const daysStr = match[2];
       if (daysStr !== undefined) {
         hasExplicitAllocations = true;
         const d = parseFloat(daysStr);
-        if (!isNaN(d)) {
+        if (!isNaN(d) && model) {
           tripWatchDays.set(model, (tripWatchDays.get(model) || 0) + d);
         }
       }
     });
 
-    // If no explicit allocations, distribute the trip.days
+    // If no explicit allocations were found, assign the trip days
     if (!hasExplicitAllocations) {
-      if (parts.length === 1) {
-        const model = parts[0];
+      if (tokens.length === 1) {
+        const model = tokens[0];
         tripWatchDays.set(model, (tripWatchDays.get(model) || 0) + totalDays);
-      } else if (parts.length > 1) {
-        const per = parts.length ? totalDays / parts.length : 0;
-        parts.forEach((model) => {
+      } else if (tokens.length > 1) {
+        const per = tokens.length ? totalDays / tokens.length : 0;
+        tokens.forEach((model) => {
           tripWatchDays.set(model, (tripWatchDays.get(model) || 0) + per);
         });
       }
     }
   });
-
-  // console.log("Trip watch days breakdown:", Array.from(tripWatchDays.entries()));
 
   const mostTripWatch = Array.from(tripWatchDays.entries()).sort((a, b) => b[1] - a[1])[0];
   const tripWatchName = mostTripWatch?.[0] || "N/A";
