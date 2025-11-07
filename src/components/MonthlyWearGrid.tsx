@@ -32,6 +32,7 @@ interface WearEntry {
 interface MonthlyWearGridProps {
   watches: Watch[];
   wearEntries: WearEntry[];
+  onDataChange?: () => void;
 }
 
 const WATCH_COLORS = [
@@ -54,7 +55,7 @@ const WATCH_COLORS = [
   "hsl(210, 70%, 50%)",  // Sky
 ];
 
-export const MonthlyWearGrid = ({ watches, wearEntries }: MonthlyWearGridProps) => {
+export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyWearGridProps) => {
   const [editingCell, setEditingCell] = useState<{ watchId: string; monthIndex: number } | null>(null);
   const [editValue, setEditValue] = useState<string>("");
   const { requestVerification } = usePasscode();
@@ -169,8 +170,10 @@ export const MonthlyWearGrid = ({ watches, wearEntries }: MonthlyWearGridProps) 
         toast.success("Wear entry added");
       }
 
-      // Refresh the page to show updated data
-      window.location.reload();
+      // Trigger data refresh
+      if (onDataChange) {
+        onDataChange();
+      }
     } catch (error) {
       console.error('Error updating wear entry:', error);
       toast.error("Failed to update wear entry");

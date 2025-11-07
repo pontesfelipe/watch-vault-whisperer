@@ -80,6 +80,65 @@ export type Database = {
         }
         Relationships: []
       }
+      watch_specs: {
+        Row: {
+          band: string | null
+          case_material: string | null
+          case_size: string | null
+          caseback: string | null
+          created_at: string
+          crystal: string | null
+          id: string
+          lug_to_lug: string | null
+          movement: string | null
+          power_reserve: string | null
+          price: number
+          updated_at: string
+          watch_id: string
+          water_resistance: string | null
+        }
+        Insert: {
+          band?: string | null
+          case_material?: string | null
+          case_size?: string | null
+          caseback?: string | null
+          created_at?: string
+          crystal?: string | null
+          id?: string
+          lug_to_lug?: string | null
+          movement?: string | null
+          power_reserve?: string | null
+          price?: number
+          updated_at?: string
+          watch_id: string
+          water_resistance?: string | null
+        }
+        Update: {
+          band?: string | null
+          case_material?: string | null
+          case_size?: string | null
+          caseback?: string | null
+          created_at?: string
+          crystal?: string | null
+          id?: string
+          lug_to_lug?: string | null
+          movement?: string | null
+          power_reserve?: string | null
+          price?: number
+          updated_at?: string
+          watch_id?: string
+          water_resistance?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "watch_specs_watch_id_fkey"
+            columns: ["watch_id"]
+            isOneToOne: false
+            referencedRelation: "watches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       watches: {
         Row: {
           brand: string

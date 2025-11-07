@@ -32,6 +32,7 @@ interface WearEntry {
 interface UsageChartProps {
   watches: Watch[];
   wearEntries: WearEntry[];
+  onDataChange?: () => void;
 }
 
 const WATCH_COLORS = [
@@ -63,7 +64,7 @@ const getSeasonFromMonth = (monthIndex: number): Season => {
   return "Fall";
 };
 
-export const UsageChart = ({ watches, wearEntries }: UsageChartProps) => {
+export const UsageChart = ({ watches, wearEntries, onDataChange }: UsageChartProps) => {
   const [showAllBestValue, setShowAllBestValue] = useState(false);
   const [showAllNeedsWear, setShowAllNeedsWear] = useState(false);
   const [showCost, setShowCost] = useState(false);
@@ -155,7 +156,7 @@ export const UsageChart = ({ watches, wearEntries }: UsageChartProps) => {
   return (
     <div className="space-y-6">
       {/* Monthly Wear Grid */}
-      <MonthlyWearGrid watches={watches} wearEntries={wearEntries} />
+      <MonthlyWearGrid watches={watches} wearEntries={wearEntries} onDataChange={onDataChange} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Seasonal Trends */}

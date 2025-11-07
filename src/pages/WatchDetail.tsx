@@ -37,12 +37,27 @@ interface WearEntry {
   notes: string | null;
 }
 
+interface WatchSpecs {
+  id: string;
+  price: number;
+  movement: string | null;
+  power_reserve: string | null;
+  crystal: string | null;
+  case_material: string | null;
+  case_size: string | null;
+  lug_to_lug: string | null;
+  water_resistance: string | null;
+  caseback: string | null;
+  band: string | null;
+}
+
 const WatchDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { requestVerification, isVerified } = usePasscode();
   const [watch, setWatch] = useState<Watch | null>(null);
+  const [watchSpecs, setWatchSpecs] = useState<WatchSpecs | null>(null);
   const [wearEntries, setWearEntries] = useState<WearEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCost, setShowCost] = useState(false);
@@ -71,12 +86,14 @@ const WatchDetail = () => {
   const fetchData = async () => {
     if (!id) return;
 
-    const [watchResult, wearResult] = await Promise.all([
+    const [watchResult, specsResult, wearResult] = await Promise.all([
       supabase.from("watches").select("*").eq("id", id).single(),
+      supabase.from("watch_specs").select("*").eq("watch_id", id).maybeSingle(),
       supabase.from("wear_entries").select("*").eq("watch_id", id).order("wear_date", { ascending: false }),
     ]);
 
     if (watchResult.data) setWatch(watchResult.data);
+    if (specsResult.data) setWatchSpecs(specsResult.data);
     if (wearResult.data) setWearEntries(wearResult.data);
     setLoading(false);
   };
@@ -182,12 +199,56 @@ const WatchDetail = () => {
                     <p className="text-sm text-muted-foreground mb-1">Dial Color</p>
                     <p className="text-lg font-medium text-foreground">{watch.dial_color}</p>
                   </div>
-                </div>
-                <div className="space-y-4">
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Type</p>
                     <p className="text-lg font-medium text-foreground">{watch.type}</p>
                   </div>
+                  {watchSpecs && (
+                    <>
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">Movement</p>
+                        <p className="text-lg font-medium text-foreground">{watchSpecs.movement || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">Power Reserve</p>
+                        <p className="text-lg font-medium text-foreground">{watchSpecs.power_reserve || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">Crystal</p>
+                        <p className="text-lg font-medium text-foreground">{watchSpecs.crystal || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">Case Material</p>
+                        <p className="text-lg font-medium text-foreground">{watchSpecs.case_material || 'N/A'}</p>
+                      </div>
+                    </>
+                  )}
+                </div>
+                <div className="space-y-4">
+                  {watchSpecs && (
+                    <>
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">Case Size</p>
+                        <p className="text-lg font-medium text-foreground">{watchSpecs.case_size || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">Lug to Lug</p>
+                        <p className="text-lg font-medium text-foreground">{watchSpecs.lug_to_lug || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">Water Resistance</p>
+                        <p className="text-lg font-medium text-foreground">{watchSpecs.water_resistance || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">Caseback</p>
+                        <p className="text-lg font-medium text-foreground">{watchSpecs.caseback || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">Band</p>
+                        <p className="text-lg font-medium text-foreground">{watchSpecs.band || 'N/A'}</p>
+                      </div>
+                    </>
+                  )}
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Purchase Cost</p>
                     <div className="flex items-center gap-2">

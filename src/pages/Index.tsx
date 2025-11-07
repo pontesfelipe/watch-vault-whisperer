@@ -252,7 +252,7 @@ const Index = () => {
         {/* Usage Chart */}
         {watches.length > 0 && (
           <div className="mb-8">
-            <UsageChart watches={watches} wearEntries={wearEntries} />
+            <UsageChart watches={watches} wearEntries={wearEntries} onDataChange={fetchData} />
           </div>
         )}
 
