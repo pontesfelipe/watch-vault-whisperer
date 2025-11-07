@@ -130,7 +130,7 @@ export const UsageChart = ({ watches, wearEntries }: UsageChartProps) => {
     monthlyTotals[index] = Object.values(breakdown).reduce((sum, days) => sum + days, 0);
   });
 
-  const maxValue = Math.max(...monthlyTotals);
+  const maxValue = 31; // Fixed scale to max days in a month
 
   // Get unique watches that were worn
   const wornWatches = watches.filter(w => (watchTotals.get(w.id) || 0) > 0);
