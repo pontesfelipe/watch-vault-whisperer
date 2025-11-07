@@ -72,7 +72,7 @@ const Index = () => {
             year: "2-digit"
           }),
           location: trip.location,
-          watch: trip.watch_model,
+          watch: (trip.watch_model as Record<string, number>) || {},
           days: Number(trip.days),
           purpose: trip.purpose,
         }))
@@ -88,7 +88,7 @@ const Index = () => {
             year: "2-digit"
           }),
           location: event.location,
-          watch: event.watch_model,
+          watch: (event.watch_model as Record<string, number>) || {},
           days: Number(event.days),
           purpose: event.purpose,
         }))

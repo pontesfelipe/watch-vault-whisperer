@@ -23,7 +23,7 @@ export type Database = {
           purpose: string
           start_date: string
           updated_at: string
-          watch_model: string[]
+          watch_model: Json | null
         }
         Insert: {
           created_at?: string
@@ -33,7 +33,7 @@ export type Database = {
           purpose: string
           start_date: string
           updated_at?: string
-          watch_model: string[]
+          watch_model?: Json | null
         }
         Update: {
           created_at?: string
@@ -43,7 +43,7 @@ export type Database = {
           purpose?: string
           start_date?: string
           updated_at?: string
-          watch_model?: string[]
+          watch_model?: Json | null
         }
         Relationships: []
       }
@@ -56,7 +56,7 @@ export type Database = {
           purpose: string
           start_date: string
           updated_at: string
-          watch_model: string[]
+          watch_model: Json | null
         }
         Insert: {
           created_at?: string
@@ -66,7 +66,7 @@ export type Database = {
           purpose: string
           start_date: string
           updated_at?: string
-          watch_model: string[]
+          watch_model?: Json | null
         }
         Update: {
           created_at?: string
@@ -76,7 +76,7 @@ export type Database = {
           purpose?: string
           start_date?: string
           updated_at?: string
-          watch_model?: string[]
+          watch_model?: Json | null
         }
         Relationships: []
       }

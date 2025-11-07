@@ -21,8 +21,8 @@ export const AddTripDialog = ({ watches, onSuccess }: AddTripDialogProps) => {
   const [formData, setFormData] = useState({
     location: "",
     startDate: "",
-    watchModels: [] as string[],
-    days: "1",
+    watchDays: {} as Record<string, number>,
+    totalDays: "1",
     purpose: "Business",
   });
 
@@ -35,11 +35,19 @@ export const AddTripDialog = ({ watches, onSuccess }: AddTripDialogProps) => {
     setLoading(true);
 
     try {
+      const totalDays = parseFloat(formData.totalDays);
+      const watchDaysSum = Object.values(formData.watchDays).reduce((sum, days) => sum + days, 0);
+      
+      if (watchDaysSum !== totalDays) {
+        toast.error(`Watch days (${watchDaysSum}) must equal total trip days (${totalDays})`);
+        return;
+      }
+
       const { error } = await supabase.from("trips").insert({
         location: formData.location,
         start_date: formData.startDate,
-        watch_model: formData.watchModels,
-        days: parseFloat(formData.days),
+        watch_model: formData.watchDays,
+        days: totalDays,
         purpose: formData.purpose,
       });
 
@@ -50,8 +58,8 @@ export const AddTripDialog = ({ watches, onSuccess }: AddTripDialogProps) => {
       setFormData({
         location: "",
         startDate: "",
-        watchModels: [],
-        days: "1",
+        watchDays: {},
+        totalDays: "1",
         purpose: "Business",
       });
       onSuccess();
@@ -94,47 +102,57 @@ export const AddTripDialog = ({ watches, onSuccess }: AddTripDialogProps) => {
             />
           </div>
           <div>
-            <Label htmlFor="watchModel">Watches</Label>
-            <div className="border rounded-md p-3 space-y-2 max-h-48 overflow-y-auto">
-              {watches.map((watch) => {
-                const watchName = `${watch.brand} ${watch.model}`;
-                const isSelected = formData.watchModels.includes(watchName);
-                return (
-                  <label key={watch.id} className="flex items-center gap-2 cursor-pointer hover:bg-accent/50 p-2 rounded">
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setFormData({ ...formData, watchModels: [...formData.watchModels, watchName] });
-                        } else {
-                          setFormData({ ...formData, watchModels: formData.watchModels.filter(w => w !== watchName) });
-                        }
-                      }}
-                      className="h-4 w-4"
-                    />
-                    <span className="text-sm">{watchName}</span>
-                  </label>
-                );
-              })}
-            </div>
-            {formData.watchModels.length > 0 && (
-              <p className="text-xs text-muted-foreground mt-1">
-                {formData.watchModels.length} watch{formData.watchModels.length !== 1 ? 'es' : ''} selected
-              </p>
-            )}
-          </div>
-          <div>
-            <Label htmlFor="days">Days</Label>
+            <Label htmlFor="totalDays">Total Trip Days</Label>
             <Input
-              id="days"
+              id="totalDays"
               type="number"
               step="0.5"
               min="0.5"
-              value={formData.days}
-              onChange={(e) => setFormData({ ...formData, days: e.target.value })}
+              value={formData.totalDays}
+              onChange={(e) => setFormData({ ...formData, totalDays: e.target.value })}
               required
             />
+          </div>
+          <div>
+            <Label>Watches & Days Worn</Label>
+            <div className="border rounded-md p-3 space-y-3 max-h-64 overflow-y-auto">
+              {watches.map((watch) => {
+                const watchName = `${watch.brand} ${watch.model}`;
+                const days = formData.watchDays[watchName] || 0;
+                return (
+                  <div key={watch.id} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">{watchName}</span>
+                      <Input
+                        type="number"
+                        step="0.5"
+                        min="0"
+                        value={days}
+                        onChange={(e) => {
+                          const newDays = parseFloat(e.target.value) || 0;
+                          const newWatchDays = { ...formData.watchDays };
+                          if (newDays > 0) {
+                            newWatchDays[watchName] = newDays;
+                          } else {
+                            delete newWatchDays[watchName];
+                          }
+                          setFormData({ ...formData, watchDays: newWatchDays });
+                        }}
+                        className="w-20 h-8"
+                        placeholder="0"
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            {Object.keys(formData.watchDays).length > 0 && (
+              <div className="mt-2 p-2 bg-muted rounded-md">
+                <p className="text-xs text-muted-foreground">
+                  Total allocated: {Object.values(formData.watchDays).reduce((sum, d) => sum + d, 0).toFixed(1)} / {formData.totalDays} days
+                </p>
+              </div>
+            )}
           </div>
           <div>
             <Label htmlFor="purpose">Purpose</Label>
