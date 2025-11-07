@@ -147,14 +147,20 @@ const Index = () => {
   // Calculate most used watch in trips (by days)
   const tripWatchDays = new Map<string, number>();
   trips.forEach(trip => {
-    if (trip.watch) {
-      tripWatchDays.set(trip.watch, (tripWatchDays.get(trip.watch) || 0) + trip.days);
+    if (trip.watch && trip.days) {
+      const currentDays = tripWatchDays.get(trip.watch) || 0;
+      tripWatchDays.set(trip.watch, currentDays + Number(trip.days));
     }
   });
+  
+  console.log("Trip watch days breakdown:", Array.from(tripWatchDays.entries()));
+  
   const mostTripWatch = Array.from(tripWatchDays.entries())
     .sort((a, b) => b[1] - a[1])[0];
   const tripWatchName = mostTripWatch?.[0] || "N/A";
   const tripWatchDaysTotal = mostTripWatch?.[1] || 0;
+  
+  console.log("Most used trip watch:", tripWatchName, "with", tripWatchDaysTotal, "days");
 
   if (loading) {
     return (
