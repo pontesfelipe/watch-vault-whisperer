@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,7 +7,6 @@ import { Plus, Search, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
-import { usePasscode } from "@/contexts/PasscodeContext";
 
 // Watch reference database for auto-population
 const WATCH_REFERENCES: Record<string, {
@@ -59,11 +58,6 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
     hasSapphire: null as boolean | null,
   });
   const { toast } = useToast();
-  const { requestVerification } = usePasscode();
-
-  const handleOpenDialog = () => {
-    requestVerification(() => setOpen(true));
-  };
 
   const handleLookupReference = async () => {
     const searchBrand = formValues.brand.trim();
@@ -218,7 +212,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <Button onClick={handleOpenDialog} className="gap-2">
+      <Button onClick={() => setOpen(true)} className="gap-2">
         <Plus className="w-4 h-4" />
         Add Watch
       </Button>
