@@ -7,6 +7,8 @@ import { UsageChart } from "@/components/UsageChart";
 import { AddWatchDialog } from "@/components/AddWatchDialog";
 import { AddTripDialog } from "@/components/AddTripDialog";
 import { AddEventDialog } from "@/components/AddEventDialog";
+import { AddWaterUsageDialog } from "@/components/AddWaterUsageDialog";
+import { WaterUsageList } from "@/components/WaterUsageList";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Watch, TrendingUp, Calendar, Search, Lock, Unlock } from "lucide-react";
@@ -29,21 +31,33 @@ interface WearEntry {
   days: number;
 }
 
+interface WaterUsage {
+  id: string;
+  watch_id: string;
+  activity_date: string;
+  activity_type: string;
+  duration_minutes?: number;
+  depth_meters?: number;
+  notes?: string;
+}
+
 const Index = () => {
   const [watches, setWatches] = useState<Watch[]>([]);
   const [wearEntries, setWearEntries] = useState<WearEntry[]>([]);
   const [trips, setTrips] = useState<Trip[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
+  const [waterUsages, setWaterUsages] = useState<WaterUsage[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const { isVerified, requestVerification } = usePasscode();
 
   const fetchData = async () => {
-    const [watchesResult, wearResult, tripsResult, eventsResult] = await Promise.all([
+    const [watchesResult, wearResult, tripsResult, eventsResult, waterResult] = await Promise.all([
       supabase.from("watches").select("*"),
       supabase.from("wear_entries").select("watch_id, wear_date, days, updated_at"),
       supabase.from("trips").select("*").order("start_date"),
       supabase.from("events").select("*").order("start_date"),
+      supabase.from("water_usage").select("*").order("activity_date", { ascending: false }),
     ]);
 
     if (watchesResult.data) setWatches(watchesResult.data);
@@ -79,6 +93,9 @@ const Index = () => {
           purpose: event.purpose,
         }))
       );
+    }
+    if (waterResult.data) {
+      setWaterUsages(waterResult.data);
     }
     setLoading(false);
   };
@@ -262,6 +279,7 @@ const Index = () => {
             <TabsTrigger value="collection">Collection</TabsTrigger>
             <TabsTrigger value="trips">Trips</TabsTrigger>
             <TabsTrigger value="events">Events</TabsTrigger>
+            <TabsTrigger value="water">Water Usage</TabsTrigger>
           </TabsList>
 
           <TabsContent value="collection" className="space-y-6">
@@ -318,6 +336,14 @@ const Index = () => {
               <AddEventDialog watches={watches} onSuccess={fetchData} />
             </div>
             <TripTimeline trips={events} type="event" watches={watches} onUpdate={fetchData} />
+          </TabsContent>
+
+          <TabsContent value="water" className="space-y-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-semibold text-foreground">Water Usage Tracking</h2>
+              <AddWaterUsageDialog watches={watches} onSuccess={fetchData} />
+            </div>
+            <WaterUsageList usages={waterUsages} watches={watches} onUpdate={fetchData} />
           </TabsContent>
         </Tabs>
       </main>

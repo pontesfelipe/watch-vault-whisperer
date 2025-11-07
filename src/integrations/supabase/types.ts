@@ -172,6 +172,50 @@ export type Database = {
         }
         Relationships: []
       }
+      water_usage: {
+        Row: {
+          activity_date: string
+          activity_type: string
+          created_at: string
+          depth_meters: number | null
+          duration_minutes: number | null
+          id: string
+          notes: string | null
+          updated_at: string
+          watch_id: string
+        }
+        Insert: {
+          activity_date: string
+          activity_type: string
+          created_at?: string
+          depth_meters?: number | null
+          duration_minutes?: number | null
+          id?: string
+          notes?: string | null
+          updated_at?: string
+          watch_id: string
+        }
+        Update: {
+          activity_date?: string
+          activity_type?: string
+          created_at?: string
+          depth_meters?: number | null
+          duration_minutes?: number | null
+          id?: string
+          notes?: string | null
+          updated_at?: string
+          watch_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "water_usage_watch_id_fkey"
+            columns: ["watch_id"]
+            isOneToOne: false
+            referencedRelation: "watches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wear_entries: {
         Row: {
           created_at: string
