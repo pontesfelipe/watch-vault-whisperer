@@ -62,6 +62,8 @@ const getSeasonFromMonth = (monthIndex: number): Season => {
 
 export const UsageChart = ({ watches, wearEntries }: UsageChartProps) => {
   const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
+  const [showAllBestValue, setShowAllBestValue] = useState(false);
+  const [showAllNeedsWear, setShowAllNeedsWear] = useState(false);
 
   // Calculate monthly breakdown by watch
   const monthlyBreakdown = Array(12).fill(0).map(() => ({})) as Array<Record<string, number>>;
@@ -357,12 +359,22 @@ export const UsageChart = ({ watches, wearEntries }: UsageChartProps) => {
 
         {/* Top Cost Per Use */}
         <Card className="border-border bg-card p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-            <DollarSign className="w-5 h-5 text-primary" />
-            Best Value
-          </h3>
-          <div className="space-y-3">
-            {watchCostPerUse.slice(0, 5).map((watch, index) => (
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+              <DollarSign className="w-5 h-5 text-primary" />
+              Best Value
+            </h3>
+            {watchCostPerUse.length > 5 && (
+              <button
+                onClick={() => setShowAllBestValue(!showAllBestValue)}
+                className="text-xs text-primary hover:underline"
+              >
+                {showAllBestValue ? 'Show less' : `Show all (${watchCostPerUse.length})`}
+              </button>
+            )}
+          </div>
+          <div className="space-y-3 max-h-[400px] overflow-y-auto">
+            {(showAllBestValue ? watchCostPerUse : watchCostPerUse.slice(0, 5)).map((watch, index) => (
               <div key={watch.name} className="space-y-1">
                 <div className="flex items-start justify-between gap-2">
                   <span className="text-xs text-foreground font-medium truncate flex-1">
@@ -382,12 +394,22 @@ export const UsageChart = ({ watches, wearEntries }: UsageChartProps) => {
 
         {/* Worst Cost Per Use */}
         <Card className="border-border bg-card p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-            <DollarSign className="w-5 h-5 text-destructive" />
-            Needs More Wear
-          </h3>
-          <div className="space-y-3">
-            {watchCostPerUse.slice(-5).reverse().map((watch) => (
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+              <DollarSign className="w-5 h-5 text-destructive" />
+              Needs More Wear
+            </h3>
+            {watchCostPerUse.length > 5 && (
+              <button
+                onClick={() => setShowAllNeedsWear(!showAllNeedsWear)}
+                className="text-xs text-primary hover:underline"
+              >
+                {showAllNeedsWear ? 'Show less' : `Show all (${watchCostPerUse.length})`}
+              </button>
+            )}
+          </div>
+          <div className="space-y-3 max-h-[400px] overflow-y-auto">
+            {(showAllNeedsWear ? watchCostPerUse.slice().reverse() : watchCostPerUse.slice(-5).reverse()).map((watch) => (
               <div key={watch.name} className="space-y-1">
                 <div className="flex items-start justify-between gap-2">
                   <span className="text-xs text-foreground font-medium truncate flex-1">
