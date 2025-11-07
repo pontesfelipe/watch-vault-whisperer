@@ -144,23 +144,49 @@ const Index = () => {
   const trendingWatch = watches.find(w => w.id === trendingWatchId);
   const trendingDays = trendingWatchId ? recentWearTotals.get(trendingWatchId) || 0 : 0;
 
-  // Calculate most used watch in trips (by days)
+  // Calculate most used watch in trips (by days), parsing models with per-watch allocations
   const tripWatchDays = new Map<string, number>();
-  trips.forEach(trip => {
-    if (trip.watch && trip.days) {
-      const currentDays = tripWatchDays.get(trip.watch) || 0;
-      tripWatchDays.set(trip.watch, currentDays + Number(trip.days));
+  trips.forEach((trip) => {
+    const watchText = (trip.watch || "").trim();
+    if (!watchText) return;
+    const totalDays = Number(trip.days) || 0;
+
+    const parts = watchText.split(",").map((p) => p.trim()).filter(Boolean);
+    let hasExplicitAllocations = false;
+
+    parts.forEach((part) => {
+      const match = part.match(/^(.*?)(?:\s*\(([-+]?\d*\.?\d+)\))?$/);
+      if (!match) return;
+      const model = match[1].trim();
+      const daysStr = match[2];
+      if (daysStr !== undefined) {
+        hasExplicitAllocations = true;
+        const d = parseFloat(daysStr);
+        if (!isNaN(d)) {
+          tripWatchDays.set(model, (tripWatchDays.get(model) || 0) + d);
+        }
+      }
+    });
+
+    // If no explicit allocations, distribute the trip.days
+    if (!hasExplicitAllocations) {
+      if (parts.length === 1) {
+        const model = parts[0];
+        tripWatchDays.set(model, (tripWatchDays.get(model) || 0) + totalDays);
+      } else if (parts.length > 1) {
+        const per = parts.length ? totalDays / parts.length : 0;
+        parts.forEach((model) => {
+          tripWatchDays.set(model, (tripWatchDays.get(model) || 0) + per);
+        });
+      }
     }
   });
-  
-  console.log("Trip watch days breakdown:", Array.from(tripWatchDays.entries()));
-  
-  const mostTripWatch = Array.from(tripWatchDays.entries())
-    .sort((a, b) => b[1] - a[1])[0];
+
+  // console.log("Trip watch days breakdown:", Array.from(tripWatchDays.entries()));
+
+  const mostTripWatch = Array.from(tripWatchDays.entries()).sort((a, b) => b[1] - a[1])[0];
   const tripWatchName = mostTripWatch?.[0] || "N/A";
   const tripWatchDaysTotal = mostTripWatch?.[1] || 0;
-  
-  console.log("Most used trip watch:", tripWatchName, "with", tripWatchDaysTotal, "days");
 
   if (loading) {
     return (
