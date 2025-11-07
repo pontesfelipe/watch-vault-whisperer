@@ -142,31 +142,46 @@ export type Database = {
       watches: {
         Row: {
           brand: string
+          case_size: string | null
+          caseback_material: string | null
           cost: number
           created_at: string
           dial_color: string
+          has_sapphire: boolean | null
           id: string
+          lug_to_lug_size: string | null
           model: string
+          movement: string | null
           type: string
           updated_at: string
         }
         Insert: {
           brand: string
+          case_size?: string | null
+          caseback_material?: string | null
           cost?: number
           created_at?: string
           dial_color: string
+          has_sapphire?: boolean | null
           id?: string
+          lug_to_lug_size?: string | null
           model: string
+          movement?: string | null
           type: string
           updated_at?: string
         }
         Update: {
           brand?: string
+          case_size?: string | null
+          caseback_material?: string | null
           cost?: number
           created_at?: string
           dial_color?: string
+          has_sapphire?: boolean | null
           id?: string
+          lug_to_lug_size?: string | null
           model?: string
+          movement?: string | null
           type?: string
           updated_at?: string
         }

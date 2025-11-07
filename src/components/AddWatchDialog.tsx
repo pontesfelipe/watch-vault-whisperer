@@ -52,6 +52,11 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
     dialColor: "",
     type: "",
     cost: "",
+    caseSize: "",
+    lugToLugSize: "",
+    casebackMaterial: "",
+    movement: "",
+    hasSapphire: null as boolean | null,
   });
   const { toast } = useToast();
   const { requestVerification } = usePasscode();
@@ -79,13 +84,18 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
       // First, try local database for instant results
       const localMatch = WATCH_REFERENCES[searchRef.toUpperCase()];
       if (localMatch && localMatch.brand.toLowerCase().includes(searchBrand.toLowerCase())) {
-        setFormValues({
-          brand: localMatch.brand,
-          model: localMatch.model,
-          dialColor: localMatch.dialColor,
-          type: localMatch.type,
-          cost: localMatch.cost.toString(),
-        });
+      setFormValues({
+        brand: localMatch.brand,
+        model: localMatch.model,
+        dialColor: localMatch.dialColor,
+        type: localMatch.type,
+        cost: localMatch.cost.toString(),
+        caseSize: "",
+        lugToLugSize: "",
+        casebackMaterial: "",
+        movement: "",
+        hasSapphire: null,
+      });
         toast({
           title: "Watch Found",
           description: `Loaded ${localMatch.brand} ${localMatch.model}`
@@ -115,6 +125,11 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         dialColor: data.dialColor,
         type: data.type,
         cost: data.cost.toString(),
+        caseSize: data.caseSize || "",
+        lugToLugSize: data.lugToLugSize || "",
+        casebackMaterial: data.casebackMaterial || "",
+        movement: data.movement || "",
+        hasSapphire: data.hasSapphire,
       });
       
       toast({
@@ -153,6 +168,11 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         dial_color: data.dialColor,
         type: data.type,
         cost: data.cost,
+        case_size: formValues.caseSize || null,
+        lug_to_lug_size: formValues.lugToLugSize || null,
+        caseback_material: formValues.casebackMaterial || null,
+        movement: formValues.movement || null,
+        has_sapphire: formValues.hasSapphire,
       });
 
       if (error) throw error;
@@ -170,6 +190,11 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         dialColor: "",
         type: "",
         cost: "",
+        caseSize: "",
+        lugToLugSize: "",
+        casebackMaterial: "",
+        movement: "",
+        hasSapphire: null,
       });
       onSuccess();
     } catch (error) {
@@ -302,6 +327,75 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
               className="bg-background border-border"
             />
           </div>
+
+          {/* Optional Specifications Section */}
+          {(formValues.caseSize || formValues.lugToLugSize || formValues.casebackMaterial || 
+            formValues.movement || formValues.hasSapphire !== null) && (
+            <div className="space-y-3 pt-4 border-t border-border">
+              <h3 className="text-sm font-semibold text-foreground">Additional Specifications</h3>
+              
+              {formValues.caseSize && (
+                <div className="space-y-1">
+                  <Label htmlFor="caseSize" className="text-xs text-muted-foreground">Case Size</Label>
+                  <Input
+                    id="caseSize"
+                    value={formValues.caseSize}
+                    onChange={(e) => setFormValues({ ...formValues, caseSize: e.target.value })}
+                    className="bg-background border-border text-sm"
+                    placeholder="e.g., 41mm"
+                  />
+                </div>
+              )}
+              
+              {formValues.lugToLugSize && (
+                <div className="space-y-1">
+                  <Label htmlFor="lugToLugSize" className="text-xs text-muted-foreground">Lug to Lug</Label>
+                  <Input
+                    id="lugToLugSize"
+                    value={formValues.lugToLugSize}
+                    onChange={(e) => setFormValues({ ...formValues, lugToLugSize: e.target.value })}
+                    className="bg-background border-border text-sm"
+                    placeholder="e.g., 48mm"
+                  />
+                </div>
+              )}
+              
+              {formValues.casebackMaterial && (
+                <div className="space-y-1">
+                  <Label htmlFor="casebackMaterial" className="text-xs text-muted-foreground">Caseback Material</Label>
+                  <Input
+                    id="casebackMaterial"
+                    value={formValues.casebackMaterial}
+                    onChange={(e) => setFormValues({ ...formValues, casebackMaterial: e.target.value })}
+                    className="bg-background border-border text-sm"
+                    placeholder="e.g., Stainless Steel, Sapphire Crystal"
+                  />
+                </div>
+              )}
+              
+              {formValues.movement && (
+                <div className="space-y-1">
+                  <Label htmlFor="movement" className="text-xs text-muted-foreground">Movement</Label>
+                  <Input
+                    id="movement"
+                    value={formValues.movement}
+                    onChange={(e) => setFormValues({ ...formValues, movement: e.target.value })}
+                    className="bg-background border-border text-sm"
+                    placeholder="e.g., Omega Co-Axial 8800"
+                  />
+                </div>
+              )}
+              
+              {formValues.hasSapphire !== null && (
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Sapphire Crystal</Label>
+                  <div className="text-sm text-foreground">
+                    {formValues.hasSapphire ? "Yes" : "No"}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="flex gap-2">
             <Button type="submit" disabled={loading} className="flex-1">

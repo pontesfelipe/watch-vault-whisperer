@@ -43,17 +43,22 @@ serve(async (req) => {
           },
           {
             role: 'user',
-            content: `Find the specifications for this watch: ${brand} ${modelReference}
+            content: `Find the detailed specifications for this watch: ${brand} ${modelReference}
 
 Return the information in this exact JSON format:
 {
   "model": "full model name",
   "dialColor": "dial color (e.g., Black, Blue, Silver, White, Green)",
   "type": "watch type (e.g., Diver, Chronograph, Pilot, GMT, Dress, Field)",
-  "cost": retail price in USD as a number
+  "cost": retail price in USD as a number,
+  "caseSize": "case diameter with units (e.g., 41mm, 40mm)",
+  "lugToLugSize": "lug to lug measurement with units (e.g., 48mm, 47.5mm)",
+  "casebackMaterial": "caseback material (e.g., Stainless Steel, Sapphire Crystal, Titanium)",
+  "movement": "movement caliber and type (e.g., Omega Co-Axial Master Chronometer 8800, Rolex Caliber 3235)",
+  "hasSapphire": true or false for sapphire crystal
 }
 
-If you cannot find this specific watch, return: {"error": "Watch not found"}
+Pull as much information as you can find from watch manufacturer websites, retail sites, or watch databases. If a specific detail is not available, use null for that field. If you cannot find the watch at all, return: {"error": "Watch not found"}
 
 Important: Return ONLY the JSON object, no markdown formatting or explanation.`
           }
@@ -110,10 +115,17 @@ Important: Return ONLY the JSON object, no markdown formatting or explanation.`
       );
     }
 
-    // Validate the response has required fields
+    // Validate the response has required fields (optional fields can be null)
     if (!watchData.model || !watchData.dialColor || !watchData.type || !watchData.cost) {
       throw new Error('Incomplete watch data from AI');
     }
+    
+    // Ensure optional fields are present (can be null)
+    watchData.caseSize = watchData.caseSize || null;
+    watchData.lugToLugSize = watchData.lugToLugSize || null;
+    watchData.casebackMaterial = watchData.casebackMaterial || null;
+    watchData.movement = watchData.movement || null;
+    watchData.hasSapphire = watchData.hasSapphire !== undefined ? watchData.hasSapphire : null;
 
     console.log('Watch data found:', watchData);
 
