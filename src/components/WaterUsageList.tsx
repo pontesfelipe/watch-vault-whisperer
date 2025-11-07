@@ -1,6 +1,9 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Droplets } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Droplets, Eye, EyeOff } from "lucide-react";
+import { useState, useEffect } from "react";
+import { usePasscode } from "@/contexts/PasscodeContext";
 
 interface WaterUsage {
   id: string;
@@ -34,6 +37,30 @@ const getActivityColor = (activityType: string) => {
 };
 
 export const WaterUsageList = ({ usages, watches }: WaterUsageListProps) => {
+  const { isVerified, requestVerification } = usePasscode();
+  const [showLocation, setShowLocation] = useState(false);
+
+  const handleToggleLocation = () => {
+    if (!showLocation) {
+      if (isVerified) {
+        setShowLocation(true);
+      } else {
+        requestVerification(() => {
+          setShowLocation(true);
+        });
+      }
+    } else {
+      setShowLocation(false);
+    }
+  };
+
+  // Auto-show location if already verified
+  useEffect(() => {
+    if (isVerified) {
+      setShowLocation(true);
+    }
+  }, [isVerified]);
+
   if (usages.length === 0) {
     return (
       <Card className="border-border bg-card p-8 text-center">
@@ -45,8 +72,31 @@ export const WaterUsageList = ({ usages, watches }: WaterUsageListProps) => {
   }
 
   return (
-    <div className="space-y-3">
-      {usages.map((entry) => {
+    <>
+      {usages.length > 0 && (
+        <div className="flex justify-end mb-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleToggleLocation}
+            className="gap-2 text-xs"
+          >
+            {showLocation ? (
+              <>
+                <EyeOff className="w-4 h-4" />
+                Hide Locations
+              </>
+            ) : (
+              <>
+                <Eye className="w-4 h-4" />
+                Show Locations
+              </>
+            )}
+          </Button>
+        </div>
+      )}
+      <div className="space-y-3">
+        {usages.map((entry) => {
         const watch = watches.find(w => w.id === entry.watch_id);
         if (!watch) return null;
         
@@ -89,14 +139,15 @@ export const WaterUsageList = ({ usages, watches }: WaterUsageListProps) => {
               
               {entry.notes && (
                 <p className="text-sm text-muted-foreground mt-2 border-t border-border pt-2">
-                  {entry.notes}
+                  {showLocation ? entry.notes : "••••••"}
                 </p>
               )}
             </div>
           </div>
         </Card>
         );
-      })}
-    </div>
+        })}
+      </div>
+    </>
   );
 };
