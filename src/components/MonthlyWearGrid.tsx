@@ -114,17 +114,19 @@ export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyW
     }
 
     try {
-      // Get the first day of the month
-      const currentYear = new Date().getFullYear();
-      const wearDate = new Date(currentYear, monthIndex, 1).toISOString().split('T')[0];
+      // Compute month range safely (handles December -> next year)
+      const now = new Date();
+      const startOfMonthDate = new Date(now.getFullYear(), monthIndex, 1);
+      const startOfNextMonthDate = new Date(now.getFullYear(), monthIndex + 1, 1);
+      const wearDate = format(startOfMonthDate, 'yyyy-MM-dd');
       
       // Check if an entry exists for this watch and month
       const { data: existingEntries } = await supabase
         .from('wear_entries')
         .select('*')
         .eq('watch_id', watchId)
-        .gte('wear_date', `${currentYear}-${String(monthIndex + 1).padStart(2, '0')}-01`)
-        .lt('wear_date', `${currentYear}-${String(monthIndex + 2).padStart(2, '0')}-01`);
+        .gte('wear_date', format(startOfMonthDate, 'yyyy-MM-dd'))
+        .lt('wear_date', format(startOfNextMonthDate, 'yyyy-MM-dd'));
 
       if (newValue === 0) {
         // Delete all entries for this month if value is 0
