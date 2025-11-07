@@ -159,7 +159,7 @@ export const UsageChart = ({ watches, wearEntries }: UsageChartProps) => {
           </TooltipProvider>
         </div>
         
-        <div className="flex items-end justify-between gap-2 h-[500px] mb-6">
+        <div className="flex items-end justify-between gap-2 h-[2000px] mb-6">
           {monthlyTotals.map((total, monthIndex) => {
             const height = total > 0 ? (total / maxValue) * 100 : 0;
             const breakdown = monthlyBreakdown[monthIndex];
