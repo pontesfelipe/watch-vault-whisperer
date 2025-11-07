@@ -109,14 +109,16 @@ export const AddWaterUsageDialog = ({ watches, onSuccess }: AddWaterUsageDialogP
                 <SelectValue placeholder="Select activity" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="Pool">Pool</SelectItem>
+                <SelectItem value="Hot tub">Hot tub</SelectItem>
+                <SelectItem value="Lake">Lake</SelectItem>
+                <SelectItem value="Ocean">Ocean</SelectItem>
+                <SelectItem value="Beach">Beach</SelectItem>
                 <SelectItem value="Swimming">Swimming</SelectItem>
                 <SelectItem value="Diving">Diving</SelectItem>
                 <SelectItem value="Snorkeling">Snorkeling</SelectItem>
                 <SelectItem value="Shower">Shower</SelectItem>
                 <SelectItem value="Rain">Rain Exposure</SelectItem>
-                <SelectItem value="Beach">Beach</SelectItem>
-                <SelectItem value="Pool">Pool</SelectItem>
-                <SelectItem value="Ocean">Ocean</SelectItem>
                 <SelectItem value="Other">Other</SelectItem>
               </SelectContent>
             </Select>

@@ -19,14 +19,16 @@ interface WaterUsageListProps {
 
 const getActivityColor = (activityType: string) => {
   const colors: Record<string, string> = {
+    Pool: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+    "Hot tub": "bg-red-500/10 text-red-500 border-red-500/20",
+    Lake: "bg-teal-500/10 text-teal-500 border-teal-500/20",
+    Ocean: "bg-cyan-500/10 text-cyan-500 border-cyan-500/20",
+    Beach: "bg-amber-500/10 text-amber-500 border-amber-500/20",
     Swimming: "bg-blue-500/10 text-blue-500 border-blue-500/20",
     Diving: "bg-indigo-500/10 text-indigo-500 border-indigo-500/20",
     Snorkeling: "bg-cyan-500/10 text-cyan-500 border-cyan-500/20",
     Shower: "bg-slate-500/10 text-slate-500 border-slate-500/20",
     Rain: "bg-gray-500/10 text-gray-500 border-gray-500/20",
-    Beach: "bg-amber-500/10 text-amber-500 border-amber-500/20",
-    Pool: "bg-sky-500/10 text-sky-500 border-sky-500/20",
-    Ocean: "bg-teal-500/10 text-teal-500 border-teal-500/20",
   };
   return colors[activityType] || "bg-primary/10 text-primary border-primary/20";
 };
