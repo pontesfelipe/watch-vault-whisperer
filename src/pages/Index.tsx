@@ -144,17 +144,17 @@ const Index = () => {
   const trendingWatch = watches.find(w => w.id === trendingWatchId);
   const trendingDays = trendingWatchId ? recentWearTotals.get(trendingWatchId) || 0 : 0;
 
-  // Calculate most used watch in trips
-  const tripWatchCounts = new Map<string, number>();
+  // Calculate most used watch in trips (by days)
+  const tripWatchDays = new Map<string, number>();
   trips.forEach(trip => {
     if (trip.watch) {
-      tripWatchCounts.set(trip.watch, (tripWatchCounts.get(trip.watch) || 0) + 1);
+      tripWatchDays.set(trip.watch, (tripWatchDays.get(trip.watch) || 0) + trip.days);
     }
   });
-  const mostTripWatch = Array.from(tripWatchCounts.entries())
+  const mostTripWatch = Array.from(tripWatchDays.entries())
     .sort((a, b) => b[1] - a[1])[0];
   const tripWatchName = mostTripWatch?.[0] || "N/A";
-  const tripWatchCount = mostTripWatch?.[1] || 0;
+  const tripWatchDaysTotal = mostTripWatch?.[1] || 0;
 
   if (loading) {
     return (
@@ -231,7 +231,7 @@ const Index = () => {
           />
           <StatsCard
             title="Trip Watch"
-            value={tripWatchCount}
+            value={tripWatchDaysTotal.toFixed(1)}
             icon={Calendar}
             subtitle={tripWatchName}
           />
