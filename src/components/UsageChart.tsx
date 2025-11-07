@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TrendingUp, TrendingDown, DollarSign, Eye, EyeOff } from "lucide-react";
 import {
   Tooltip,
@@ -67,17 +67,28 @@ export const UsageChart = ({ watches, wearEntries }: UsageChartProps) => {
   const [showAllBestValue, setShowAllBestValue] = useState(false);
   const [showAllNeedsWear, setShowAllNeedsWear] = useState(false);
   const [showCost, setShowCost] = useState(false);
-  const { requestVerification } = usePasscode();
+  const { requestVerification, isVerified } = usePasscode();
 
   const handleToggleCost = () => {
     if (!showCost) {
-      requestVerification(() => {
+      if (isVerified) {
         setShowCost(true);
-      });
+      } else {
+        requestVerification(() => {
+          setShowCost(true);
+        });
+      }
     } else {
       setShowCost(false);
     }
   };
+
+  // Auto-show cost if already verified
+  useEffect(() => {
+    if (isVerified) {
+      setShowCost(true);
+    }
+  }, [isVerified]);
 
   // Calculate monthly breakdown by watch
   const monthlyBreakdown = Array(12).fill(0).map(() => ({})) as Array<Record<string, number>>;

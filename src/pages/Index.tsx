@@ -9,8 +9,10 @@ import { AddTripDialog } from "@/components/AddTripDialog";
 import { AddEventDialog } from "@/components/AddEventDialog";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Watch, TrendingUp, Calendar, Search } from "lucide-react";
+import { Watch, TrendingUp, Calendar, Search, Lock, Unlock } from "lucide-react";
 import { Trip, Event } from "@/types/watch";
+import { Button } from "@/components/ui/button";
+import { usePasscode } from "@/contexts/PasscodeContext";
 
 interface Watch {
   id: string;
@@ -34,6 +36,7 @@ const Index = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const { isVerified, requestVerification } = usePasscode();
 
   const fetchData = async () => {
     const [watchesResult, wearResult, tripsResult, eventsResult] = await Promise.all([
@@ -168,7 +171,31 @@ const Index = () => {
                 <p className="text-sm text-muted-foreground">Track and manage your timepieces</p>
               </div>
             </div>
-            <AddWatchDialog onSuccess={fetchData} />
+            <div className="flex items-center gap-3">
+              <Button
+                variant={isVerified ? "default" : "outline"}
+                size="sm"
+                onClick={() => {
+                  if (!isVerified) {
+                    requestVerification(() => {});
+                  }
+                }}
+                className="gap-2"
+              >
+                {isVerified ? (
+                  <>
+                    <Unlock className="w-4 h-4" />
+                    Unlocked
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-4 h-4" />
+                    Unlock All
+                  </>
+                )}
+              </Button>
+              <AddWatchDialog onSuccess={fetchData} />
+            </div>
           </div>
         </div>
       </header>

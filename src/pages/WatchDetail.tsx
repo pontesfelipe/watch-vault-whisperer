@@ -41,7 +41,7 @@ const WatchDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { requestVerification } = usePasscode();
+  const { requestVerification, isVerified } = usePasscode();
   const [watch, setWatch] = useState<Watch | null>(null);
   const [wearEntries, setWearEntries] = useState<WearEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,13 +49,24 @@ const WatchDetail = () => {
 
   const handleToggleCost = () => {
     if (!showCost) {
-      requestVerification(() => {
+      if (isVerified) {
         setShowCost(true);
-      });
+      } else {
+        requestVerification(() => {
+          setShowCost(true);
+        });
+      }
     } else {
       setShowCost(false);
     }
   };
+
+  // Auto-show cost if already verified
+  useEffect(() => {
+    if (isVerified) {
+      setShowCost(true);
+    }
+  }, [isVerified]);
 
   const fetchData = async () => {
     if (!id) return;

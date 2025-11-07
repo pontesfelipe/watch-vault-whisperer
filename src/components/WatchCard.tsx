@@ -5,7 +5,7 @@ import { Watch as WatchIcon, Calendar, Eye, EyeOff, Trash2 } from "lucide-react"
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePasscode } from "@/contexts/PasscodeContext";
 import {
   AlertDialog,
@@ -35,18 +35,29 @@ interface WatchCardProps {
 export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { requestVerification } = usePasscode();
+  const { requestVerification, isVerified } = usePasscode();
   const [showCost, setShowCost] = useState(false);
 
   const handleToggleCost = () => {
     if (!showCost) {
-      requestVerification(() => {
+      if (isVerified) {
         setShowCost(true);
-      });
+      } else {
+        requestVerification(() => {
+          setShowCost(true);
+        });
+      }
     } else {
       setShowCost(false);
     }
   };
+
+  // Auto-show cost if already verified
+  useEffect(() => {
+    if (isVerified) {
+      setShowCost(true);
+    }
+  }, [isVerified]);
 
   const handleDelete = async () => {
     const { error } = await supabase.from("watches").delete().eq("id", watch.id);
