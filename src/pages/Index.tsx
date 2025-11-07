@@ -144,6 +144,18 @@ const Index = () => {
   const trendingWatch = watches.find(w => w.id === trendingWatchId);
   const trendingDays = trendingWatchId ? recentWearTotals.get(trendingWatchId) || 0 : 0;
 
+  // Calculate most used watch in trips
+  const tripWatchCounts = new Map<string, number>();
+  trips.forEach(trip => {
+    if (trip.watch) {
+      tripWatchCounts.set(trip.watch, (tripWatchCounts.get(trip.watch) || 0) + 1);
+    }
+  });
+  const mostTripWatch = Array.from(tripWatchCounts.entries())
+    .sort((a, b) => b[1] - a[1])[0];
+  const tripWatchName = mostTripWatch?.[0] || "N/A";
+  const tripWatchCount = mostTripWatch?.[1] || 0;
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -174,7 +186,7 @@ const Index = () => {
 
       <main className="container mx-auto px-4 py-8">
         {/* Stats Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-4 mb-8">
           <StatsCard
             title="Total Watches"
             value={totalWatches}
@@ -216,6 +228,12 @@ const Index = () => {
             value={trendingDays.toFixed(1)}
             icon={TrendingUp}
             subtitle={trendingWatch ? `${trendingWatch.model}` : "N/A"}
+          />
+          <StatsCard
+            title="Trip Watch"
+            value={tripWatchCount}
+            icon={Calendar}
+            subtitle={tripWatchName}
           />
         </div>
 
