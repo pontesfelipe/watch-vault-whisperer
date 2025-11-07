@@ -61,7 +61,31 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
   };
 
   const handleLookupReference = () => {
-    const found = WATCH_REFERENCES[modelRef];
+    const searchBrand = formValues.brand.trim().toLowerCase();
+    const searchRef = modelRef.trim().toUpperCase();
+    
+    // Strategy 1: Exact model reference match
+    let found = WATCH_REFERENCES[searchRef] || WATCH_REFERENCES[modelRef];
+    
+    // Strategy 2: Verify brand if entered
+    if (found && searchBrand) {
+      if (!found.brand.toLowerCase().includes(searchBrand)) {
+        found = undefined; // Brand doesn't match, ignore this result
+      }
+    }
+    
+    // Strategy 3: Partial match search if no exact match
+    if (!found && (searchRef || searchBrand)) {
+      const entries = Object.entries(WATCH_REFERENCES);
+      const match = entries.find(([ref, data]) => {
+        const refMatch = searchRef ? ref.toUpperCase().includes(searchRef) : true;
+        const brandMatch = searchBrand ? data.brand.toLowerCase().includes(searchBrand) : true;
+        return refMatch && brandMatch;
+      });
+      found = match?.[1];
+    }
+    
+    // Populate or show error
     if (found) {
       setFormValues({
         brand: found.brand,
@@ -77,7 +101,9 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
     } else {
       toast({
         title: "Not Found",
-        description: "Model reference not found in database. Please enter manually.",
+        description: searchBrand 
+          ? `No ${searchBrand} watch found with reference "${modelRef}". Enter details manually.`
+          : "Model reference not found. Enter brand first for better results, or fill manually.",
         variant: "destructive",
       });
     }
@@ -150,7 +176,27 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         <DialogHeader>
           <DialogTitle className="text-foreground">Add New Watch</DialogTitle>
         </DialogHeader>
+        
+        <div className="bg-muted/50 p-3 rounded-lg border border-border">
+          <p className="text-sm text-muted-foreground">
+            <strong className="text-foreground">Quick Add:</strong> Enter Brand and Model Reference, then click Search to auto-fill details.
+          </p>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="brand">Brand</Label>
+            <Input
+              id="brand"
+              value={formValues.brand}
+              onChange={(e) => setFormValues({ ...formValues, brand: e.target.value })}
+              required
+              maxLength={100}
+              placeholder="e.g., Omega, Rolex, IWC"
+              className="bg-background border-border"
+            />
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="modelRef">Model Reference (Optional)</Label>
             <div className="flex gap-2">
@@ -164,26 +210,17 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
               <Button
                 type="button"
                 variant="outline"
-                size="icon"
                 onClick={handleLookupReference}
                 disabled={!modelRef}
+                className="shrink-0"
               >
-                <Search className="w-4 h-4" />
+                <Search className="w-4 h-4 mr-1" />
+                Search
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground">Enter model reference to auto-fill information</p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="brand">Brand</Label>
-            <Input
-              id="brand"
-              value={formValues.brand}
-              onChange={(e) => setFormValues({ ...formValues, brand: e.target.value })}
-              required
-              maxLength={100}
-              className="bg-background border-border"
-            />
+            <p className="text-xs text-muted-foreground">
+              With brand entered above, click Search to auto-fill remaining fields
+            </p>
           </div>
 
           <div className="space-y-2">
