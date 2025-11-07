@@ -107,6 +107,7 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
               type="date"
               required
               max={new Date().toISOString().split('T')[0]}
+              defaultValue={new Date().toISOString().split('T')[0]}
               className="bg-background border-border"
             />
           </div>

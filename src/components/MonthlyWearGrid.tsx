@@ -11,6 +11,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { usePasscode } from "@/contexts/PasscodeContext";
 import { format } from "date-fns";
 
@@ -101,7 +102,7 @@ export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyW
   const handleCellClick = (watchId: string, monthIndex: number, currentValue: number) => {
     requestVerification(() => {
       setEditingCell({ watchId, monthIndex });
-      setEditValue(currentValue > 0 ? currentValue.toString() : "");
+      setEditValue(currentValue > 0 ? currentValue.toFixed(1) : "");
     });
   };
 
@@ -116,6 +117,8 @@ export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyW
       setEditingCell(null);
       return;
     }
+
+    const rounded = Math.round(newValue * 10) / 10;
 
     setIsSaving(true);
 
@@ -136,7 +139,7 @@ export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyW
 
       if (fetchErr) throw fetchErr;
 
-      if (newValue === 0) {
+      if (rounded === 0) {
         // Delete all entries for this month if value is 0
         if (existingEntries && existingEntries.length > 0) {
           const { error } = await supabase
@@ -151,7 +154,7 @@ export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyW
         // Update the first existing entry and delete others
         const { error } = await supabase
           .from('wear_entries')
-          .update({ days: newValue })
+          .update({ days: rounded })
           .eq('id', existingEntries[0].id);
         
         if (error) throw error;
@@ -173,7 +176,7 @@ export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyW
           .insert({
             watch_id: watchId,
             wear_date: wearDate,
-            days: newValue,
+            days: rounded,
           });
         
         if (error) throw error;
@@ -255,17 +258,22 @@ export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyW
                         onClick={() => !isEditing && handleCellClick(watch.id, monthIndex, days)}
                       >
                         {isEditing ? (
-                          <Input
-                            type="number"
-                            value={editValue}
-                            onChange={(e) => setEditValue(e.target.value)}
-                            onBlur={() => handleCellUpdate(watch.id, monthIndex)}
-                            onKeyDown={(e) => handleKeyDown(e, watch.id, monthIndex)}
-                            className="w-16 h-7 text-center p-1"
-                            autoFocus
-                            step="0.1"
-                            min="0"
-                          />
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="number"
+                              value={editValue}
+                              onChange={(e) => setEditValue(e.target.value)}
+                              onKeyDown={(e) => handleKeyDown(e, watch.id, monthIndex)}
+                              className="w-16 h-7 text-center p-1"
+                              autoFocus
+                              step="0.1"
+                              min="0"
+                            />
+                            <div className="flex gap-1">
+                              <Button size="sm" onClick={() => handleCellUpdate(watch.id, monthIndex)} disabled={isSaving}>Save</Button>
+                              <Button size="sm" variant="outline" onClick={() => setEditingCell(null)} disabled={isSaving}>Cancel</Button>
+                            </div>
+                          </div>
                         ) : (
                           days > 0 ? days.toFixed(1) : '-'
                         )}
