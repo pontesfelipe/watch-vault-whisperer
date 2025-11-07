@@ -11,6 +11,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
+import { usePasscode } from "@/contexts/PasscodeContext";
 
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -54,6 +55,7 @@ const WATCH_COLORS = [
 export const MonthlyWearGrid = ({ watches, wearEntries }: MonthlyWearGridProps) => {
   const [editingCell, setEditingCell] = useState<{ watchId: string; monthIndex: number } | null>(null);
   const [editValue, setEditValue] = useState<string>("");
+  const { requestVerification } = usePasscode();
   // Calculate monthly breakdown by watch
   const monthlyBreakdown = Array(12).fill(0).map(() => ({})) as Array<Record<string, number>>;
   const watchTotals = new Map<string, number>();
@@ -83,8 +85,10 @@ export const MonthlyWearGrid = ({ watches, wearEntries }: MonthlyWearGridProps) 
   );
 
   const handleCellClick = (watchId: string, monthIndex: number, currentValue: number) => {
-    setEditingCell({ watchId, monthIndex });
-    setEditValue(currentValue > 0 ? currentValue.toString() : "");
+    requestVerification(() => {
+      setEditingCell({ watchId, monthIndex });
+      setEditValue(currentValue > 0 ? currentValue.toString() : "");
+    });
   };
 
   const handleCellUpdate = async (watchId: string, monthIndex: number) => {

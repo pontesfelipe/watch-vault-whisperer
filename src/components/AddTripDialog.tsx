@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
+import { usePasscode } from "@/contexts/PasscodeContext";
 
 interface AddTripDialogProps {
   watches: { id: string; brand: string; model: string }[];
@@ -16,6 +17,7 @@ interface AddTripDialogProps {
 export const AddTripDialog = ({ watches, onSuccess }: AddTripDialogProps) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { requestVerification } = usePasscode();
   const [formData, setFormData] = useState({
     location: "",
     startDate: "",
@@ -23,6 +25,10 @@ export const AddTripDialog = ({ watches, onSuccess }: AddTripDialogProps) => {
     days: "1",
     purpose: "Business",
   });
+
+  const handleOpenDialog = () => {
+    requestVerification(() => setOpen(true));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,12 +65,10 @@ export const AddTripDialog = ({ watches, onSuccess }: AddTripDialogProps) => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus className="w-4 h-4 mr-2" />
-          Add Trip
-        </Button>
-      </DialogTrigger>
+      <Button onClick={handleOpenDialog}>
+        <Plus className="w-4 h-4 mr-2" />
+        Add Trip
+      </Button>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add Trip</DialogTitle>

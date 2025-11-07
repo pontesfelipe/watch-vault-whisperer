@@ -8,6 +8,7 @@ import { Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { usePasscode } from "@/contexts/PasscodeContext";
 
 const wearSchema = z.object({
   watchId: z.string().uuid(),
@@ -20,6 +21,11 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { requestVerification } = usePasscode();
+
+  const handleOpenDialog = () => {
+    requestVerification(() => setOpen(true));
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -83,12 +89,10 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
-          <Calendar className="w-4 h-4" />
-          Log Wear
-        </Button>
-      </DialogTrigger>
+      <Button onClick={handleOpenDialog} variant="outline" size="sm" className="gap-2">
+        <Calendar className="w-4 h-4" />
+        Log Wear
+      </Button>
       <DialogContent className="bg-card border-border max-w-md">
         <DialogHeader>
           <DialogTitle className="text-foreground">Add Wear Entry</DialogTitle>

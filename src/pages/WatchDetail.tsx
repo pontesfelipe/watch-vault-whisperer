@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Calendar, DollarSign, Trash2 } from "lucide-react";
 import { AddWearDialog } from "@/components/AddWearDialog";
 import { useToast } from "@/hooks/use-toast";
+import { usePasscode } from "@/contexts/PasscodeContext";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,6 +41,7 @@ const WatchDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { requestVerification } = usePasscode();
   const [watch, setWatch] = useState<Watch | null>(null);
   const [wearEntries, setWearEntries] = useState<WearEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,23 +64,25 @@ const WatchDetail = () => {
   }, [id]);
 
   const handleDeleteEntry = async (entryId: string) => {
-    const { error } = await supabase.from("wear_entries").delete().eq("id", entryId);
+    requestVerification(async () => {
+      const { error } = await supabase.from("wear_entries").delete().eq("id", entryId);
 
-    if (error) {
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to delete entry",
+          variant: "destructive",
+        });
+        return;
+      }
+
       toast({
-        title: "Error",
-        description: "Failed to delete entry",
-        variant: "destructive",
+        title: "Success",
+        description: "Wear entry deleted",
       });
-      return;
-    }
 
-    toast({
-      title: "Success",
-      description: "Wear entry deleted",
+      fetchData();
     });
-
-    fetchData();
   };
 
   if (loading) {

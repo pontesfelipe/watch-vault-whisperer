@@ -7,6 +7,7 @@ import { Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { usePasscode } from "@/contexts/PasscodeContext";
 
 const watchSchema = z.object({
   brand: z.string().trim().min(1, "Brand is required").max(100),
@@ -20,6 +21,11 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { requestVerification } = usePasscode();
+
+  const handleOpenDialog = () => {
+    requestVerification(() => setOpen(true));
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -75,12 +81,10 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="gap-2">
-          <Plus className="w-4 h-4" />
-          Add Watch
-        </Button>
-      </DialogTrigger>
+      <Button onClick={handleOpenDialog} className="gap-2">
+        <Plus className="w-4 h-4" />
+        Add Watch
+      </Button>
       <DialogContent className="bg-card border-border max-w-md">
         <DialogHeader>
           <DialogTitle className="text-foreground">Add New Watch</DialogTitle>
