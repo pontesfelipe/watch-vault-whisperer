@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { usePasscode } from "@/contexts/PasscodeContext";
+import { format } from "date-fns";
 
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -174,9 +175,13 @@ export const MonthlyWearGrid = ({ watches, wearEntries }: MonthlyWearGridProps) 
     }
   };
 
+  const todayDate = format(new Date(), "MMMM d, yyyy");
+
   return (
     <Card className="border-border bg-card p-6">
-      <h3 className="text-xl font-semibold text-foreground mb-6">Monthly Wear Distribution</h3>
+      <h3 className="text-xl font-semibold text-foreground mb-6">
+        Monthly Wear Distribution - {todayDate}
+      </h3>
       
       <div className="overflow-x-auto">
         <Table>
