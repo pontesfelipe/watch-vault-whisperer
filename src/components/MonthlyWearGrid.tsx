@@ -57,6 +57,17 @@ export const MonthlyWearGrid = ({ watches, wearEntries }: MonthlyWearGridProps) 
   const [editingCell, setEditingCell] = useState<{ watchId: string; monthIndex: number } | null>(null);
   const [editValue, setEditValue] = useState<string>("");
   const { requestVerification } = usePasscode();
+  
+  // Find the most recent wear entry date
+  const lastUpdateDate = wearEntries.length > 0
+    ? format(
+        new Date(
+          Math.max(...wearEntries.map(entry => new Date(entry.wear_date).getTime()))
+        ),
+        "MMMM d, yyyy"
+      )
+    : "No entries yet";
+  
   // Calculate monthly breakdown by watch
   const monthlyBreakdown = Array(12).fill(0).map(() => ({})) as Array<Record<string, number>>;
   const watchTotals = new Map<string, number>();
@@ -175,12 +186,10 @@ export const MonthlyWearGrid = ({ watches, wearEntries }: MonthlyWearGridProps) 
     }
   };
 
-  const todayDate = format(new Date(), "MMMM d, yyyy");
-
   return (
     <Card className="border-border bg-card p-6">
       <h3 className="text-xl font-semibold text-foreground mb-6">
-        Monthly Wear Distribution - {todayDate}
+        Monthly Wear Distribution - Last Update: {lastUpdateDate}
       </h3>
       
       <div className="overflow-x-auto">
