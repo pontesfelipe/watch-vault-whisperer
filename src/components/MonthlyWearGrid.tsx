@@ -7,6 +7,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
 
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -48,6 +52,8 @@ const WATCH_COLORS = [
 ];
 
 export const MonthlyWearGrid = ({ watches, wearEntries }: MonthlyWearGridProps) => {
+  const [editingCell, setEditingCell] = useState<{ watchId: string; monthIndex: number } | null>(null);
+  const [editValue, setEditValue] = useState<string>("");
   // Calculate monthly breakdown by watch
   const monthlyBreakdown = Array(12).fill(0).map(() => ({})) as Array<Record<string, number>>;
   const watchTotals = new Map<string, number>();
@@ -75,6 +81,94 @@ export const MonthlyWearGrid = ({ watches, wearEntries }: MonthlyWearGridProps) 
   const monthlyTotals = monthlyBreakdown.map(breakdown => 
     Object.values(breakdown).reduce((sum, days) => sum + days, 0)
   );
+
+  const handleCellClick = (watchId: string, monthIndex: number, currentValue: number) => {
+    setEditingCell({ watchId, monthIndex });
+    setEditValue(currentValue > 0 ? currentValue.toString() : "");
+  };
+
+  const handleCellUpdate = async (watchId: string, monthIndex: number) => {
+    const newValue = parseFloat(editValue);
+    
+    if (isNaN(newValue) || newValue < 0) {
+      toast.error("Please enter a valid number");
+      setEditingCell(null);
+      return;
+    }
+
+    try {
+      // Get the first day of the month
+      const currentYear = new Date().getFullYear();
+      const wearDate = new Date(currentYear, monthIndex, 1).toISOString().split('T')[0];
+      
+      // Check if an entry exists for this watch and month
+      const { data: existingEntries } = await supabase
+        .from('wear_entries')
+        .select('*')
+        .eq('watch_id', watchId)
+        .gte('wear_date', `${currentYear}-${String(monthIndex + 1).padStart(2, '0')}-01`)
+        .lt('wear_date', `${currentYear}-${String(monthIndex + 2).padStart(2, '0')}-01`);
+
+      if (newValue === 0) {
+        // Delete all entries for this month if value is 0
+        if (existingEntries && existingEntries.length > 0) {
+          const { error } = await supabase
+            .from('wear_entries')
+            .delete()
+            .in('id', existingEntries.map(e => e.id));
+          
+          if (error) throw error;
+          toast.success("Wear entry removed");
+        }
+      } else if (existingEntries && existingEntries.length > 0) {
+        // Update the first existing entry and delete others
+        const { error } = await supabase
+          .from('wear_entries')
+          .update({ days: newValue })
+          .eq('id', existingEntries[0].id);
+        
+        if (error) throw error;
+
+        // Delete other entries for this month
+        if (existingEntries.length > 1) {
+          await supabase
+            .from('wear_entries')
+            .delete()
+            .in('id', existingEntries.slice(1).map(e => e.id));
+        }
+        
+        toast.success("Wear entry updated");
+      } else {
+        // Create new entry
+        const { error } = await supabase
+          .from('wear_entries')
+          .insert({
+            watch_id: watchId,
+            wear_date: wearDate,
+            days: newValue,
+          });
+        
+        if (error) throw error;
+        toast.success("Wear entry added");
+      }
+
+      // Refresh the page to show updated data
+      window.location.reload();
+    } catch (error) {
+      console.error('Error updating wear entry:', error);
+      toast.error("Failed to update wear entry");
+    }
+
+    setEditingCell(null);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent, watchId: string, monthIndex: number) => {
+    if (e.key === 'Enter') {
+      handleCellUpdate(watchId, monthIndex);
+    } else if (e.key === 'Escape') {
+      setEditingCell(null);
+    }
+  };
 
   return (
     <Card className="border-border bg-card p-6">
@@ -113,16 +207,33 @@ export const MonthlyWearGrid = ({ watches, wearEntries }: MonthlyWearGridProps) 
                   </TableCell>
                   {monthlyBreakdown.map((breakdown, monthIndex) => {
                     const days = breakdown[watchKey] || 0;
+                    const isEditing = editingCell?.watchId === watch.id && editingCell?.monthIndex === monthIndex;
+                    
                     return (
                       <TableCell 
                         key={monthIndex} 
-                        className="text-center text-sm"
+                        className="text-center text-sm cursor-pointer hover:bg-muted/50 transition-colors"
                         style={{
                           backgroundColor: days > 0 ? `${watchColorMap.get(watchKey)}20` : 'transparent',
                           fontWeight: days > 0 ? '600' : 'normal',
                         }}
+                        onClick={() => !isEditing && handleCellClick(watch.id, monthIndex, days)}
                       >
-                        {days > 0 ? days.toFixed(1) : '-'}
+                        {isEditing ? (
+                          <Input
+                            type="number"
+                            value={editValue}
+                            onChange={(e) => setEditValue(e.target.value)}
+                            onBlur={() => handleCellUpdate(watch.id, monthIndex)}
+                            onKeyDown={(e) => handleKeyDown(e, watch.id, monthIndex)}
+                            className="w-16 h-7 text-center p-1"
+                            autoFocus
+                            step="0.5"
+                            min="0"
+                          />
+                        ) : (
+                          days > 0 ? days.toFixed(1) : '-'
+                        )}
                       </TableCell>
                     );
                   })}
