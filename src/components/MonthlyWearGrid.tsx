@@ -61,6 +61,7 @@ export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyW
   const [editValue, setEditValue] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
   const { requestVerification } = usePasscode();
+  const gridEditable = false;
   
   // Find the most recent update timestamp
   const lastUpdateDate = wearEntries.length > 0 && wearEntries.some(e => e.updated_at)
@@ -250,14 +251,14 @@ export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyW
                     return (
                       <TableCell 
                         key={monthIndex} 
-                        className="text-center text-sm cursor-pointer hover:bg-muted/50 transition-colors"
+                        className="text-center text-sm hover:bg-muted/50 transition-colors"
                         style={{
                           backgroundColor: days > 0 ? `${watchColorMap.get(watchKey)}20` : 'transparent',
                           fontWeight: days > 0 ? '600' : 'normal',
                         }}
-                        onClick={() => !isEditing && handleCellClick(watch.id, monthIndex, days)}
+                        onClick={() => { if (gridEditable && !isEditing) handleCellClick(watch.id, monthIndex, days); }}
                       >
-                        {isEditing ? (
+                        {gridEditable && isEditing ? (
                           <div className="flex items-center gap-2">
                             <Input
                               type="number"
