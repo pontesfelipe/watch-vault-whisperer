@@ -5,6 +5,8 @@ import { StatsCard } from "@/components/StatsCard";
 import { TripTimeline } from "@/components/TripTimeline";
 import { UsageChart } from "@/components/UsageChart";
 import { AddWatchDialog } from "@/components/AddWatchDialog";
+import { AddTripDialog } from "@/components/AddTripDialog";
+import { AddEventDialog } from "@/components/AddEventDialog";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Watch, TrendingUp, Calendar, Search } from "lucide-react";
@@ -216,17 +218,19 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="trips" className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-semibold text-foreground mb-4">Travel History</h2>
-              <TripTimeline trips={trips} />
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-semibold text-foreground">Travel History</h2>
+              <AddTripDialog watches={watches} onSuccess={fetchData} />
             </div>
+            <TripTimeline trips={trips} />
           </TabsContent>
 
           <TabsContent value="events" className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-semibold text-foreground mb-4">Special Events</h2>
-              <TripTimeline trips={events} />
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-semibold text-foreground">Special Events</h2>
+              <AddEventDialog watches={watches} onSuccess={fetchData} />
             </div>
+            <TripTimeline trips={events} />
           </TabsContent>
         </Tabs>
       </main>

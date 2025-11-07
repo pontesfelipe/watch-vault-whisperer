@@ -16,6 +16,8 @@ interface Watch {
   brand: string;
   model: string;
   cost: number;
+  type: string;
+  dial_color: string;
 }
 
 interface WearEntry {
@@ -77,12 +79,18 @@ export const UsageChart = ({ watches, wearEntries }: UsageChartProps) => {
     }
   });
 
-  // Calculate seasonal trends
-  const seasonalData: Record<Season, { days: number; cost: number }> = {
-    Winter: { days: 0, cost: 0 },
-    Spring: { days: 0, cost: 0 },
-    Summer: { days: 0, cost: 0 },
-    Fall: { days: 0, cost: 0 },
+  // Calculate seasonal trends with detailed breakdowns
+  const seasonalData: Record<Season, { 
+    days: number; 
+    cost: number; 
+    watches: Map<string, number>;
+    styles: Map<string, number>;
+    colors: Map<string, number>;
+  }> = {
+    Winter: { days: 0, cost: 0, watches: new Map(), styles: new Map(), colors: new Map() },
+    Spring: { days: 0, cost: 0, watches: new Map(), styles: new Map(), colors: new Map() },
+    Summer: { days: 0, cost: 0, watches: new Map(), styles: new Map(), colors: new Map() },
+    Fall: { days: 0, cost: 0, watches: new Map(), styles: new Map(), colors: new Map() },
   };
 
   wearEntries.forEach(entry => {
@@ -93,8 +101,13 @@ export const UsageChart = ({ watches, wearEntries }: UsageChartProps) => {
     
     if (watch) {
       const watchTotal = watchTotals.get(watch.id) || 1;
+      const watchKey = `${watch.brand} ${watch.model}`;
+      
       seasonalData[season].days += entry.days;
       seasonalData[season].cost += (watch.cost / watchTotal) * entry.days;
+      seasonalData[season].watches.set(watchKey, (seasonalData[season].watches.get(watchKey) || 0) + entry.days);
+      seasonalData[season].styles.set(watch.type, (seasonalData[season].styles.get(watch.type) || 0) + entry.days);
+      seasonalData[season].colors.set(watch.dial_color, (seasonalData[season].colors.get(watch.dial_color) || 0) + entry.days);
     }
   });
 
@@ -247,7 +260,7 @@ export const UsageChart = ({ watches, wearEntries }: UsageChartProps) => {
         {/* Seasonal Trends */}
         <Card className="border-border bg-card p-6">
           <h3 className="text-lg font-semibold text-foreground mb-4">Seasonal Trends</h3>
-          <div className="space-y-4">
+          <div className="space-y-6">
             {(Object.entries(seasonalData) as [Season, typeof seasonalData[Season]][])
               .sort((a, b) => b[1].days - a[1].days)
               .map(([season, data]) => {
@@ -255,29 +268,88 @@ export const UsageChart = ({ watches, wearEntries }: UsageChartProps) => {
                 const percentage = (data.days / maxSeasonDays) * 100;
                 const avgCostPerDay = data.days > 0 ? data.cost / data.days : 0;
                 
+                // Get top watch, style, and color for this season
+                const topWatch = Array.from(data.watches.entries()).sort((a, b) => b[1] - a[1])[0];
+                const topStyle = Array.from(data.styles.entries()).sort((a, b) => b[1] - a[1])[0];
+                const topColor = Array.from(data.colors.entries()).sort((a, b) => b[1] - a[1])[0];
+                
                 return (
-                  <div key={season} className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-foreground font-medium">{season}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-muted-foreground">{data.days.toFixed(1)}d</span>
-                        {season === Object.entries(seasonalData).sort((a, b) => b[1].days - a[1].days)[0][0] ? (
-                          <TrendingUp className="w-4 h-4 text-primary" />
-                        ) : (
-                          <TrendingDown className="w-4 h-4 text-muted-foreground" />
-                        )}
-                      </div>
-                    </div>
-                    <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-primary rounded-full transition-all duration-500"
-                        style={{ width: `${percentage}%` }}
-                      />
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Avg: ${avgCostPerDay.toFixed(0)}/day
-                    </p>
-                  </div>
+                  <TooltipProvider key={season}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="space-y-2 cursor-pointer">
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-foreground font-medium">{season}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted-foreground">{data.days.toFixed(1)}d</span>
+                              {season === Object.entries(seasonalData).sort((a, b) => b[1].days - a[1].days)[0][0] ? (
+                                <TrendingUp className="w-4 h-4 text-primary" />
+                              ) : (
+                                <TrendingDown className="w-4 h-4 text-muted-foreground" />
+                              )}
+                            </div>
+                          </div>
+                          <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-primary rounded-full transition-all duration-500"
+                              style={{ width: `${percentage}%` }}
+                            />
+                          </div>
+                          <div className="flex flex-wrap gap-1">
+                            {topStyle && (
+                              <Badge variant="outline" className="text-xs">
+                                {topStyle[0]}
+                              </Badge>
+                            )}
+                            {topColor && (
+                              <Badge variant="outline" className="text-xs">
+                                {topColor[0]}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs bg-card border-2 border-border z-50">
+                        <div className="space-y-3 p-2">
+                          <p className="font-bold text-foreground">{season}</p>
+                          <div className="space-y-2">
+                            <p className="text-xs text-muted-foreground">Avg: ${avgCostPerDay.toFixed(0)}/day</p>
+                            {topWatch && (
+                              <div className="text-xs">
+                                <span className="text-muted-foreground">Top watch:</span>
+                                <span className="ml-1 text-foreground font-medium">{topWatch[0]}</span>
+                                <span className="ml-1 text-muted-foreground">({topWatch[1].toFixed(1)}d)</span>
+                              </div>
+                            )}
+                            {data.styles.size > 0 && (
+                              <div className="text-xs">
+                                <span className="text-muted-foreground">Styles:</span>
+                                {Array.from(data.styles.entries())
+                                  .sort((a, b) => b[1] - a[1])
+                                  .map(([style, days]) => (
+                                    <div key={style} className="ml-2">
+                                      {style}: {days.toFixed(1)}d
+                                    </div>
+                                  ))}
+                              </div>
+                            )}
+                            {data.colors.size > 0 && (
+                              <div className="text-xs">
+                                <span className="text-muted-foreground">Colors:</span>
+                                {Array.from(data.colors.entries())
+                                  .sort((a, b) => b[1] - a[1])
+                                  .map(([color, days]) => (
+                                    <div key={color} className="ml-2">
+                                      {color}: {days.toFixed(1)}d
+                                    </div>
+                                  ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 );
               })}
           </div>
