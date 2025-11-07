@@ -343,7 +343,7 @@ const Index = () => {
               <h2 className="text-2xl font-semibold text-foreground">Water Usage Tracking</h2>
               <AddWaterUsageDialog watches={watches} onSuccess={fetchData} />
             </div>
-            <WaterUsageList usages={waterUsages} watches={watches} onUpdate={fetchData} />
+            <WaterUsageList usages={waterUsages} watches={watches} />
           </TabsContent>
         </Tabs>
       </main>
