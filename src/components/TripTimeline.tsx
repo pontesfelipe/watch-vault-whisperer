@@ -36,7 +36,25 @@ interface TripTimelineProps {
 }
 
 export const TripTimeline = ({ trips, limit, type, watches, onUpdate }: TripTimelineProps) => {
-  const displayTrips = limit ? trips.slice(0, limit) : trips;
+  const [selectedYear, setSelectedYear] = useState<string>("all");
+  
+  // Get available years from trips
+  const availableYears = Array.from(
+    new Set(trips.map(trip => {
+      const date = new Date(trip.startDate);
+      return date.getFullYear();
+    }))
+  ).sort((a, b) => b - a);
+  
+  // Filter trips by year
+  const filteredTrips = selectedYear === "all" 
+    ? trips 
+    : trips.filter(trip => {
+        const date = new Date(trip.startDate);
+        return date.getFullYear().toString() === selectedYear;
+      });
+  
+  const displayTrips = limit ? filteredTrips.slice(0, limit) : filteredTrips;
   const { isVerified, requestVerification } = usePasscode();
   const [showLocation, setShowLocation] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -134,8 +152,24 @@ export const TripTimeline = ({ trips, limit, type, watches, onUpdate }: TripTime
   return (
     <>
       <div className="space-y-4">
-        {displayTrips.length > 0 && (
-          <div className="flex justify-end mb-2">
+        {trips.length > 0 && (
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-muted-foreground">Year:</label>
+              <Select value={selectedYear} onValueChange={setSelectedYear}>
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Years</SelectItem>
+                  {availableYears.map(year => (
+                    <SelectItem key={year} value={year.toString()}>
+                      {year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <Button
               variant="ghost"
               size="sm"

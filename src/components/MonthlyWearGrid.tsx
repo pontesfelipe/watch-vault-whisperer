@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { usePasscode } from "@/contexts/PasscodeContext";
 import { format } from "date-fns";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -62,6 +63,12 @@ export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyW
   const [isSaving, setIsSaving] = useState(false);
   const { requestVerification } = usePasscode();
   const gridEditable = false;
+  const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
+  
+  // Get available years from wear entries
+  const availableYears = Array.from(
+    new Set(wearEntries.map(entry => new Date(entry.wear_date).getFullYear()))
+  ).sort((a, b) => b - a);
   
   // Find the most recent update timestamp
   const lastUpdateDate = wearEntries.length > 0 && wearEntries.some(e => e.updated_at)
@@ -73,11 +80,16 @@ export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyW
       )
     : "No entries yet";
   
+  // Filter wear entries by selected year
+  const filteredWearEntries = wearEntries.filter(entry => 
+    new Date(entry.wear_date).getFullYear().toString() === selectedYear
+  );
+  
   // Calculate monthly breakdown by watch
   const monthlyBreakdown = Array(12).fill(0).map(() => ({})) as Array<Record<string, number>>;
   const watchTotals = new Map<string, number>();
   
-  wearEntries.forEach((entry) => {
+  filteredWearEntries.forEach((entry) => {
     const date = new Date(entry.wear_date);
     const monthIndex = date.getMonth();
     const watch = watches.find(w => w.id === entry.watch_id);
@@ -209,9 +221,26 @@ export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyW
   };
   return (
     <Card className="border-border bg-card p-6">
-      <h3 className="text-xl font-semibold text-foreground mb-6">
-        Monthly Wear Distribution - Last Update: {lastUpdateDate}
-      </h3>
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-xl font-semibold text-foreground">
+          Monthly Wear Distribution - Last Update: {lastUpdateDate}
+        </h3>
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-muted-foreground">Year:</label>
+          <Select value={selectedYear} onValueChange={setSelectedYear}>
+            <SelectTrigger className="w-[120px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {availableYears.map(year => (
+                <SelectItem key={year} value={year.toString()}>
+                  {year}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
       
       <div className="overflow-x-auto">
         <Table>
