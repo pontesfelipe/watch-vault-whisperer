@@ -9,6 +9,7 @@ export interface Watch {
 }
 
 export interface Trip {
+  id: string;
   startDate: string;
   location: string;
   watch: string;
@@ -17,6 +18,7 @@ export interface Trip {
 }
 
 export interface Event {
+  id: string;
   startDate: string;
   location: string;
   watch: string;

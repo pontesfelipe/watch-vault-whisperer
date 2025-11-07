@@ -51,6 +51,7 @@ const Index = () => {
     if (tripsResult.data) {
       setTrips(
         tripsResult.data.map((trip) => ({
+          id: trip.id,
           startDate: new Date(trip.start_date).toLocaleDateString("en-US", {
             month: "numeric",
             day: "numeric",
@@ -66,6 +67,7 @@ const Index = () => {
     if (eventsResult.data) {
       setEvents(
         eventsResult.data.map((event) => ({
+          id: event.id,
           startDate: new Date(event.start_date).toLocaleDateString("en-US", {
             month: "numeric",
             day: "numeric",
@@ -307,7 +309,7 @@ const Index = () => {
               <h2 className="text-2xl font-semibold text-foreground">Travel History</h2>
               <AddTripDialog watches={watches} onSuccess={fetchData} />
             </div>
-            <TripTimeline trips={trips} />
+            <TripTimeline trips={trips} type="trip" watches={watches} onUpdate={fetchData} />
           </TabsContent>
 
           <TabsContent value="events" className="space-y-6">
@@ -315,7 +317,7 @@ const Index = () => {
               <h2 className="text-2xl font-semibold text-foreground">Special Events</h2>
               <AddEventDialog watches={watches} onSuccess={fetchData} />
             </div>
-            <TripTimeline trips={events} />
+            <TripTimeline trips={events} type="event" watches={watches} onUpdate={fetchData} />
           </TabsContent>
         </Tabs>
       </main>
