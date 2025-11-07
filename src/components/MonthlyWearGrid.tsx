@@ -58,6 +58,7 @@ const WATCH_COLORS = [
 export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyWearGridProps) => {
   const [editingCell, setEditingCell] = useState<{ watchId: string; monthIndex: number } | null>(null);
   const [editValue, setEditValue] = useState<string>("");
+  const [isSaving, setIsSaving] = useState(false);
   const { requestVerification } = usePasscode();
   
   // Find the most recent update timestamp
@@ -105,13 +106,18 @@ export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyW
   };
 
   const handleCellUpdate = async (watchId: string, monthIndex: number) => {
-    const newValue = parseFloat(editValue);
+    if (isSaving) return;
+
+    const cleaned = editValue.replace(',', '.');
+    const newValue = parseFloat(cleaned);
     
     if (isNaN(newValue) || newValue < 0) {
       toast.error("Please enter a valid number");
       setEditingCell(null);
       return;
     }
+
+    setIsSaving(true);
 
     try {
       // Compute month range safely (handles December -> next year)
@@ -121,12 +127,14 @@ export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyW
       const wearDate = format(startOfMonthDate, 'yyyy-MM-dd');
       
       // Check if an entry exists for this watch and month
-      const { data: existingEntries } = await supabase
+      const { data: existingEntries, error: fetchErr } = await supabase
         .from('wear_entries')
         .select('*')
         .eq('watch_id', watchId)
         .gte('wear_date', format(startOfMonthDate, 'yyyy-MM-dd'))
         .lt('wear_date', format(startOfNextMonthDate, 'yyyy-MM-dd'));
+
+      if (fetchErr) throw fetchErr;
 
       if (newValue === 0) {
         // Delete all entries for this month if value is 0
@@ -150,10 +158,11 @@ export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyW
 
         // Delete other entries for this month
         if (existingEntries.length > 1) {
-          await supabase
+          const { error: delErr } = await supabase
             .from('wear_entries')
             .delete()
             .in('id', existingEntries.slice(1).map(e => e.id));
+          if (delErr) throw delErr;
         }
         
         toast.success("Wear entry updated");
@@ -178,6 +187,8 @@ export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyW
     } catch (error) {
       console.error('Error updating wear entry:', error);
       toast.error("Failed to update wear entry");
+    } finally {
+      setIsSaving(false);
     }
 
     setEditingCell(null);
@@ -185,12 +196,13 @@ export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyW
 
   const handleKeyDown = (e: React.KeyboardEvent, watchId: string, monthIndex: number) => {
     if (e.key === 'Enter') {
+      e.preventDefault();
       handleCellUpdate(watchId, monthIndex);
     } else if (e.key === 'Escape') {
+      e.preventDefault();
       setEditingCell(null);
     }
   };
-
   return (
     <Card className="border-border bg-card p-6">
       <h3 className="text-xl font-semibold text-foreground mb-6">

@@ -47,7 +47,7 @@ const Index = () => {
     ]);
 
     if (watchesResult.data) setWatches(watchesResult.data);
-    if (wearResult.data) setWearEntries(wearResult.data);
+    if (wearResult.data) setWearEntries(wearResult.data.map(w => ({ ...w, days: Number(w.days) })));
     if (tripsResult.data) {
       setTrips(
         tripsResult.data.map((trip) => ({
