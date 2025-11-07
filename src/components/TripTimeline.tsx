@@ -63,7 +63,7 @@ export const TripTimeline = ({ trips, limit, type, watches, onUpdate }: TripTime
   const [formData, setFormData] = useState({
     location: "",
     startDate: "",
-    watchModel: "",
+    watchModels: [] as string[],
     days: "1",
     purpose: "",
   });
@@ -112,10 +112,11 @@ export const TripTimeline = ({ trips, limit, type, watches, onUpdate }: TripTime
 
   const handleEdit = (trip: Trip) => {
     setEditItem(trip);
+    const watchModels = Array.isArray(trip.watch) ? trip.watch : [trip.watch];
     setFormData({
       location: trip.location,
       startDate: trip.startDate,
-      watchModel: trip.watch,
+      watchModels: watchModels,
       days: trip.days.toString(),
       purpose: trip.purpose,
     });
@@ -131,7 +132,7 @@ export const TripTimeline = ({ trips, limit, type, watches, onUpdate }: TripTime
       const { error } = await supabase.from(table).update({
         location: formData.location,
         start_date: formData.startDate,
-        watch_model: formData.watchModel,
+        watch_model: formData.watchModels,
         days: parseFloat(formData.days),
         purpose: formData.purpose,
       }).eq("id", editItem.id);
@@ -241,7 +242,9 @@ export const TripTimeline = ({ trips, limit, type, watches, onUpdate }: TripTime
                 
                 <div className="mt-3 pt-3 border-t border-border">
                   <p className="text-sm text-muted-foreground">
-                    <span className="font-medium text-foreground">{trip.watch}</span>
+                    <span className="font-medium text-foreground">
+                      {Array.isArray(trip.watch) ? trip.watch.join(", ") : trip.watch}
+                    </span>
                     <span className="mx-2">•</span>
                     <span>{trip.days} {trip.days === 1 ? 'day' : 'days'}</span>
                   </p>
@@ -297,22 +300,35 @@ export const TripTimeline = ({ trips, limit, type, watches, onUpdate }: TripTime
               />
             </div>
             <div>
-              <Label htmlFor="edit-watchModel">Watch</Label>
-              <Select
-                value={formData.watchModel}
-                onValueChange={(value) => setFormData({ ...formData, watchModel: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select watch" />
-                </SelectTrigger>
-                <SelectContent>
-                  {watches.map((watch) => (
-                    <SelectItem key={watch.id} value={`${watch.brand} ${watch.model}`}>
-                      {watch.brand} {watch.model}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="edit-watchModel">Watches</Label>
+              <div className="border rounded-md p-3 space-y-2 max-h-48 overflow-y-auto">
+                {watches.map((watch) => {
+                  const watchName = `${watch.brand} ${watch.model}`;
+                  const isSelected = formData.watchModels.includes(watchName);
+                  return (
+                    <label key={watch.id} className="flex items-center gap-2 cursor-pointer hover:bg-accent/50 p-2 rounded">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setFormData({ ...formData, watchModels: [...formData.watchModels, watchName] });
+                          } else {
+                            setFormData({ ...formData, watchModels: formData.watchModels.filter(w => w !== watchName) });
+                          }
+                        }}
+                        className="h-4 w-4"
+                      />
+                      <span className="text-sm">{watchName}</span>
+                    </label>
+                  );
+                })}
+              </div>
+              {formData.watchModels.length > 0 && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  {formData.watchModels.length} watch{formData.watchModels.length !== 1 ? 'es' : ''} selected
+                </p>
+              )}
             </div>
             <div>
               <Label htmlFor="edit-days">{type === "trip" ? "Days" : "Duration (days)"}</Label>

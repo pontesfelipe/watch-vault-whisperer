@@ -12,7 +12,7 @@ export interface Trip {
   id: string;
   startDate: string;
   location: string;
-  watch: string;
+  watch: string | string[];
   days: number;
   purpose: string;
 }
@@ -21,7 +21,7 @@ export interface Event {
   id: string;
   startDate: string;
   location: string;
-  watch: string;
+  watch: string | string[];
   days: number;
   purpose: string;
 }
