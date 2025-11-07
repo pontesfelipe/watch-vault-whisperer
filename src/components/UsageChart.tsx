@@ -1,20 +1,14 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
-import { TrendingUp, TrendingDown, DollarSign, Info } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { MonthlyWearGrid } from "./MonthlyWearGrid";
 
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -68,10 +62,8 @@ const getSeasonFromMonth = (monthIndex: number): Season => {
 };
 
 export const UsageChart = ({ watches, wearEntries }: UsageChartProps) => {
-  const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
   const [showAllBestValue, setShowAllBestValue] = useState(false);
   const [showAllNeedsWear, setShowAllNeedsWear] = useState(false);
-  const [yAxisScale, setYAxisScale] = useState<string>("10");
 
   // Calculate monthly breakdown by watch
   const monthlyBreakdown = Array(12).fill(0).map(() => ({})) as Array<Record<string, number>>;
@@ -135,152 +127,12 @@ export const UsageChart = ({ watches, wearEntries }: UsageChartProps) => {
     .filter(w => w.total > 0)
     .sort((a, b) => a.costPerUse - b.costPerUse);
 
-  const monthlyTotals = Array(12).fill(0);
-  Object.values(monthlyBreakdown).forEach((breakdown, index) => {
-    monthlyTotals[index] = Object.values(breakdown).reduce((sum, days) => sum + days, 0);
-  });
-
-  const maxValue = parseInt(yAxisScale); // Use selected Y-axis scale
-
-  // Get unique watches that were worn
-  const wornWatches = watches.filter(w => (watchTotals.get(w.id) || 0) > 0);
-  const watchColorMap = new Map<string, string>();
-  wornWatches.forEach((watch, index) => {
-    watchColorMap.set(`${watch.brand} ${watch.model}`, WATCH_COLORS[index % WATCH_COLORS.length]);
-  });
-
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Main Chart */}
-      <Card className="border-border bg-card p-6 lg:col-span-2">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-semibold text-foreground">Monthly Wear Distribution</h3>
-          <div className="flex items-center gap-3">
-            <Select value={yAxisScale} onValueChange={setYAxisScale}>
-              <SelectTrigger className="w-[120px] bg-background border-border z-50">
-                <SelectValue placeholder="Y-axis scale" />
-              </SelectTrigger>
-              <SelectContent className="bg-background border-border z-50">
-                <SelectItem value="5">5 days</SelectItem>
-                <SelectItem value="10">10 days</SelectItem>
-                <SelectItem value="15">15 days</SelectItem>
-                <SelectItem value="20">20 days</SelectItem>
-                <SelectItem value="31">31 days</SelectItem>
-              </SelectContent>
-            </Select>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger>
-                  <Info className="w-5 h-5 text-muted-foreground" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Hover over bars to see breakdown by watch model</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-        </div>
-        
-        <div className="flex items-end justify-between gap-2 h-80 mb-6">
-          {monthlyTotals.map((total, monthIndex) => {
-            const height = total > 0 ? (total / maxValue) * 100 : 0;
-            const breakdown = monthlyBreakdown[monthIndex];
-            const watches = Object.entries(breakdown);
-            const isHovered = hoveredMonth === monthIndex;
-            
-            return (
-              <TooltipProvider key={monthIndex}>
-                <Tooltip>
-              <TooltipTrigger asChild>
-                    <div 
-                      className="flex-1 flex flex-col items-center gap-2 cursor-pointer"
-                      onMouseEnter={() => setHoveredMonth(monthIndex)}
-                      onMouseLeave={() => setHoveredMonth(null)}
-                    >
-                      <div className="w-full flex flex-col items-center justify-end h-full relative">
-                        <div className="text-xs text-foreground font-semibold mb-2">
-                          {total > 0 ? total.toFixed(1) : ""}
-                        </div>
-                        <div
-                          className="w-full rounded-t-md transition-all duration-300 relative overflow-hidden border-2 border-border/50"
-                          style={{ height: `${height}%`, minHeight: total > 0 ? '12px' : '0' }}
-                        >
-                          {watches.length > 0 ? (
-                            <div className="h-full flex flex-col">
-                              {watches.map(([watchName, days]) => {
-                                const percentage = (days / total) * 100;
-                                return (
-                                  <div
-                                    key={watchName}
-                                    className={`transition-all duration-300 border-b border-background/20 ${isHovered ? 'opacity-100' : 'opacity-95'}`}
-                                    style={{
-                                      height: `${percentage}%`,
-                                      backgroundColor: watchColorMap.get(watchName),
-                                      minHeight: percentage > 0 ? '2px' : '0',
-                                    }}
-                                  />
-                                );
-                              })}
-                            </div>
-                          ) : null}
-                        </div>
-                      </div>
-                      <span className="text-xs text-foreground font-semibold">
-                        {monthNames[monthIndex]}
-                      </span>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-xs bg-card border-2 border-border z-50">
-                    <div className="space-y-2 p-2">
-                      <p className="font-bold text-foreground mb-3">{monthNames[monthIndex]}</p>
-                      {watches.length > 0 ? (
-                        watches.map(([watchName, days]) => (
-                          <div key={watchName} className="flex items-center justify-between gap-4 text-xs py-1">
-                            <div className="flex items-center gap-2 flex-1 min-w-0">
-                              <div 
-                                className="w-3 h-3 rounded-sm flex-shrink-0 border border-border"
-                                style={{ backgroundColor: watchColorMap.get(watchName) }}
-                              />
-                              <span className="truncate text-foreground font-medium">{watchName}</span>
-                            </div>
-                            <span className="font-bold text-primary flex-shrink-0">{days.toFixed(1)}d</span>
-                          </div>
-                        ))
-                      ) : (
-                        <p className="text-xs text-muted-foreground py-2">No watches worn</p>
-                      )}
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            );
-          })}
-        </div>
+    <div className="space-y-6">
+      {/* Monthly Wear Grid */}
+      <MonthlyWearGrid watches={watches} wearEntries={wearEntries} />
 
-        {/* Legend */}
-        <div className="flex flex-wrap gap-3 pt-4 border-t border-border">
-          {wornWatches.slice(0, 8).map((watch) => {
-            const watchKey = `${watch.brand} ${watch.model}`;
-            return (
-              <div key={watchKey} className="flex items-center gap-2">
-                <div 
-                  className="w-3 h-3 rounded-sm"
-                  style={{ backgroundColor: watchColorMap.get(watchKey) }}
-                />
-                <span className="text-xs text-muted-foreground truncate max-w-[120px]">
-                  {watch.brand}
-                </span>
-              </div>
-            );
-          })}
-          {wornWatches.length > 8 && (
-            <span className="text-xs text-muted-foreground">+{wornWatches.length - 8} more</span>
-          )}
-        </div>
-      </Card>
-
-      {/* Side Stats */}
-      <div className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Seasonal Trends */}
         <Card className="border-border bg-card p-6">
           <h3 className="text-lg font-semibold text-foreground mb-4">Seasonal Trends</h3>
