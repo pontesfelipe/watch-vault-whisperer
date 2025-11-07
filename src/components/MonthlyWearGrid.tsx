@@ -86,10 +86,9 @@ export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyW
     }
   });
 
-  // Get unique watches that were worn
-  const wornWatches = watches.filter(w => (watchTotals.get(w.id) || 0) > 0);
+  // Get color map for all watches to ensure consistent colors even for unworn watches
   const watchColorMap = new Map<string, string>();
-  wornWatches.forEach((watch, index) => {
+  watches.forEach((watch, index) => {
     watchColorMap.set(`${watch.brand} ${watch.model}`, WATCH_COLORS[index % WATCH_COLORS.length]);
   });
 
@@ -210,7 +209,7 @@ export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyW
             </TableRow>
           </TableHeader>
           <TableBody>
-            {wornWatches.map((watch) => {
+            {watches.map((watch) => {
               const watchKey = `${watch.brand} ${watch.model}`;
               const total = watchTotals.get(watch.id) || 0;
               
