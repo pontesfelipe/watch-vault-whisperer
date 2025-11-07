@@ -263,7 +263,7 @@ export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyW
                             onKeyDown={(e) => handleKeyDown(e, watch.id, monthIndex)}
                             className="w-16 h-7 text-center p-1"
                             autoFocus
-                            step="0.5"
+                            step="0.1"
                             min="0"
                           />
                         ) : (

@@ -41,10 +41,11 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
         notes: formData.get("notes") || undefined,
       });
 
+      const roundedDays = Math.round(data.days * 10) / 10;
       const { error } = await supabase.from("wear_entries").insert({
         watch_id: data.watchId,
         wear_date: data.wearDate,
-        days: data.days,
+        days: roundedDays,
         notes: data.notes,
       });
 
@@ -116,14 +117,14 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
               id="days"
               name="days"
               type="number"
-              step="0.5"
+              step="0.1"
               min="0.1"
               max="31"
               defaultValue="1"
               required
               className="bg-background border-border"
             />
-            <p className="text-xs text-muted-foreground">Use decimals for partial days (e.g., 0.5)</p>
+            <p className="text-xs text-muted-foreground">Use one decimal (e.g., 1.0, 0.5)</p>
           </div>
 
           <div className="space-y-2">
