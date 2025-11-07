@@ -158,37 +158,52 @@ const Index = () => {
     let hasExplicitAllocations = false;
 
     tokens.forEach((token) => {
-      // Capture a trailing numeric in parentheses, leave other parentheses (e.g., (Sapphire)) in the name
-      const match = token.match(/^(.*?)(?:\s*\(([-+]?\d*\.?\d+)\))?$/);
+      // Match watch name and optional days in final parentheses: "Watch Name (3.5)"
+      // Handles watches with existing parentheses like "Watch (Sapphire)" correctly
+      const match = token.match(/^(.*?)(?:\s*\(([-+]?\d*\.?\d+)\)\s*)?$/);
       if (!match) return;
+      
       const model = match[1].trim();
       const daysStr = match[2];
-      if (daysStr !== undefined) {
+      
+      if (daysStr !== undefined && model) {
         hasExplicitAllocations = true;
         const d = parseFloat(daysStr);
-        if (!isNaN(d) && model) {
+        if (!isNaN(d)) {
           tripWatchDays.set(model, (tripWatchDays.get(model) || 0) + d);
         }
       }
     });
 
-    // If no explicit allocations were found, assign the trip days
+    // If no explicit allocations were found, use trip's total days
     if (!hasExplicitAllocations) {
       if (tokens.length === 1) {
         const model = tokens[0];
-        tripWatchDays.set(model, (tripWatchDays.get(model) || 0) + totalDays);
+        if (model) {
+          tripWatchDays.set(model, (tripWatchDays.get(model) || 0) + totalDays);
+        }
       } else if (tokens.length > 1) {
-        const per = tokens.length ? totalDays / tokens.length : 0;
+        const per = totalDays / tokens.length;
         tokens.forEach((model) => {
-          tripWatchDays.set(model, (tripWatchDays.get(model) || 0) + per);
+          if (model) {
+            tripWatchDays.set(model, (tripWatchDays.get(model) || 0) + per);
+          }
         });
       }
     }
   });
 
+  console.log("Trip watch days breakdown:", 
+    Array.from(tripWatchDays.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, days]) => `${name}: ${days.toFixed(1)} days`)
+  );
+
   const mostTripWatch = Array.from(tripWatchDays.entries()).sort((a, b) => b[1] - a[1])[0];
   const tripWatchName = mostTripWatch?.[0] || "N/A";
   const tripWatchDaysTotal = mostTripWatch?.[1] || 0;
+  
+  console.log("Most worn trip watch:", tripWatchName, "with", tripWatchDaysTotal.toFixed(1), "days");
 
   if (loading) {
     return (
