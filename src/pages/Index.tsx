@@ -105,6 +105,45 @@ const Index = () => {
   
   const avgDaysPerWatch = totalWatches > 0 ? (totalDaysWorn / totalWatches).toFixed(1) : "0";
 
+  // Calculate most worn color
+  const colorTotals = new Map<string, number>();
+  wearEntries.forEach(entry => {
+    const watch = watches.find(w => w.id === entry.watch_id);
+    if (watch) {
+      colorTotals.set(watch.dial_color, (colorTotals.get(watch.dial_color) || 0) + entry.days);
+    }
+  });
+  const mostWornColor = Array.from(colorTotals.entries())
+    .sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";
+
+  // Calculate most worn style
+  const styleTotals = new Map<string, number>();
+  wearEntries.forEach(entry => {
+    const watch = watches.find(w => w.id === entry.watch_id);
+    if (watch) {
+      styleTotals.set(watch.type, (styleTotals.get(watch.type) || 0) + entry.days);
+    }
+  });
+  const mostWornStyle = Array.from(styleTotals.entries())
+    .sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";
+
+  // Calculate trending watch (last 3 months)
+  const threeMonthsAgo = new Date();
+  threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+  
+  const recentWearTotals = new Map<string, number>();
+  wearEntries.forEach(entry => {
+    const wearDate = new Date(entry.wear_date);
+    if (wearDate >= threeMonthsAgo) {
+      recentWearTotals.set(entry.watch_id, (recentWearTotals.get(entry.watch_id) || 0) + entry.days);
+    }
+  });
+  
+  const trendingWatchId = Array.from(recentWearTotals.entries())
+    .sort((a, b) => b[1] - a[1])[0]?.[0];
+  const trendingWatch = watches.find(w => w.id === trendingWatchId);
+  const trendingDays = trendingWatchId ? recentWearTotals.get(trendingWatchId) || 0 : 0;
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -135,7 +174,7 @@ const Index = () => {
 
       <main className="container mx-auto px-4 py-8">
         {/* Stats Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4 mb-8">
           <StatsCard
             title="Total Watches"
             value={totalWatches}
@@ -159,6 +198,24 @@ const Index = () => {
             value={avgDaysPerWatch}
             icon={TrendingUp}
             subtitle="days per watch"
+          />
+          <StatsCard
+            title="#1 Color"
+            value={mostWornColor}
+            icon={Watch}
+            subtitle="most worn"
+          />
+          <StatsCard
+            title="#1 Style"
+            value={mostWornStyle}
+            icon={Watch}
+            subtitle="most worn"
+          />
+          <StatsCard
+            title="Trending"
+            value={trendingDays.toFixed(1)}
+            icon={TrendingUp}
+            subtitle={trendingWatch ? `${trendingWatch.brand}` : "N/A"}
           />
         </div>
 
