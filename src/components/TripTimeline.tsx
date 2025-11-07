@@ -112,10 +112,18 @@ export const TripTimeline = ({ trips, limit, type, watches, onUpdate }: TripTime
 
   const handleEdit = (trip: Trip) => {
     setEditItem(trip);
+    // Filter out watches that no longer exist
+    const currentWatchNames = watches.map(w => `${w.brand} ${w.model}`);
+    const filteredWatchDays: Record<string, number> = {};
+    Object.entries(trip.watch || {}).forEach(([watchName, days]) => {
+      if (currentWatchNames.includes(watchName)) {
+        filteredWatchDays[watchName] = days;
+      }
+    });
     setFormData({
       location: trip.location,
       startDate: trip.startDate,
-      watchDays: trip.watch || {},
+      watchDays: filteredWatchDays,
       totalDays: trip.days.toString(),
       purpose: trip.purpose,
     });
