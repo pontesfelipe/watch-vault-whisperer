@@ -8,6 +8,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -64,6 +71,7 @@ export const UsageChart = ({ watches, wearEntries }: UsageChartProps) => {
   const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
   const [showAllBestValue, setShowAllBestValue] = useState(false);
   const [showAllNeedsWear, setShowAllNeedsWear] = useState(false);
+  const [yAxisScale, setYAxisScale] = useState<string>("10");
 
   // Calculate monthly breakdown by watch
   const monthlyBreakdown = Array(12).fill(0).map(() => ({})) as Array<Record<string, number>>;
@@ -132,7 +140,7 @@ export const UsageChart = ({ watches, wearEntries }: UsageChartProps) => {
     monthlyTotals[index] = Object.values(breakdown).reduce((sum, days) => sum + days, 0);
   });
 
-  const maxValue = 10; // Fixed scale to 10 days
+  const maxValue = parseInt(yAxisScale); // Use selected Y-axis scale
 
   // Get unique watches that were worn
   const wornWatches = watches.filter(w => (watchTotals.get(w.id) || 0) > 0);
@@ -147,16 +155,30 @@ export const UsageChart = ({ watches, wearEntries }: UsageChartProps) => {
       <Card className="border-border bg-card p-6 lg:col-span-2">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-semibold text-foreground">Monthly Wear Distribution</h3>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <Info className="w-5 h-5 text-muted-foreground" />
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Hover over bars to see breakdown by watch model</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <div className="flex items-center gap-3">
+            <Select value={yAxisScale} onValueChange={setYAxisScale}>
+              <SelectTrigger className="w-[120px] bg-background border-border z-50">
+                <SelectValue placeholder="Y-axis scale" />
+              </SelectTrigger>
+              <SelectContent className="bg-background border-border z-50">
+                <SelectItem value="5">5 days</SelectItem>
+                <SelectItem value="10">10 days</SelectItem>
+                <SelectItem value="15">15 days</SelectItem>
+                <SelectItem value="20">20 days</SelectItem>
+                <SelectItem value="31">31 days</SelectItem>
+              </SelectContent>
+            </Select>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Info className="w-5 h-5 text-muted-foreground" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Hover over bars to see breakdown by watch model</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         </div>
         
         <div className="flex items-end justify-between gap-2 h-80 mb-6">
