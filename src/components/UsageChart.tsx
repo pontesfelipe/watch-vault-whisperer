@@ -132,7 +132,7 @@ export const UsageChart = ({ watches, wearEntries }: UsageChartProps) => {
     monthlyTotals[index] = Object.values(breakdown).reduce((sum, days) => sum + days, 0);
   });
 
-  const maxValue = 31; // Fixed scale to max days in a month
+  const maxValue = 10; // Fixed scale to 10 days
 
   // Get unique watches that were worn
   const wornWatches = watches.filter(w => (watchTotals.get(w.id) || 0) > 0);
@@ -159,97 +159,80 @@ export const UsageChart = ({ watches, wearEntries }: UsageChartProps) => {
           </TooltipProvider>
         </div>
         
-        <div className="relative h-[400px] mb-6">
-          {/* Y-axis labels */}
-          <div className="absolute left-0 top-0 bottom-0 w-8 flex flex-col justify-between text-xs text-muted-foreground py-2">
-            <span>31</span>
-            <span>20</span>
-            <span>10</span>
-            <span>0</span>
-          </div>
-          
-          {/* Chart area */}
-          <div className="ml-10 h-full relative border-l border-b border-border">
-            {/* Horizontal grid lines */}
-            {[0, 10, 20, 31].map((value) => (
-              <div
-                key={value}
-                className="absolute w-full border-t border-border/30"
-                style={{ bottom: `${(value / 31) * 100}%` }}
-              />
-            ))}
+        <div className="flex items-end justify-between gap-2 h-80 mb-6">
+          {monthlyTotals.map((total, monthIndex) => {
+            const height = total > 0 ? (total / maxValue) * 100 : 0;
+            const breakdown = monthlyBreakdown[monthIndex];
+            const watches = Object.entries(breakdown);
+            const isHovered = hoveredMonth === monthIndex;
             
-            {/* SVG for lines */}
-            <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
-              {wornWatches.map((watch) => {
-                const watchKey = `${watch.brand} ${watch.model}`;
-                const points = monthlyTotals.map((_, monthIndex) => {
-                  const days = monthlyBreakdown[monthIndex][watchKey] || 0;
-                  const x = (monthIndex / 11) * 100;
-                  const y = 100 - (days / 31) * 100;
-                  return `${x},${y}`;
-                }).join(' ');
-                
-                return (
-                  <polyline
-                    key={watchKey}
-                    points={points}
-                    fill="none"
-                    stroke={watchColorMap.get(watchKey)}
-                    strokeWidth="2"
-                    className="transition-all duration-300"
-                    vectorEffect="non-scaling-stroke"
-                  />
-                );
-              })}
-              
-              {/* Data points */}
-              {wornWatches.map((watch) => {
-                const watchKey = `${watch.brand} ${watch.model}`;
-                return monthlyTotals.map((_, monthIndex) => {
-                  const days = monthlyBreakdown[monthIndex][watchKey] || 0;
-                  if (days === 0) return null;
-                  
-                  const x = (monthIndex / 11) * 100;
-                  const y = 100 - (days / 31) * 100;
-                  
-                  return (
-                    <TooltipProvider key={`${watchKey}-${monthIndex}`}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <circle
-                            cx={`${x}%`}
-                            cy={`${y}%`}
-                            r="4"
-                            fill={watchColorMap.get(watchKey)}
-                            className="cursor-pointer hover:r-6 transition-all"
-                            onMouseEnter={() => setHoveredMonth(monthIndex)}
-                            onMouseLeave={() => setHoveredMonth(null)}
-                          />
-                        </TooltipTrigger>
-                        <TooltipContent className="bg-card border-2 border-border z-50">
-                          <div className="space-y-1 p-2">
-                            <p className="font-bold text-foreground">{monthNames[monthIndex]}</p>
-                            <p className="text-xs text-foreground">{watchKey}</p>
-                            <p className="text-xs text-primary font-bold">{days.toFixed(1)} days</p>
+            return (
+              <TooltipProvider key={monthIndex}>
+                <Tooltip>
+              <TooltipTrigger asChild>
+                    <div 
+                      className="flex-1 flex flex-col items-center gap-2 cursor-pointer"
+                      onMouseEnter={() => setHoveredMonth(monthIndex)}
+                      onMouseLeave={() => setHoveredMonth(null)}
+                    >
+                      <div className="w-full flex flex-col items-center justify-end h-full relative">
+                        <div className="text-xs text-foreground font-semibold mb-2">
+                          {total > 0 ? total.toFixed(1) : ""}
+                        </div>
+                        <div
+                          className="w-full rounded-t-md transition-all duration-300 relative overflow-hidden border-2 border-border/50"
+                          style={{ height: `${height}%`, minHeight: total > 0 ? '12px' : '0' }}
+                        >
+                          {watches.length > 0 ? (
+                            <div className="h-full flex flex-col">
+                              {watches.map(([watchName, days]) => {
+                                const percentage = (days / total) * 100;
+                                return (
+                                  <div
+                                    key={watchName}
+                                    className={`transition-all duration-300 border-b border-background/20 ${isHovered ? 'opacity-100' : 'opacity-95'}`}
+                                    style={{
+                                      height: `${percentage}%`,
+                                      backgroundColor: watchColorMap.get(watchName),
+                                      minHeight: percentage > 0 ? '2px' : '0',
+                                    }}
+                                  />
+                                );
+                              })}
+                            </div>
+                          ) : null}
+                        </div>
+                      </div>
+                      <span className="text-xs text-foreground font-semibold">
+                        {monthNames[monthIndex]}
+                      </span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs bg-card border-2 border-border z-50">
+                    <div className="space-y-2 p-2">
+                      <p className="font-bold text-foreground mb-3">{monthNames[monthIndex]}</p>
+                      {watches.length > 0 ? (
+                        watches.map(([watchName, days]) => (
+                          <div key={watchName} className="flex items-center justify-between gap-4 text-xs py-1">
+                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                              <div 
+                                className="w-3 h-3 rounded-sm flex-shrink-0 border border-border"
+                                style={{ backgroundColor: watchColorMap.get(watchName) }}
+                              />
+                              <span className="truncate text-foreground font-medium">{watchName}</span>
+                            </div>
+                            <span className="font-bold text-primary flex-shrink-0">{days.toFixed(1)}d</span>
                           </div>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  );
-                });
-              })}
-            </svg>
-          </div>
-          
-          {/* X-axis labels */}
-          <div className="ml-10 flex justify-between mt-2">
-            {monthNames.map((month, index) => (
-              <span key={index} className="text-xs text-foreground font-semibold">
-                {month}
-              </span>
-            ))}
-          </div>
+                        ))
+                      ) : (
+                        <p className="text-xs text-muted-foreground py-2">No watches worn</p>
+                      )}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            );
+          })}
         </div>
 
         {/* Legend */}
