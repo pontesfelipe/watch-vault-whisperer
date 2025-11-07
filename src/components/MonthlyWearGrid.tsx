@@ -26,6 +26,7 @@ interface WearEntry {
   watch_id: string;
   wear_date: string;
   days: number;
+  updated_at?: string;
 }
 
 interface MonthlyWearGridProps {
@@ -58,11 +59,11 @@ export const MonthlyWearGrid = ({ watches, wearEntries }: MonthlyWearGridProps) 
   const [editValue, setEditValue] = useState<string>("");
   const { requestVerification } = usePasscode();
   
-  // Find the most recent wear entry date
-  const lastUpdateDate = wearEntries.length > 0
+  // Find the most recent update timestamp
+  const lastUpdateDate = wearEntries.length > 0 && wearEntries.some(e => e.updated_at)
     ? format(
         new Date(
-          Math.max(...wearEntries.map(entry => new Date(entry.wear_date).getTime()))
+          Math.max(...wearEntries.filter(e => e.updated_at).map(entry => new Date(entry.updated_at!).getTime()))
         ),
         "MMMM d, yyyy"
       )

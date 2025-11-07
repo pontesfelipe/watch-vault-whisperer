@@ -41,7 +41,7 @@ const Index = () => {
   const fetchData = async () => {
     const [watchesResult, wearResult, tripsResult, eventsResult] = await Promise.all([
       supabase.from("watches").select("*"),
-      supabase.from("wear_entries").select("watch_id, wear_date, days"),
+      supabase.from("wear_entries").select("watch_id, wear_date, days, updated_at"),
       supabase.from("trips").select("*").order("start_date"),
       supabase.from("events").select("*").order("start_date"),
     ]);
