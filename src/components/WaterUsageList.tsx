@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Droplets, Eye, EyeOff } from "lucide-react";
 import { useState, useEffect } from "react";
 import { usePasscode } from "@/contexts/PasscodeContext";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface WaterUsage {
   id: string;
@@ -125,6 +126,7 @@ export const WaterUsageList = ({ usages, watches }: WaterUsageListProps) => {
                   <h4 className="font-semibold text-foreground">
                     {watch.brand} {watch.model}
                   </h4>
+                  <p className="text-sm text-muted-foreground mt-1">Purpose: <span className="text-foreground font-medium">{entry.activity_type}</span></p>
                 </div>
               </div>
               
