@@ -8,6 +8,7 @@ interface PasscodeContextType {
   resetVerification: () => void;
   requestVerification: (onVerified: () => void) => void;
   pendingAction: (() => void) | null;
+  clearPendingAction: () => void;
 }
 
 const PasscodeContext = createContext<PasscodeContextType | undefined>(undefined);
@@ -43,6 +44,10 @@ export const PasscodeProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const clearPendingAction = () => {
+    setPendingAction(null);
+  };
+
   return (
     <PasscodeContext.Provider
       value={{
@@ -57,6 +62,7 @@ export const PasscodeProvider = ({ children }: { children: ReactNode }) => {
           }
         },
         pendingAction,
+        clearPendingAction,
       }}
     >
       {children}
@@ -90,7 +96,7 @@ import { toast } from "sonner";
 const PasscodeDialogInternal = ({ onSuccess }: { onSuccess: () => void }) => {
   const [passcode, setPasscode] = useState("");
   const [isOpen, setIsOpen] = useState(true);
-  const { verifyPasscode } = usePasscode();
+  const { verifyPasscode, clearPendingAction } = usePasscode();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,6 +114,7 @@ const PasscodeDialogInternal = ({ onSuccess }: { onSuccess: () => void }) => {
   const handleCancel = () => {
     setIsOpen(false);
     setPasscode("");
+    clearPendingAction();
   };
 
   return (
