@@ -166,6 +166,25 @@ const Index = () => {
   const trendingWatch = watches.find(w => w.id === trendingWatchId);
   const trendingDays = trendingWatchId ? recentWearTotals.get(trendingWatchId) || 0 : 0;
 
+  // Calculate #1 trip watch (most worn across all trips)
+  const tripWatchTotals = new Map<string, number>();
+  trips.forEach(trip => {
+    Object.entries(trip.watch || {}).forEach(([watchName, days]) => {
+      tripWatchTotals.set(watchName, (tripWatchTotals.get(watchName) || 0) + days);
+    });
+  });
+  const topTripWatch = Array.from(tripWatchTotals.entries())
+    .sort((a, b) => b[1] - a[1])[0];
+
+  // Calculate #1 water usage watch (most used in water activities)
+  const waterWatchCounts = new Map<string, number>();
+  waterUsages.forEach(usage => {
+    waterWatchCounts.set(usage.watch_id, (waterWatchCounts.get(usage.watch_id) || 0) + 1);
+  });
+  const topWaterWatchId = Array.from(waterWatchCounts.entries())
+    .sort((a, b) => b[1] - a[1])[0]?.[0];
+  const topWaterWatch = watches.find(w => w.id === topWaterWatchId);
+
 
   if (loading) {
     return (
@@ -327,6 +346,20 @@ const Index = () => {
               <h2 className="text-2xl font-semibold text-foreground">Travel History</h2>
               <AddTripDialog watches={watches} onSuccess={fetchData} />
             </div>
+            {topTripWatch && (
+              <div className="bg-card border border-border rounded-lg p-4 mb-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">#1 Trip Watch</p>
+                    <h3 className="text-lg font-semibold text-foreground">{topTripWatch[0]}</h3>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-primary">{topTripWatch[1]}</p>
+                    <p className="text-xs text-muted-foreground">days worn</p>
+                  </div>
+                </div>
+              </div>
+            )}
             <TripTimeline trips={trips} type="trip" watches={watches} onUpdate={fetchData} />
           </TabsContent>
 
@@ -343,6 +376,20 @@ const Index = () => {
               <h2 className="text-2xl font-semibold text-foreground">Water Usage Tracking</h2>
               <AddWaterUsageDialog watches={watches} onSuccess={fetchData} />
             </div>
+            {topWaterWatch && (
+              <div className="bg-card border border-border rounded-lg p-4 mb-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">#1 Water Usage Watch</p>
+                    <h3 className="text-lg font-semibold text-foreground">{topWaterWatch.brand} {topWaterWatch.model}</h3>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-primary">{waterWatchCounts.get(topWaterWatch.id)}</p>
+                    <p className="text-xs text-muted-foreground">activities</p>
+                  </div>
+                </div>
+              </div>
+            )}
             <WaterUsageList usages={waterUsages} watches={watches} />
           </TabsContent>
         </Tabs>
