@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Calendar, DollarSign, Trash2 } from "lucide-react";
+import { ArrowLeft, Calendar, DollarSign, Eye, EyeOff, Trash2 } from "lucide-react";
 import { AddWearDialog } from "@/components/AddWearDialog";
 import { useToast } from "@/hooks/use-toast";
 import { usePasscode } from "@/contexts/PasscodeContext";
@@ -45,6 +45,17 @@ const WatchDetail = () => {
   const [watch, setWatch] = useState<Watch | null>(null);
   const [wearEntries, setWearEntries] = useState<WearEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showCost, setShowCost] = useState(false);
+
+  const handleToggleCost = () => {
+    if (!showCost) {
+      requestVerification(() => {
+        setShowCost(true);
+      });
+    } else {
+      setShowCost(false);
+    }
+  };
 
   const fetchData = async () => {
     if (!id) return;
@@ -168,7 +179,25 @@ const WatchDetail = () => {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Purchase Cost</p>
-                    <p className="text-lg font-medium text-foreground">${watch.cost.toLocaleString()}</p>
+                    <div className="flex items-center gap-2">
+                      {showCost ? (
+                        <p className="text-lg font-medium text-foreground">${watch.cost.toLocaleString()}</p>
+                      ) : (
+                        <p className="text-lg font-medium text-muted-foreground">••••••</p>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0"
+                        onClick={handleToggleCost}
+                      >
+                        {showCost ? (
+                          <EyeOff className="w-4 h-4 text-muted-foreground" />
+                        ) : (
+                          <Eye className="w-4 h-4 text-muted-foreground" />
+                        )}
+                      </Button>
+                    </div>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Total Wear Entries</p>
@@ -196,9 +225,27 @@ const WatchDetail = () => {
 
                 <Card className="border-border bg-card p-6">
                   <div className="flex items-center justify-between">
-                    <div>
+                    <div className="flex-1">
                       <p className="text-sm text-muted-foreground mb-1">Purchase Cost</p>
-                      <p className="text-3xl font-bold text-foreground">${watch.cost.toLocaleString()}</p>
+                      <div className="flex items-center gap-2">
+                        {showCost ? (
+                          <p className="text-3xl font-bold text-foreground">${watch.cost.toLocaleString()}</p>
+                        ) : (
+                          <p className="text-3xl font-bold text-muted-foreground">••••••</p>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          onClick={handleToggleCost}
+                        >
+                          {showCost ? (
+                            <EyeOff className="w-4 h-4 text-muted-foreground" />
+                          ) : (
+                            <Eye className="w-4 h-4 text-muted-foreground" />
+                          )}
+                        </Button>
+                      </div>
                     </div>
                     <DollarSign className="w-8 h-8 text-primary" />
                   </div>
@@ -208,7 +255,11 @@ const WatchDetail = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-muted-foreground mb-1">Cost Per Day</p>
-                      <p className="text-3xl font-bold text-primary">${costPerUse.toFixed(0)}</p>
+                      {showCost ? (
+                        <p className="text-3xl font-bold text-primary">${costPerUse.toFixed(0)}</p>
+                      ) : (
+                        <p className="text-3xl font-bold text-muted-foreground">••••</p>
+                      )}
                     </div>
                     <DollarSign className="w-8 h-8 text-muted-foreground" />
                   </div>

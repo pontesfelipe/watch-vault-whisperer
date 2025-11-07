@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
-import { TrendingUp, TrendingDown, DollarSign } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, Eye, EyeOff } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -9,6 +9,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { MonthlyWearGrid } from "./MonthlyWearGrid";
+import { usePasscode } from "@/contexts/PasscodeContext";
+import { Button } from "@/components/ui/button";
 
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -64,6 +66,18 @@ const getSeasonFromMonth = (monthIndex: number): Season => {
 export const UsageChart = ({ watches, wearEntries }: UsageChartProps) => {
   const [showAllBestValue, setShowAllBestValue] = useState(false);
   const [showAllNeedsWear, setShowAllNeedsWear] = useState(false);
+  const [showCost, setShowCost] = useState(false);
+  const { requestVerification } = usePasscode();
+
+  const handleToggleCost = () => {
+    if (!showCost) {
+      requestVerification(() => {
+        setShowCost(true);
+      });
+    } else {
+      setShowCost(false);
+    }
+  };
 
   // Calculate monthly breakdown by watch
   const monthlyBreakdown = Array(12).fill(0).map(() => ({})) as Array<Record<string, number>>;
@@ -189,7 +203,9 @@ export const UsageChart = ({ watches, wearEntries }: UsageChartProps) => {
                         <div className="space-y-3 p-2">
                           <p className="font-bold text-foreground">{season}</p>
                           <div className="space-y-2">
-                            <p className="text-xs text-muted-foreground">Avg: ${avgCostPerDay.toFixed(0)}/day</p>
+                            {showCost && (
+                              <p className="text-xs text-muted-foreground">Avg: ${avgCostPerDay.toFixed(0)}/day</p>
+                            )}
                             {topWatch && (
                               <div className="text-xs">
                                 <span className="text-muted-foreground">Top watch:</span>
@@ -234,10 +250,24 @@ export const UsageChart = ({ watches, wearEntries }: UsageChartProps) => {
         {/* Top Cost Per Use */}
         <Card className="border-border bg-card p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-              <DollarSign className="w-5 h-5 text-primary" />
-              Best Value
-            </h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                <DollarSign className="w-5 h-5 text-primary" />
+                Best Value
+              </h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0"
+                onClick={handleToggleCost}
+              >
+                {showCost ? (
+                  <EyeOff className="w-4 h-4 text-muted-foreground" />
+                ) : (
+                  <Eye className="w-4 h-4 text-muted-foreground" />
+                )}
+              </Button>
+            </div>
             {watchCostPerUse.length > 5 && (
               <button
                 onClick={() => setShowAllBestValue(!showAllBestValue)}
@@ -254,12 +284,18 @@ export const UsageChart = ({ watches, wearEntries }: UsageChartProps) => {
                   <span className="text-xs text-foreground font-medium truncate flex-1">
                     {watch.name}
                   </span>
-                  <Badge variant="secondary" className="text-xs shrink-0">
-                    ${watch.costPerUse.toFixed(0)}/day
-                  </Badge>
+                  {showCost ? (
+                    <Badge variant="secondary" className="text-xs shrink-0">
+                      ${watch.costPerUse.toFixed(0)}/day
+                    </Badge>
+                  ) : (
+                    <Badge variant="secondary" className="text-xs shrink-0">
+                      ••••/day
+                    </Badge>
+                  )}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {watch.total} days • ${watch.cost.toLocaleString()} total
+                  {watch.total} days{showCost && ` • $${watch.cost.toLocaleString()} total`}
                 </p>
               </div>
             ))}
@@ -289,12 +325,18 @@ export const UsageChart = ({ watches, wearEntries }: UsageChartProps) => {
                   <span className="text-xs text-foreground font-medium truncate flex-1">
                     {watch.name}
                   </span>
-                  <Badge variant="destructive" className="text-xs shrink-0">
-                    ${watch.costPerUse.toFixed(0)}/day
-                  </Badge>
+                  {showCost ? (
+                    <Badge variant="destructive" className="text-xs shrink-0">
+                      ${watch.costPerUse.toFixed(0)}/day
+                    </Badge>
+                  ) : (
+                    <Badge variant="destructive" className="text-xs shrink-0">
+                      ••••/day
+                    </Badge>
+                  )}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {watch.total} days • ${watch.cost.toLocaleString()} total
+                  {watch.total} days{showCost && ` • $${watch.cost.toLocaleString()} total`}
                 </p>
               </div>
             ))}

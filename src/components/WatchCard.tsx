@@ -1,10 +1,12 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Watch as WatchIcon, Calendar, Eye, Trash2 } from "lucide-react";
+import { Watch as WatchIcon, Calendar, Eye, EyeOff, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { usePasscode } from "@/contexts/PasscodeContext";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,6 +35,18 @@ interface WatchCardProps {
 export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { requestVerification } = usePasscode();
+  const [showCost, setShowCost] = useState(false);
+
+  const handleToggleCost = () => {
+    if (!showCost) {
+      requestVerification(() => {
+        setShowCost(true);
+      });
+    } else {
+      setShowCost(false);
+    }
+  };
 
   const handleDelete = async () => {
     const { error } = await supabase.from("watches").delete().eq("id", watch.id);
@@ -82,12 +96,36 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
 
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Cost</span>
-            <span className="font-medium text-foreground">${watch.cost.toLocaleString()}</span>
+            <div className="flex items-center gap-2">
+              {showCost ? (
+                <span className="font-medium text-foreground">${watch.cost.toLocaleString()}</span>
+              ) : (
+                <span className="font-medium text-muted-foreground">••••••</span>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0"
+                onClick={handleToggleCost}
+              >
+                {showCost ? (
+                  <EyeOff className="w-4 h-4 text-muted-foreground" />
+                ) : (
+                  <Eye className="w-4 h-4 text-muted-foreground" />
+                )}
+              </Button>
+            </div>
           </div>
 
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Cost/Day</span>
-            <span className="font-medium text-primary">${costPerUse.toFixed(0)}</span>
+            <div className="flex items-center gap-2">
+              {showCost ? (
+                <span className="font-medium text-primary">${costPerUse.toFixed(0)}</span>
+              ) : (
+                <span className="font-medium text-muted-foreground">••••</span>
+              )}
+            </div>
           </div>
           
           <div className="flex items-center justify-between pt-3 border-t border-border">
