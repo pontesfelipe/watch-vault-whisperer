@@ -215,7 +215,7 @@ const Index = () => {
             title="Trending"
             value={trendingDays.toFixed(1)}
             icon={TrendingUp}
-            subtitle={trendingWatch ? `${trendingWatch.brand}` : "N/A"}
+            subtitle={trendingWatch ? `${trendingWatch.model}` : "N/A"}
           />
         </div>
 
