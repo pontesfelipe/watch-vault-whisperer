@@ -214,7 +214,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
     <Dialog open={open} onOpenChange={setOpen}>
       <Button onClick={() => setOpen(true)} className="gap-2">
         <Plus className="w-4 h-4" />
-        Add Watch
+        Add to Collection
       </Button>
       <DialogContent className="bg-card border-border max-w-md">
         <DialogHeader>

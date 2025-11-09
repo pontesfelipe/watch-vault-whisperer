@@ -9,6 +9,9 @@ import { AddTripDialog } from "@/components/AddTripDialog";
 import { AddEventDialog } from "@/components/AddEventDialog";
 import { AddWaterUsageDialog } from "@/components/AddWaterUsageDialog";
 import { WaterUsageList } from "@/components/WaterUsageList";
+import { AddWishlistDialog } from "@/components/AddWishlistDialog";
+import { WishlistTable } from "@/components/WishlistTable";
+import { TastePreferences } from "@/components/TastePreferences";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -16,6 +19,7 @@ import { Watch, TrendingUp, Calendar, Search, Lock, Unlock } from "lucide-react"
 import { Trip, Event } from "@/types/watch";
 import { Button } from "@/components/ui/button";
 import { usePasscode } from "@/contexts/PasscodeContext";
+import { useToast } from "@/hooks/use-toast";
 
 interface Watch {
   id: string;
@@ -42,24 +46,38 @@ interface WaterUsage {
   notes?: string;
 }
 
+interface WishlistItem {
+  id: string;
+  brand: string;
+  model: string;
+  dial_colors: string;
+  rank: number;
+  notes?: string;
+  is_ai_suggested: boolean;
+}
+
 const Index = () => {
   const [watches, setWatches] = useState<Watch[]>([]);
   const [wearEntries, setWearEntries] = useState<WearEntry[]>([]);
   const [trips, setTrips] = useState<Trip[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [waterUsages, setWaterUsages] = useState<WaterUsage[]>([]);
+  const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBrand, setSelectedBrand] = useState<string>("all");
   const [loading, setLoading] = useState(true);
+  const [generatingSuggestions, setGeneratingSuggestions] = useState(false);
   const { isVerified, requestVerification } = usePasscode();
+  const { toast } = useToast();
 
   const fetchData = async () => {
-    const [watchesResult, wearResult, tripsResult, eventsResult, waterResult] = await Promise.all([
+    const [watchesResult, wearResult, tripsResult, eventsResult, waterResult, wishlistResult] = await Promise.all([
       supabase.from("watches").select("*"),
       supabase.from("wear_entries").select("watch_id, wear_date, days, updated_at"),
       supabase.from("trips").select("*").order("start_date"),
       supabase.from("events").select("*").order("start_date"),
       supabase.from("water_usage").select("*").order("activity_date", { ascending: false }),
+      supabase.from("wishlist").select("*").order("rank", { ascending: true }),
     ]);
 
     if (watchesResult.data) setWatches(watchesResult.data);
@@ -99,7 +117,71 @@ const Index = () => {
     if (waterResult.data) {
       setWaterUsages(waterResult.data);
     }
+    if (wishlistResult.data) {
+      setWishlist(wishlistResult.data);
+    }
     setLoading(false);
+  };
+
+  const handleGenerateSuggestions = async (tasteDescription: string) => {
+    setGeneratingSuggestions(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("suggest-watches", {
+        body: { 
+          collection: watches.map(w => ({
+            brand: w.brand,
+            model: w.model,
+            dial_color: w.dial_color,
+            type: w.type,
+          })),
+          tasteDescription 
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.suggestions) {
+        // Clear old AI suggestions
+        const { error: deleteError } = await supabase
+          .from("wishlist")
+          .delete()
+          .eq("is_ai_suggested", true);
+
+        if (deleteError) throw deleteError;
+
+        // Insert new AI suggestions
+        const { error: insertError } = await supabase
+          .from("wishlist")
+          .insert(
+            data.suggestions.map((s: any) => ({
+              brand: s.brand,
+              model: s.model,
+              dial_colors: s.dial_colors,
+              rank: s.rank,
+              notes: s.notes,
+              is_ai_suggested: true,
+            }))
+          );
+
+        if (insertError) throw insertError;
+
+        await fetchData();
+        
+        toast({
+          title: "AI Suggestions Generated!",
+          description: `${data.suggestions.length} watches suggested based on your collection and taste`,
+        });
+      }
+    } catch (error) {
+      console.error("Error generating suggestions:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate watch suggestions",
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingSuggestions(false);
+    }
   };
 
   useEffect(() => {
@@ -302,8 +384,9 @@ const Index = () => {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="collection" className="space-y-6">
-          <TabsList className="bg-card border border-border">
+          <TabsList className="bg-card border border-border grid grid-cols-5 w-full max-w-2xl mx-auto">
             <TabsTrigger value="collection">Collection</TabsTrigger>
+            <TabsTrigger value="wishlist">Wishlist</TabsTrigger>
             <TabsTrigger value="trips">Trips</TabsTrigger>
             <TabsTrigger value="events">Events</TabsTrigger>
             <TabsTrigger value="water">Water Usage</TabsTrigger>
@@ -362,6 +445,38 @@ const Index = () => {
                 )}
               </>
             )}
+          </TabsContent>
+
+          <TabsContent value="wishlist" className="space-y-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-semibold text-foreground">Your Wishlist</h2>
+              <AddWishlistDialog onSuccess={fetchData} />
+            </div>
+            
+            <TastePreferences 
+              onSuggest={handleGenerateSuggestions}
+              isGenerating={generatingSuggestions}
+            />
+
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-xl font-semibold mb-4">Your Wishlist</h3>
+                <WishlistTable 
+                  items={wishlist} 
+                  onDelete={fetchData}
+                  showAISuggested={false}
+                />
+              </div>
+
+              <div>
+                <h3 className="text-xl font-semibold mb-4">AI Suggestions</h3>
+                <WishlistTable 
+                  items={wishlist} 
+                  onDelete={fetchData}
+                  showAISuggested={true}
+                />
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="trips" className="space-y-6">

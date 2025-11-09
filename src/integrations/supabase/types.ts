@@ -80,6 +80,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_preferences: {
+        Row: {
+          created_at: string
+          id: string
+          taste_description: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          taste_description?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          taste_description?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       watch_specs: {
         Row: {
           band: string | null
@@ -268,6 +289,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      wishlist: {
+        Row: {
+          brand: string
+          created_at: string
+          dial_colors: string
+          id: string
+          is_ai_suggested: boolean
+          model: string
+          notes: string | null
+          rank: number
+          updated_at: string
+        }
+        Insert: {
+          brand: string
+          created_at?: string
+          dial_colors: string
+          id?: string
+          is_ai_suggested?: boolean
+          model: string
+          notes?: string | null
+          rank?: number
+          updated_at?: string
+        }
+        Update: {
+          brand?: string
+          created_at?: string
+          dial_colors?: string
+          id?: string
+          is_ai_suggested?: boolean
+          model?: string
+          notes?: string | null
+          rank?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
     }
     Views: {
