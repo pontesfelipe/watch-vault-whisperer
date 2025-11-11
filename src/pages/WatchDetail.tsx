@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Calendar, DollarSign, Eye, EyeOff, Trash2 } from "lucide-react";
 import { AddWearDialog } from "@/components/AddWearDialog";
+import { EditWatchDialog } from "@/components/EditWatchDialog";
 import { useToast } from "@/hooks/use-toast";
 import { usePasscode } from "@/contexts/PasscodeContext";
 import {
@@ -28,6 +29,11 @@ interface Watch {
   dial_color: string;
   type: string;
   cost: number;
+  case_size?: string;
+  lug_to_lug_size?: string;
+  caseback_material?: string;
+  movement?: string;
+  has_sapphire?: boolean;
   average_resale_price?: number;
   warranty_date?: string;
   warranty_card_url?: string;
@@ -165,13 +171,16 @@ const WatchDetail = () => {
             Back to Collection
           </Button>
           <div className="flex items-start justify-between">
-            <div>
+            <div className="flex-1">
               <h1 className="text-3xl font-bold text-foreground">{watch.brand}</h1>
               <p className="text-xl text-muted-foreground">{watch.model}</p>
             </div>
-            <Badge variant="secondary" className="text-sm">
-              {watch.type}
-            </Badge>
+            <div className="flex gap-2 items-start">
+              <EditWatchDialog watch={watch} onSuccess={fetchData} />
+              <Badge variant="secondary" className="text-sm">
+                {watch.type}
+              </Badge>
+            </div>
           </div>
         </div>
       </header>

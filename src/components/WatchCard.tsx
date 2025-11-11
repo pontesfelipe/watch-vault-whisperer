@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { usePasscode } from "@/contexts/PasscodeContext";
+import { EditWatchDialog } from "@/components/EditWatchDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,8 +27,14 @@ interface WatchCardProps {
     dial_color: string;
     type: string;
     cost: number;
+    case_size?: string;
+    lug_to_lug_size?: string;
+    caseback_material?: string;
+    movement?: string;
+    has_sapphire?: boolean;
     average_resale_price?: number;
     warranty_date?: string;
+    warranty_card_url?: string;
   };
   totalDays: number;
   onDelete: () => void;
@@ -193,6 +200,8 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
             <Eye className="w-4 h-4" />
             Details
           </Button>
+
+          <EditWatchDialog watch={watch} onSuccess={onDelete} />
 
           <Button 
             variant="outline" 
