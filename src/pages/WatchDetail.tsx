@@ -283,18 +283,6 @@ const WatchDetail = () => {
                       </Button>
                     </div>
                   </div>
-                  {watch.average_resale_price && (
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">Avg. Resale Price (Used)</p>
-                      <div className="flex items-center gap-2">
-                        {showCost ? (
-                          <p className="text-lg font-medium text-foreground">${watch.average_resale_price.toLocaleString()}</p>
-                        ) : (
-                          <p className="text-lg font-medium text-muted-foreground">••••••</p>
-                        )}
-                      </div>
-                    </div>
-                  )}
                   {watch.warranty_date && (
                     <div>
                       <p className="text-sm text-muted-foreground mb-1">Warranty Status</p>
@@ -384,6 +372,24 @@ const WatchDetail = () => {
                     <DollarSign className="w-8 h-8 text-muted-foreground" />
                   </div>
                 </Card>
+
+                {watch.average_resale_price && (
+                  <Card className="border-border bg-card p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <p className="text-sm text-muted-foreground mb-1">Avg. Resale Price (Used)</p>
+                        <div className="flex items-center gap-2">
+                          {showCost ? (
+                            <p className="text-3xl font-bold text-foreground">${watch.average_resale_price.toLocaleString()}</p>
+                          ) : (
+                            <p className="text-3xl font-bold text-muted-foreground">••••••</p>
+                          )}
+                        </div>
+                      </div>
+                      <DollarSign className="w-8 h-8 text-primary" />
+                    </div>
+                  </Card>
+                )}
               </div>
 
               {/* Monthly Breakdown */}
