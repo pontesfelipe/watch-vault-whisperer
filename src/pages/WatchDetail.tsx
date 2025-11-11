@@ -283,6 +283,19 @@ const WatchDetail = () => {
                       </Button>
                     </div>
                   </div>
+                  {watch.average_resale_price && (
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Avg. US Resale Price (Used)</p>
+                      <div className="flex items-center gap-2">
+                        {showCost ? (
+                          <p className="text-lg font-medium text-foreground">${watch.average_resale_price.toLocaleString()}</p>
+                        ) : (
+                          <p className="text-lg font-medium text-muted-foreground">••••••</p>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">Market data from US resale platforms</p>
+                    </div>
+                  )}
                   {watch.warranty_date && (
                     <div>
                       <p className="text-sm text-muted-foreground mb-1">Warranty Status</p>

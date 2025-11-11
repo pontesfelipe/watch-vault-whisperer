@@ -240,7 +240,7 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="averageResalePrice">Average US Resale Price (Used) - Optional</Label>
+            <Label htmlFor="averageResalePrice">Avg. US Resale Price (Market Data) - Optional</Label>
             <Input
               id="averageResalePrice"
               value={formValues.averageResalePrice}
@@ -248,9 +248,12 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
               type="number"
               step="0.01"
               min="0"
-              placeholder="Leave blank if unknown"
+              placeholder="From online resale marketplaces"
               className="bg-background border-border"
             />
+            <p className="text-xs text-muted-foreground">
+              Based on data from Chrono24, Bob's Watches, WatchBox, and Crown & Caliber
+            </p>
           </div>
 
           <div className="space-y-2">

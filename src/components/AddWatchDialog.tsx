@@ -132,7 +132,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         casebackMaterial: data.casebackMaterial || "",
         movement: data.movement || "",
         hasSapphire: data.hasSapphire,
-        averageResalePrice: "",
+        averageResalePrice: data.averageResalePrice ? data.averageResalePrice.toString() : "",
         warrantyDate: "",
         warrantyCardFile: null,
       });
@@ -367,7 +367,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="averageResalePrice">Average US Resale Price (Used) - Optional</Label>
+            <Label htmlFor="averageResalePrice">Avg. US Resale Price (Auto-fetched) - Optional</Label>
             <Input
               id="averageResalePrice"
               value={formValues.averageResalePrice}
@@ -375,9 +375,14 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
               type="number"
               step="0.01"
               min="0"
-              placeholder="Leave blank if unknown"
+              placeholder="Auto-filled from online sources (editable)"
               className="bg-background border-border"
             />
+            <p className="text-xs text-muted-foreground">
+              {formValues.averageResalePrice 
+                ? "✓ Auto-populated from US resale marketplaces" 
+                : "Will be fetched automatically when you click Search above"}
+            </p>
           </div>
 
           <div className="space-y-2">

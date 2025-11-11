@@ -52,7 +52,13 @@ IMPORTANT: First, search the OFFICIAL BRAND WEBSITE for accurate information. Fo
 - For Cartier watches, search cartier.com
 - For any brand, search their official website first
 
-After checking the official brand site, verify with authorized dealer sites and reputable watch databases.
+After checking the official brand site for retail information, ALSO search the following US-based resale marketplaces for AVERAGE PRE-OWNED PRICES:
+- Chrono24.com (largest global marketplace for used watches)
+- Bob's Watches (US-based Rolex specialist)
+- WatchBox (US pre-owned luxury watches)
+- Crown & Caliber (US pre-owned marketplace)
+
+Calculate the average US resale price by aggregating prices from these sources for similar condition pre-owned models.
 
 Return the information in this exact JSON format:
 {
@@ -60,6 +66,7 @@ Return the information in this exact JSON format:
   "dialColor": "dial color (e.g., Black, Blue, Silver, White, Green)",
   "type": "watch type (e.g., Diver, Chronograph, Pilot, GMT, Dress, Field)",
   "cost": retail price in USD as a number (from official brand site),
+  "averageResalePrice": average US pre-owned resale price in USD as a number (from Chrono24, Bob's Watches, WatchBox, Crown & Caliber) or null if not found,
   "caseSize": "case diameter with units (e.g., 41mm, 40mm)",
   "lugToLugSize": "lug to lug measurement with units (e.g., 48mm, 47.5mm)",
   "casebackMaterial": "caseback material (e.g., Stainless Steel, Sapphire Crystal, Titanium)",
@@ -67,7 +74,7 @@ Return the information in this exact JSON format:
   "hasSapphire": true or false for sapphire crystal
 }
 
-Pull information specifically from the official brand website first. If a specific detail is not available, use null for that field. If you cannot find the watch at all, return: {"error": "Watch not found"}
+Pull retail information specifically from the official brand website first. For resale price, aggregate data from the US marketplace sites listed above. If a specific detail is not available, use null for that field. If you cannot find the watch at all, return: {"error": "Watch not found"}
 
 Important: Return ONLY the JSON object, no markdown formatting or explanation.`
           }
@@ -135,6 +142,7 @@ Important: Return ONLY the JSON object, no markdown formatting or explanation.`
     watchData.casebackMaterial = watchData.casebackMaterial || null;
     watchData.movement = watchData.movement || null;
     watchData.hasSapphire = watchData.hasSapphire !== undefined ? watchData.hasSapphire : null;
+    watchData.averageResalePrice = watchData.averageResalePrice || null;
 
     console.log('Watch data found:', watchData);
 
