@@ -469,7 +469,39 @@ const Index = () => {
               </div>
 
               <div>
-                <h3 className="text-xl font-semibold mb-4">AI Suggestions</h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-semibold">AI Suggestions</h3>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      try {
+                        const { error } = await supabase
+                          .from("wishlist")
+                          .delete()
+                          .eq("is_ai_suggested", true);
+
+                        if (error) throw error;
+
+                        toast({
+                          title: "Cleared",
+                          description: "AI suggestions have been cleared",
+                        });
+
+                        await fetchData();
+                      } catch (error) {
+                        console.error("Error clearing AI suggestions:", error);
+                        toast({
+                          title: "Error",
+                          description: "Failed to clear AI suggestions",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                  >
+                    Clear AI Suggestions
+                  </Button>
+                </div>
                 <WishlistTable 
                   items={wishlist} 
                   onDelete={fetchData}

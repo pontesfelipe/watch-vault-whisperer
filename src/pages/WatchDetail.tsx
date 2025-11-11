@@ -28,6 +28,9 @@ interface Watch {
   dial_color: string;
   type: string;
   cost: number;
+  average_resale_price?: number;
+  warranty_date?: string;
+  warranty_card_url?: string;
 }
 
 interface WearEntry {
@@ -271,6 +274,42 @@ const WatchDetail = () => {
                       </Button>
                     </div>
                   </div>
+                  {watch.average_resale_price && (
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Avg. Resale Price (Used)</p>
+                      <div className="flex items-center gap-2">
+                        {showCost ? (
+                          <p className="text-lg font-medium text-foreground">${watch.average_resale_price.toLocaleString()}</p>
+                        ) : (
+                          <p className="text-lg font-medium text-muted-foreground">••••••</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  {watch.warranty_date && (
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Warranty Status</p>
+                      <div>
+                        <p className="text-lg font-medium text-foreground">
+                          {new Date(watch.warranty_date) < new Date() ? (
+                            <span className="text-destructive">Expired ({new Date(watch.warranty_date).toLocaleDateString()})</span>
+                          ) : (
+                            <span className="text-green-500">Valid until {new Date(watch.warranty_date).toLocaleDateString()}</span>
+                          )}
+                        </p>
+                        {watch.warranty_card_url && (
+                          <a 
+                            href={watch.warranty_card_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-sm text-primary hover:underline mt-1 inline-block"
+                          >
+                            View Warranty Card
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  )}
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Total Wear Entries</p>
                     <p className="text-lg font-medium text-foreground">{wearEntries.length}</p>

@@ -43,14 +43,23 @@ serve(async (req) => {
           },
           {
             role: 'user',
-            content: `Find the detailed specifications for this watch: ${brand} ${modelReference}
+            content: `Search for this watch: ${brand} ${modelReference}
+
+IMPORTANT: First, search the OFFICIAL BRAND WEBSITE for accurate information. For example:
+- For Rolex watches, search rolex.com
+- For Omega watches, search omegawatches.com
+- For IWC watches, search iwc.com
+- For Cartier watches, search cartier.com
+- For any brand, search their official website first
+
+After checking the official brand site, verify with authorized dealer sites and reputable watch databases.
 
 Return the information in this exact JSON format:
 {
   "model": "full model name",
   "dialColor": "dial color (e.g., Black, Blue, Silver, White, Green)",
   "type": "watch type (e.g., Diver, Chronograph, Pilot, GMT, Dress, Field)",
-  "cost": retail price in USD as a number,
+  "cost": retail price in USD as a number (from official brand site),
   "caseSize": "case diameter with units (e.g., 41mm, 40mm)",
   "lugToLugSize": "lug to lug measurement with units (e.g., 48mm, 47.5mm)",
   "casebackMaterial": "caseback material (e.g., Stainless Steel, Sapphire Crystal, Titanium)",
@@ -58,7 +67,7 @@ Return the information in this exact JSON format:
   "hasSapphire": true or false for sapphire crystal
 }
 
-Pull as much information as you can find from watch manufacturer websites, retail sites, or watch databases. If a specific detail is not available, use null for that field. If you cannot find the watch at all, return: {"error": "Watch not found"}
+Pull information specifically from the official brand website first. If a specific detail is not available, use null for that field. If you cannot find the watch at all, return: {"error": "Watch not found"}
 
 Important: Return ONLY the JSON object, no markdown formatting or explanation.`
           }

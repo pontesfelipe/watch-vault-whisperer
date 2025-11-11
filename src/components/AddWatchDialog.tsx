@@ -39,6 +39,8 @@ const watchSchema = z.object({
   dialColor: z.string().trim().min(1, "Dial color is required").max(50),
   type: z.string().trim().min(1, "Type is required").max(100),
   cost: z.number().min(0, "Cost must be positive"),
+  averageResalePrice: z.number().min(0, "Resale price must be positive").optional(),
+  warrantyDate: z.string().optional(),
 });
 
 export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
@@ -56,6 +58,9 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
     casebackMaterial: "",
     movement: "",
     hasSapphire: null as boolean | null,
+    averageResalePrice: "",
+    warrantyDate: "",
+    warrantyCardFile: null as File | null,
   });
   const { toast } = useToast();
 
@@ -89,6 +94,9 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         casebackMaterial: "",
         movement: "",
         hasSapphire: null,
+        averageResalePrice: "",
+        warrantyDate: "",
+        warrantyCardFile: null,
       });
         toast({
           title: "Watch Found",
@@ -124,6 +132,9 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         casebackMaterial: data.casebackMaterial || "",
         movement: data.movement || "",
         hasSapphire: data.hasSapphire,
+        averageResalePrice: "",
+        warrantyDate: "",
+        warrantyCardFile: null,
       });
       
       toast({
@@ -154,7 +165,34 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         dialColor: formValues.dialColor,
         type: formValues.type,
         cost: parseFloat(formValues.cost),
+        averageResalePrice: formValues.averageResalePrice ? parseFloat(formValues.averageResalePrice) : undefined,
+        warrantyDate: formValues.warrantyDate || undefined,
       });
+
+      // Upload warranty card if provided
+      let warrantyCardUrl = null;
+      if (formValues.warrantyCardFile) {
+        const fileExt = formValues.warrantyCardFile.name.split('.').pop();
+        const fileName = `${crypto.randomUUID()}.${fileExt}`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('warranty-cards')
+          .upload(fileName, formValues.warrantyCardFile);
+
+        if (uploadError) {
+          toast({
+            title: "Upload Error",
+            description: "Failed to upload warranty card",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        const { data: { publicUrl } } = supabase.storage
+          .from('warranty-cards')
+          .getPublicUrl(fileName);
+        
+        warrantyCardUrl = publicUrl;
+      }
 
       const { error } = await supabase.from("watches").insert({
         brand: data.brand,
@@ -167,6 +205,9 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         caseback_material: formValues.casebackMaterial || null,
         movement: formValues.movement || null,
         has_sapphire: formValues.hasSapphire,
+        average_resale_price: data.averageResalePrice || null,
+        warranty_date: data.warrantyDate || null,
+        warranty_card_url: warrantyCardUrl,
       });
 
       if (error) throw error;
@@ -189,6 +230,9 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         casebackMaterial: "",
         movement: "",
         hasSapphire: null,
+        averageResalePrice: "",
+        warrantyDate: "",
+        warrantyCardFile: null,
       });
       onSuccess();
     } catch (error) {
@@ -320,6 +364,46 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
               required
               className="bg-background border-border"
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="averageResalePrice">Average US Resale Price (Used) - Optional</Label>
+            <Input
+              id="averageResalePrice"
+              value={formValues.averageResalePrice}
+              onChange={(e) => setFormValues({ ...formValues, averageResalePrice: e.target.value })}
+              type="number"
+              step="0.01"
+              min="0"
+              placeholder="Leave blank if unknown"
+              className="bg-background border-border"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="warrantyDate">Warranty Expiration Date - Optional</Label>
+            <Input
+              id="warrantyDate"
+              value={formValues.warrantyDate}
+              onChange={(e) => setFormValues({ ...formValues, warrantyDate: e.target.value })}
+              type="date"
+              className="bg-background border-border"
+            />
+            {formValues.warrantyDate && new Date(formValues.warrantyDate) < new Date() && (
+              <p className="text-xs text-destructive">Warranty has expired</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="warrantyCard">Warranty Card - Optional</Label>
+            <Input
+              id="warrantyCard"
+              type="file"
+              accept="image/*,.pdf"
+              onChange={(e) => setFormValues({ ...formValues, warrantyCardFile: e.target.files?.[0] || null })}
+              className="bg-background border-border"
+            />
+            <p className="text-xs text-muted-foreground">Upload warranty card image or PDF</p>
           </div>
 
           {/* Optional Specifications Section */}

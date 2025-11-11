@@ -26,6 +26,8 @@ interface WatchCardProps {
     dial_color: string;
     type: string;
     cost: number;
+    average_resale_price?: number;
+    warranty_date?: string;
   };
   totalDays: number;
   onDelete: () => void;
@@ -149,6 +151,28 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
               )}
             </div>
           </div>
+          
+          {watch.average_resale_price && (
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Resale Value</span>
+              <div className="flex items-center gap-2">
+                {showCost ? (
+                  <span className="font-medium text-foreground">${watch.average_resale_price.toLocaleString()}</span>
+                ) : (
+                  <span className="font-medium text-muted-foreground">••••••</span>
+                )}
+              </div>
+            </div>
+          )}
+          
+          {watch.warranty_date && (
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Warranty</span>
+              <span className={`font-medium text-xs ${new Date(watch.warranty_date) < new Date() ? 'text-destructive' : 'text-green-500'}`}>
+                {new Date(watch.warranty_date) < new Date() ? 'Expired' : 'Valid'}
+              </span>
+            </div>
+          )}
           
           <div className="flex items-center justify-between pt-3 border-t border-border">
             <div className="flex items-center gap-2 text-muted-foreground">

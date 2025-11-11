@@ -42,9 +42,17 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
       });
 
       const roundedDays = Math.round(data.days * 10) / 10;
+      
+      // Fix timezone issue: ensure the date is stored as-is without timezone conversion
+      const dateObj = new Date(data.wearDate + 'T00:00:00');
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObj.getDate()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${day}`;
+      
       const { error } = await supabase.from("wear_entries").insert({
         watch_id: data.watchId,
-        wear_date: data.wearDate,
+        wear_date: formattedDate,
         days: roundedDays,
         notes: data.notes,
       });

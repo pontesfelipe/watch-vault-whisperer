@@ -162,6 +162,7 @@ export type Database = {
       }
       watches: {
         Row: {
+          average_resale_price: number | null
           brand: string
           case_size: string | null
           caseback_material: string | null
@@ -175,8 +176,11 @@ export type Database = {
           movement: string | null
           type: string
           updated_at: string
+          warranty_card_url: string | null
+          warranty_date: string | null
         }
         Insert: {
+          average_resale_price?: number | null
           brand: string
           case_size?: string | null
           caseback_material?: string | null
@@ -190,8 +194,11 @@ export type Database = {
           movement?: string | null
           type: string
           updated_at?: string
+          warranty_card_url?: string | null
+          warranty_date?: string | null
         }
         Update: {
+          average_resale_price?: number | null
           brand?: string
           case_size?: string | null
           caseback_material?: string | null
@@ -205,6 +212,8 @@ export type Database = {
           movement?: string | null
           type?: string
           updated_at?: string
+          warranty_card_url?: string | null
+          warranty_date?: string | null
         }
         Relationships: []
       }
