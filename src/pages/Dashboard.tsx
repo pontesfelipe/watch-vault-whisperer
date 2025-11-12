@@ -26,7 +26,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
@@ -39,7 +39,7 @@ const Dashboard = () => {
         <QuickAddWearDialog watches={watches} onSuccess={refetch} />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
           title="Total Watches"
           value={stats.totalWatches}
@@ -62,10 +62,12 @@ const Dashboard = () => {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <UsageChart watches={watches} wearEntries={wearEntries} />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2">
+          <UsageChart watches={watches} wearEntries={wearEntries} />
+        </div>
         
-        <div className="space-y-6">
+        <div className="space-y-4">
           <StatsCard
             title="Most Worn Dial Color"
             value={stats.mostWornDialColor || "N/A"}
@@ -79,7 +81,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatsCard
           title="Trending (30 Days)"
           value={stats.trendingWatch ? `${stats.trendingWatch.brand} ${stats.trendingWatch.model}` : "N/A"}

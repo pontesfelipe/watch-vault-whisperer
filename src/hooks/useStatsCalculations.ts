@@ -99,22 +99,22 @@ export const useStatsCalculations = (
     )[0]?.[0];
     const trendingWatch = watches.find((w) => w.id === trendingWatchId);
 
-    // Top trip watch - extract watch IDs from watch_model JSON
+    // Top trip watch - extract watch model names from watch_model JSON
     const tripWatchCounts = trips.reduce(
       (acc, trip) => {
         if (trip.watch_model && typeof trip.watch_model === 'object') {
-          Object.keys(trip.watch_model).forEach((watchId) => {
-            acc[watchId] = (acc[watchId] || 0) + 1;
+          Object.keys(trip.watch_model).forEach((modelName) => {
+            acc[modelName] = (acc[modelName] || 0) + 1;
           });
         }
         return acc;
       },
       {} as Record<string, number>
     );
-    const topTripWatchId = Object.entries(tripWatchCounts).sort(
+    const topTripModelName = Object.entries(tripWatchCounts).sort(
       ([, a], [, b]) => b - a
     )[0]?.[0];
-    const topTripWatch = watches.find((w) => w.id === topTripWatchId);
+    const topTripWatch = watches.find((w) => w.model === topTripModelName);
 
     // Top water usage watch
     const waterWatchCounts = waterUsages.reduce(
