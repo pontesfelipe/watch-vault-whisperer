@@ -16,7 +16,7 @@ interface WearEntry {
 }
 
 interface Trip {
-  watch_id?: string;
+  watch_model?: any;
 }
 
 interface WaterUsage {
@@ -99,11 +99,13 @@ export const useStatsCalculations = (
     )[0]?.[0];
     const trendingWatch = watches.find((w) => w.id === trendingWatchId);
 
-    // Top trip watch
+    // Top trip watch - extract watch IDs from watch_model JSON
     const tripWatchCounts = trips.reduce(
       (acc, trip) => {
-        if (trip.watch_id) {
-          acc[trip.watch_id] = (acc[trip.watch_id] || 0) + 1;
+        if (trip.watch_model && typeof trip.watch_model === 'object') {
+          Object.keys(trip.watch_model).forEach((watchId) => {
+            acc[watchId] = (acc[watchId] || 0) + 1;
+          });
         }
         return acc;
       },

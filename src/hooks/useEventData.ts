@@ -5,7 +5,7 @@ interface Event {
   id: string;
   start_date: string;
   location: string;
-  watch_id?: string;
+  watch_model?: any;
   days: number;
   purpose: string;
 }

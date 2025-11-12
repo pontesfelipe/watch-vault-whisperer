@@ -5,16 +5,21 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { WatchCard } from "@/components/WatchCard";
 import { AddWatchDialog } from "@/components/AddWatchDialog";
-import { AddWearDialog } from "@/components/AddWearDialog";
+import { QuickAddWearDialog } from "@/components/QuickAddWearDialog";
 import { useWatchData } from "@/hooks/useWatchData";
+import { useStatsCalculations } from "@/hooks/useStatsCalculations";
+import { useTripData } from "@/hooks/useTripData";
+import { useWaterUsageData } from "@/hooks/useWaterUsageData";
 
 const Collection = () => {
   const { watches, wearEntries, loading, refetch } = useWatchData();
+  const { trips } = useTripData();
+  const { waterUsages } = useWaterUsageData();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBrand, setSelectedBrand] = useState<string>("all");
   const [showAddWatch, setShowAddWatch] = useState(false);
-  const [showAddWear, setShowAddWear] = useState(false);
-  const [selectedWatchForWear, setSelectedWatchForWear] = useState<string>("");
+
+  const stats = useStatsCalculations(watches, wearEntries, trips, waterUsages);
 
   if (loading) {
     return (
@@ -38,11 +43,6 @@ const Collection = () => {
 
   const uniqueBrands = Array.from(new Set(watches.map((w) => w.brand))).sort();
 
-  const handleAddWear = (watchId: string) => {
-    setSelectedWatchForWear(watchId);
-    setShowAddWear(true);
-  };
-
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
@@ -54,10 +54,13 @@ const Collection = () => {
             {watches.length} {watches.length === 1 ? "watch" : "watches"} in your collection
           </p>
         </div>
-        <Button onClick={() => setShowAddWatch(true)} className="gap-2">
-          <Plus className="w-4 h-4" />
-          Add Watch
-        </Button>
+        <div className="flex gap-2">
+          <QuickAddWearDialog watches={watches} onSuccess={refetch} />
+          <Button onClick={() => setShowAddWatch(true)} className="gap-2">
+            <Plus className="w-4 h-4" />
+            Add Watch
+          </Button>
+        </div>
       </div>
 
       <div className="flex gap-4 flex-col sm:flex-row">
@@ -107,7 +110,6 @@ const Collection = () => {
       )}
 
       <AddWatchDialog onSuccess={refetch} />
-      <AddWearDialog watchId={selectedWatchForWear} onSuccess={refetch} />
     </div>
   );
 };

@@ -1,13 +1,14 @@
 import { Watch, Calendar, TrendingUp, Target, Palette, Shirt, Flame, Plane, Droplets } from "lucide-react";
 import { StatsCard } from "@/components/StatsCard";
 import { UsageChart } from "@/components/UsageChart";
+import { QuickAddWearDialog } from "@/components/QuickAddWearDialog";
 import { useWatchData } from "@/hooks/useWatchData";
 import { useTripData } from "@/hooks/useTripData";
 import { useWaterUsageData } from "@/hooks/useWaterUsageData";
 import { useStatsCalculations } from "@/hooks/useStatsCalculations";
 
 const Dashboard = () => {
-  const { watches, wearEntries, loading: watchLoading } = useWatchData();
+  const { watches, wearEntries, loading: watchLoading, refetch } = useWatchData();
   const { trips, loading: tripLoading } = useTripData();
   const { waterUsages, loading: waterLoading } = useWaterUsageData();
 
@@ -26,13 +27,16 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-          Dashboard
-        </h1>
-        <p className="text-muted-foreground">
-          Overview of your watch collection statistics
-        </p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            Dashboard
+          </h1>
+          <p className="text-muted-foreground">
+            Overview of your watch collection statistics
+          </p>
+        </div>
+        <QuickAddWearDialog watches={watches} onSuccess={refetch} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
