@@ -39,8 +39,8 @@ const Dashboard = () => {
         <QuickAddWearDialog watches={watches} onSuccess={refetch} />
       </div>
 
-      <div className="relative">
-        <div className="grid grid-flow-col auto-cols-[minmax(180px,1fr)] gap-3 overflow-x-auto pb-2">
+      <div className="space-y-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           <StatsCard
             title="Total Watches"
             value={stats.totalWatches}
@@ -71,6 +71,8 @@ const Dashboard = () => {
             icon={Palette}
             variant="compact"
           />
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3">
           <StatsCard
             title="Most Worn Style"
             value={stats.mostWornStyle || "N/A"}

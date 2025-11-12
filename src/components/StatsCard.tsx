@@ -12,17 +12,17 @@ interface StatsCardProps {
 export const StatsCard = ({ title, value, icon: Icon, subtitle, variant = "default" }: StatsCardProps) => {
   const isCompact = variant === "compact";
   return (
-    <Card className={`border-border bg-card ${isCompact ? "p-4" : "p-6"} hover:shadow-[var(--shadow-glow)] transition-all duration-300 min-w-[180px]`}>
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <p className={`text-sm text-muted-foreground ${isCompact ? "mb-1" : "mb-2"}`}>{title}</p>
-          <p className={`${isCompact ? "text-2xl" : "text-3xl"} font-bold text-foreground mb-1`}>{value}</p>
+    <Card className={`border-border bg-card ${isCompact ? "p-3" : "p-6"} hover:shadow-[var(--shadow-glow)] transition-all duration-300`}>
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1 min-w-0">
+          <p className={`${isCompact ? "text-xs" : "text-sm"} text-muted-foreground ${isCompact ? "mb-0.5" : "mb-2"}`}>{title}</p>
+          <p className={`${isCompact ? "text-lg" : "text-3xl"} font-bold text-foreground truncate`}>{value}</p>
           {subtitle && (
             <p className="text-xs text-muted-foreground">{subtitle}</p>
           )}
         </div>
-        <div className={`${isCompact ? "w-10 h-10" : "w-12 h-12"} rounded-lg bg-primary/10 flex items-center justify-center`}>
-          <Icon className={`${isCompact ? "w-5 h-5" : "w-6 h-6"} text-primary`} />
+        <div className={`${isCompact ? "w-8 h-8" : "w-12 h-12"} rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0`}>
+          <Icon className={`${isCompact ? "w-4 h-4" : "w-6 h-6"} text-primary`} />
         </div>
       </div>
     </Card>
