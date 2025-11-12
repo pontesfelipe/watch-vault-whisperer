@@ -39,64 +39,67 @@ const Dashboard = () => {
         <QuickAddWearDialog watches={watches} onSuccess={refetch} />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatsCard
-          title="Total Watches"
-          value={stats.totalWatches}
-          icon={Watch}
-        />
-        <StatsCard
-          title="Total Days Worn"
-          value={stats.totalDaysWorn}
-          icon={Calendar}
-        />
-        <StatsCard
-          title="Most Worn Watch"
-          value={stats.mostWornWatch ? `${stats.mostWornWatch.brand} ${stats.mostWornWatch.model}` : "N/A"}
-          icon={TrendingUp}
-        />
-        <StatsCard
-          title="Avg Days/Watch"
-          value={stats.avgDaysPerWatch}
-          icon={Target}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2">
-          <UsageChart watches={watches} wearEntries={wearEntries} />
-        </div>
-        
-        <div className="space-y-4">
+      <div className="relative">
+        <div className="grid grid-flow-col auto-cols-[minmax(180px,1fr)] gap-3 overflow-x-auto pb-2">
+          <StatsCard
+            title="Total Watches"
+            value={stats.totalWatches}
+            icon={Watch}
+            variant="compact"
+          />
+          <StatsCard
+            title="Total Days Worn"
+            value={stats.totalDaysWorn}
+            icon={Calendar}
+            variant="compact"
+          />
+          <StatsCard
+            title="Most Worn Watch"
+            value={stats.mostWornWatch ? `${stats.mostWornWatch.brand} ${stats.mostWornWatch.model}` : "N/A"}
+            icon={TrendingUp}
+            variant="compact"
+          />
+          <StatsCard
+            title="Avg Days/Watch"
+            value={stats.avgDaysPerWatch}
+            icon={Target}
+            variant="compact"
+          />
           <StatsCard
             title="Most Worn Dial Color"
             value={stats.mostWornDialColor || "N/A"}
             icon={Palette}
+            variant="compact"
           />
           <StatsCard
             title="Most Worn Style"
             value={stats.mostWornStyle || "N/A"}
             icon={Shirt}
+            variant="compact"
+          />
+          <StatsCard
+            title="Trending (30 Days)"
+            value={stats.trendingWatch ? `${stats.trendingWatch.brand} ${stats.trendingWatch.model}` : "N/A"}
+            icon={Flame}
+            variant="compact"
+          />
+          <StatsCard
+            title="#1 Trip Watch"
+            value={stats.topTripWatch ? `${stats.topTripWatch.brand} ${stats.topTripWatch.model}` : "N/A"}
+            icon={Plane}
+            variant="compact"
+          />
+          <StatsCard
+            title="#1 Water Usage"
+            value={stats.topWaterWatch ? `${stats.topWaterWatch.brand} ${stats.topWaterWatch.model}` : "N/A"}
+            icon={Droplets}
+            variant="compact"
           />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <StatsCard
-          title="Trending (30 Days)"
-          value={stats.trendingWatch ? `${stats.trendingWatch.brand} ${stats.trendingWatch.model}` : "N/A"}
-          icon={Flame}
-        />
-        <StatsCard
-          title="#1 Trip Watch"
-          value={stats.topTripWatch ? `${stats.topTripWatch.brand} ${stats.topTripWatch.model}` : "N/A"}
-          icon={Plane}
-        />
-        <StatsCard
-          title="#1 Water Usage"
-          value={stats.topWaterWatch ? `${stats.topWaterWatch.brand} ${stats.topWaterWatch.model}` : "N/A"}
-          icon={Droplets}
-        />
+      <div>
+        <UsageChart watches={watches} wearEntries={wearEntries} />
       </div>
     </div>
   );
