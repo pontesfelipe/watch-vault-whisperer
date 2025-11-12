@@ -31,12 +31,12 @@ export const useStatsCalculations = (
 ) => {
   return useMemo(() => {
     const totalWatches = watches.length;
-    const totalDaysWorn = wearEntries.length;
+    const totalDaysWorn = wearEntries.reduce((sum, entry) => sum + (entry.days || 1), 0);
 
-    // Most worn watch
+    // Most worn watch - sum up days worn per watch
     const wearCounts = wearEntries.reduce(
       (acc, entry) => {
-        acc[entry.watch_id] = (acc[entry.watch_id] || 0) + 1;
+        acc[entry.watch_id] = (acc[entry.watch_id] || 0) + (entry.days || 1);
         return acc;
       },
       {} as Record<string, number>
