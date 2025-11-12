@@ -1,0 +1,50 @@
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Watch {
+  id: string;
+  brand: string;
+  model: string;
+  cost: number;
+  image_url?: string;
+  dial_color: string;
+  case_size?: string;
+  type: string;
+  average_resale_price?: number;
+}
+
+interface WearEntry {
+  id: string;
+  watch_id: string;
+  wear_date: string;
+  days: number;
+}
+
+export const useWatchData = () => {
+  const [watches, setWatches] = useState<Watch[]>([]);
+  const [wearEntries, setWearEntries] = useState<WearEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [watchesResult, wearEntriesResult] = await Promise.all([
+        supabase.from("watches").select("*").order("created_at", { ascending: false }),
+        supabase.from("wear_entries").select("*"),
+      ]);
+
+      if (watchesResult.data) setWatches(watchesResult.data);
+      if (wearEntriesResult.data) setWearEntries(wearEntriesResult.data);
+    } catch (error) {
+      console.error("Error fetching watch data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  return { watches, wearEntries, loading, refetch: fetchData };
+};
