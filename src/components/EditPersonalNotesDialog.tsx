@@ -108,6 +108,9 @@ export function EditPersonalNotesDialog({ watch, onSuccess, onClose }: EditPerso
                   selected={date}
                   onSelect={setDate}
                   initialFocus
+                  captionLayout="dropdown-buttons"
+                  fromYear={2000}
+                  toYear={new Date().getFullYear()}
                   className={cn("p-3 pointer-events-auto")}
                   disabled={(date) => date > new Date()}
                 />
