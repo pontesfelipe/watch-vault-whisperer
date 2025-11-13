@@ -39,7 +39,7 @@ export function EditPersonalNotesDialog({ watch, onSuccess, onClose }: EditPerso
     try {
       const { error } = await supabase
         .from("watches")
-        .update(formData)
+        .update(formData as any)
         .eq("id", watch.id);
 
       if (error) throw error;

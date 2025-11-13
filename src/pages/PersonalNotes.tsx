@@ -33,7 +33,7 @@ export default function PersonalNotes() {
         .order("brand", { ascending: true });
 
       if (error) throw error;
-      setWatches(data || []);
+      setWatches((data as any) || []);
     } catch (error) {
       console.error("Error fetching watches:", error);
       toast.error("Failed to load watches");
