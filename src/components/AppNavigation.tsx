@@ -24,7 +24,7 @@ const navItems = [
   { title: "Trips", url: "/trips", icon: Plane },
   { title: "Events", url: "/events", icon: Calendar },
   { title: "Water Usage", url: "/water-usage", icon: Droplets },
-  { title: "Personal Notes", url: "/personal-notes", icon: BookHeart },
+  { title: "Collection Insights", url: "/personal-notes", icon: BookHeart },
 ];
 
 export function AppNavigation() {
