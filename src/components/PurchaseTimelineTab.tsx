@@ -1,5 +1,6 @@
 import { Calendar, DollarSign } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { format } from "date-fns";
 
 interface Watch {
   id: string;
@@ -18,31 +19,20 @@ interface PurchaseTimelineTabProps {
 export function PurchaseTimelineTab({ watches }: PurchaseTimelineTabProps) {
   // Sort watches by purchase date (oldest first)
   const sortedWatches = [...watches].sort((a, b) => {
-    // Helper function to extract year for sorting
-    const getYearForSorting = (watch: Watch) => {
+    // Get comparable dates for sorting
+    const getDate = (watch: Watch): Date => {
       if (watch.when_bought) {
-        const yearMatch = watch.when_bought.match(/\b(19|20)\d{2}\b/);
-        const shortYearMatch = watch.when_bought.match(/\b\d{2}\b$/);
-        
-        if (yearMatch) {
-          return parseInt(yearMatch[0]);
-        } else if (shortYearMatch) {
-          const shortYear = parseInt(shortYearMatch[0]);
-          return shortYear > 50 ? 1900 + shortYear : 2000 + shortYear;
+        // Try to parse as ISO date (YYYY-MM-DD)
+        const date = new Date(watch.when_bought);
+        if (!isNaN(date.getTime())) {
+          return date;
         }
       }
-      return new Date(watch.created_at).getFullYear();
+      // Fallback to created_at
+      return new Date(watch.created_at);
     };
     
-    const yearA = getYearForSorting(a);
-    const yearB = getYearForSorting(b);
-    
-    if (yearA !== yearB) {
-      return yearA - yearB;
-    }
-    
-    // If same year, sort by created_at
-    return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+    return getDate(a).getTime() - getDate(b).getTime();
   });
 
   return (
@@ -76,7 +66,14 @@ export function PurchaseTimelineTab({ watches }: PurchaseTimelineTabProps) {
                       {watch.when_bought && (
                         <p className="text-sm text-muted-foreground flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
-                          {watch.when_bought}
+                          {(() => {
+                            try {
+                              const date = new Date(watch.when_bought);
+                              return !isNaN(date.getTime()) ? format(date, "MMMM d, yyyy") : watch.when_bought;
+                            } catch {
+                              return watch.when_bought;
+                            }
+                          })()}
                         </p>
                       )}
                     </div>

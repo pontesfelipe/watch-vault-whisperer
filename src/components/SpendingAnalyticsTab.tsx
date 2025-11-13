@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, TrendingUp, Calendar } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DollarSign, TrendingUp, Calendar, ChevronRight } from "lucide-react";
+import { format } from "date-fns";
 
 interface Watch {
   id: string;
@@ -15,48 +18,59 @@ interface SpendingAnalyticsTabProps {
 }
 
 export function SpendingAnalyticsTab({ watches }: SpendingAnalyticsTabProps) {
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
+
   // Calculate total spending
   const totalSpent = watches.reduce((sum, watch) => sum + watch.cost, 0);
   
   // Calculate average price
   const averagePrice = watches.length > 0 ? totalSpent / watches.length : 0;
   
-  const spendingByYear = watches.reduce((acc, watch) => {
-    // Parse year from when_bought field (formats like "March-24", "Circa 2013", "December-23")
-    let year: number | null = null;
-    
-    if (watch.when_bought) {
-      // Try to extract year from various formats
-      const yearMatch = watch.when_bought.match(/\b(19|20)\d{2}\b/); // Matches 4-digit years
-      const shortYearMatch = watch.when_bought.match(/\b\d{2}\b$/); // Matches 2-digit years at the end
-      
-      if (yearMatch) {
-        year = parseInt(yearMatch[0]);
-      } else if (shortYearMatch) {
-        const shortYear = parseInt(shortYearMatch[0]);
-        year = shortYear > 50 ? 1900 + shortYear : 2000 + shortYear;
-      }
-    }
-    
-    // Fallback to created_at if when_bought doesn't have a parseable year
-    if (!year) {
-      year = new Date(watch.created_at).getFullYear();
-    }
+  // Group watches by year
+  const watchesByYear = watches.reduce((acc, watch) => {
+    const date = watch.when_bought ? new Date(watch.when_bought) : new Date(watch.created_at);
+    const year = date.getFullYear();
     
     if (!acc[year]) {
-      acc[year] = { count: 0, total: 0 };
+      acc[year] = [];
     }
-    acc[year].count++;
-    acc[year].total += watch.cost;
+    acc[year].push(watch);
     return acc;
-  }, {} as Record<number, { count: number; total: number }>);
+  }, {} as Record<number, Watch[]>);
   
-  const yearlyData = Object.entries(spendingByYear)
+  // Calculate spending by year
+  const yearlyData = Object.entries(watchesByYear)
     .sort(([a], [b]) => Number(a) - Number(b))
-    .map(([year, data]) => ({
+    .map(([year, yearWatches]) => ({
       year: Number(year),
-      ...data,
+      count: yearWatches.length,
+      total: yearWatches.reduce((sum, w) => sum + w.cost, 0),
+      watches: yearWatches,
     }));
+
+  // Calculate monthly breakdown for selected year
+  const getMonthlyBreakdown = (year: number) => {
+    const yearWatches = watchesByYear[year] || [];
+    const monthlyData = yearWatches.reduce((acc, watch) => {
+      const date = watch.when_bought ? new Date(watch.when_bought) : new Date(watch.created_at);
+      const month = date.getMonth(); // 0-11
+      
+      if (!acc[month]) {
+        acc[month] = [];
+      }
+      acc[month].push(watch);
+      return acc;
+    }, {} as Record<number, Watch[]>);
+    
+    return Object.entries(monthlyData)
+      .sort(([a], [b]) => Number(a) - Number(b))
+      .map(([month, watches]) => ({
+        month: Number(month),
+        monthName: format(new Date(year, Number(month), 1), "MMMM"),
+        watches,
+        total: watches.reduce((sum, w) => sum + w.cost, 0),
+      }));
+  };
 
   return (
     <div className="space-y-6">
@@ -106,29 +120,79 @@ export function SpendingAnalyticsTab({ watches }: SpendingAnalyticsTabProps) {
       <Card>
         <CardHeader>
           <CardTitle>Yearly Breakdown</CardTitle>
-          <CardDescription>Spending and acquisitions by year</CardDescription>
+          <CardDescription>Spending and acquisitions by year - Click to see monthly details</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {yearlyData.map(({ year, count, total }) => (
-              <div key={year} className="flex items-center justify-between p-4 border rounded-lg">
+              <div 
+                key={year} 
+                className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => setSelectedYear(year)}
+              >
                 <div className="flex-1">
                   <p className="font-semibold text-lg">{year}</p>
                   <p className="text-sm text-muted-foreground">
                     {count} {count === 1 ? 'watch' : 'watches'} acquired
                   </p>
                 </div>
-                <div className="text-right">
-                  <p className="font-bold text-xl">${total.toLocaleString()}</p>
-                  <p className="text-xs text-muted-foreground">
-                    Avg: ${(total / count).toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                  </p>
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <p className="font-bold text-xl">${total.toLocaleString()}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Avg: ${(total / count).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                    </p>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
                 </div>
               </div>
             ))}
           </div>
         </CardContent>
       </Card>
+
+      {/* Monthly Breakdown Dialog */}
+      {selectedYear && (
+        <Dialog open={!!selectedYear} onOpenChange={() => setSelectedYear(null)}>
+          <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{selectedYear} - Monthly Breakdown</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-6">
+              {getMonthlyBreakdown(selectedYear).map(({ month, monthName, watches, total }) => (
+                <Card key={month}>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg">{monthName}</CardTitle>
+                      <div className="text-right">
+                        <p className="font-bold text-lg">${total.toLocaleString()}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {watches.length} {watches.length === 1 ? 'watch' : 'watches'}
+                        </p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {watches.map((watch) => (
+                        <div key={watch.id} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div>
+                            <p className="font-semibold">{watch.brand} {watch.model}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {watch.when_bought ? format(new Date(watch.when_bought), "MMM d, yyyy") : "Date unknown"}
+                            </p>
+                          </div>
+                          <p className="font-bold">${watch.cost.toLocaleString()}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
