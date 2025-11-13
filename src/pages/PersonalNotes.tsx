@@ -83,62 +83,61 @@ export default function PersonalNotes() {
       <Card>
         <CardHeader>
           <CardTitle>Personal Watch Notes</CardTitle>
-            <CardDescription>
-              Your private thoughts and memories about each watch
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="text-center py-8 text-muted-foreground">Loading...</div>
-            ) : watches.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">No watches found</div>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Brand</TableHead>
-                      <TableHead>Model</TableHead>
-                      <TableHead>Why I bought</TableHead>
-                      <TableHead>When I bought</TableHead>
-                      <TableHead>What I like</TableHead>
-                      <TableHead>What I don't like about this watch</TableHead>
-                      <TableHead className="w-[80px]">Actions</TableHead>
+          <CardDescription>
+            Your private thoughts and memories about each watch
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="text-center py-8 text-muted-foreground">Loading...</div>
+          ) : watches.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">No watches found</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Brand</TableHead>
+                    <TableHead>Model</TableHead>
+                    <TableHead>Why I bought</TableHead>
+                    <TableHead>When I bought</TableHead>
+                    <TableHead>What I like</TableHead>
+                    <TableHead>What I don't like about this watch</TableHead>
+                    <TableHead className="w-[80px]">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {watches.map((watch) => (
+                    <TableRow key={watch.id}>
+                      <TableCell className="font-medium">{watch.brand}</TableCell>
+                      <TableCell>{watch.model}</TableCell>
+                      <TableCell className="max-w-[200px]">
+                        <div className="truncate">{watch.why_bought || "-"}</div>
+                      </TableCell>
+                      <TableCell>{watch.when_bought || "-"}</TableCell>
+                      <TableCell className="max-w-[200px]">
+                        <div className="truncate">{watch.what_i_like || "-"}</div>
+                      </TableCell>
+                      <TableCell className="max-w-[200px]">
+                        <div className="truncate">{watch.what_i_dont_like || "-"}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setEditingWatch(watch)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {watches.map((watch) => (
-                      <TableRow key={watch.id}>
-                        <TableCell className="font-medium">{watch.brand}</TableCell>
-                        <TableCell>{watch.model}</TableCell>
-                        <TableCell className="max-w-[200px]">
-                          <div className="truncate">{watch.why_bought || "-"}</div>
-                        </TableCell>
-                        <TableCell>{watch.when_bought || "-"}</TableCell>
-                        <TableCell className="max-w-[200px]">
-                          <div className="truncate">{watch.what_i_like || "-"}</div>
-                        </TableCell>
-                        <TableCell className="max-w-[200px]">
-                          <div className="truncate">{watch.what_i_dont_like || "-"}</div>
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setEditingWatch(watch)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {editingWatch && (
         <EditPersonalNotesDialog
