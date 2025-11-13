@@ -1,4 +1,4 @@
-import { Watch, Heart, Plane, Calendar, Droplets, BarChart3, LogOut } from "lucide-react";
+import { Watch, Heart, Plane, Calendar, Droplets, BarChart3, LogOut, BookHeart } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { usePasscode } from "@/contexts/PasscodeContext";
@@ -24,6 +24,7 @@ const navItems = [
   { title: "Trips", url: "/trips", icon: Plane },
   { title: "Events", url: "/events", icon: Calendar },
   { title: "Water Usage", url: "/water-usage", icon: Droplets },
+  { title: "Personal Notes", url: "/personal-notes", icon: BookHeart },
 ];
 
 export function AppNavigation() {
