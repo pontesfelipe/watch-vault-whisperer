@@ -12,7 +12,6 @@ import Trips from "./pages/Trips";
 import Events from "./pages/Events";
 import WaterUsage from "./pages/WaterUsage";
 import PersonalNotes from "./pages/PersonalNotes";
-import PurchaseTimeline from "./pages/PurchaseTimeline";
 import WatchDetail from "./pages/WatchDetail";
 import NotFound from "./pages/NotFound";
 
@@ -33,7 +32,6 @@ const App = () => (
             <Route path="/events" element={<AppLayout><Events /></AppLayout>} />
             <Route path="/water-usage" element={<AppLayout><WaterUsage /></AppLayout>} />
             <Route path="/personal-notes" element={<AppLayout><PersonalNotes /></AppLayout>} />
-            <Route path="/purchase-timeline" element={<AppLayout><PurchaseTimeline /></AppLayout>} />
             <Route path="/watch/:id" element={<WatchDetail />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
