@@ -87,7 +87,7 @@ export default function PersonalNotes() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Personal Watch Notes</CardTitle>
+          <CardTitle>Collection Insights</CardTitle>
           <CardDescription>
             Your private thoughts, memories, and spending analytics
           </CardDescription>
