@@ -3,19 +3,24 @@ import { usePasscode } from "@/contexts/PasscodeContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Lock, Pencil } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Lock } from "lucide-react";
 import { toast } from "sonner";
 import { EditPersonalNotesDialog } from "@/components/EditPersonalNotesDialog";
+import { PersonalNotesTable } from "@/components/PersonalNotesTable";
+import { PurchaseTimelineTab } from "@/components/PurchaseTimelineTab";
+import { SpendingAnalyticsTab } from "@/components/SpendingAnalyticsTab";
 
 interface Watch {
   id: string;
   brand: string;
   model: string;
+  cost: number;
   why_bought?: string;
   when_bought?: string;
   what_i_like?: string;
   what_i_dont_like?: string;
+  created_at: string;
 }
 
 export default function PersonalNotes() {
@@ -29,8 +34,8 @@ export default function PersonalNotes() {
     try {
       const { data, error } = await supabase
         .from("watches")
-        .select("id, brand, model, why_bought, when_bought, what_i_like, what_i_dont_like")
-        .order("brand", { ascending: true });
+        .select("id, brand, model, cost, why_bought, when_bought, what_i_like, what_i_dont_like, created_at")
+        .order("created_at", { ascending: true });
 
       if (error) throw error;
       setWatches((data as any) || []);
@@ -84,7 +89,7 @@ export default function PersonalNotes() {
         <CardHeader>
           <CardTitle>Personal Watch Notes</CardTitle>
           <CardDescription>
-            Your private thoughts and memories about each watch
+            Your private thoughts, memories, and spending analytics
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -93,48 +98,28 @@ export default function PersonalNotes() {
           ) : watches.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">No watches found</div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Brand</TableHead>
-                    <TableHead>Model</TableHead>
-                    <TableHead>Why I bought</TableHead>
-                    <TableHead>When I bought</TableHead>
-                    <TableHead>What I like</TableHead>
-                    <TableHead>What I don't like about this watch</TableHead>
-                    <TableHead className="w-[80px]">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {watches.map((watch) => (
-                    <TableRow key={watch.id}>
-                      <TableCell className="font-medium">{watch.brand}</TableCell>
-                      <TableCell>{watch.model}</TableCell>
-                      <TableCell className="max-w-[200px]">
-                        <div className="truncate">{watch.why_bought || "-"}</div>
-                      </TableCell>
-                      <TableCell>{watch.when_bought || "-"}</TableCell>
-                      <TableCell className="max-w-[200px]">
-                        <div className="truncate">{watch.what_i_like || "-"}</div>
-                      </TableCell>
-                      <TableCell className="max-w-[200px]">
-                        <div className="truncate">{watch.what_i_dont_like || "-"}</div>
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setEditingWatch(watch)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+            <Tabs defaultValue="notes" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="notes">Personal Notes</TabsTrigger>
+                <TabsTrigger value="timeline">Purchase Timeline</TabsTrigger>
+                <TabsTrigger value="analytics">Spending Analytics</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="notes" className="mt-6">
+                <PersonalNotesTable 
+                  watches={watches} 
+                  onEdit={setEditingWatch}
+                />
+              </TabsContent>
+              
+              <TabsContent value="timeline" className="mt-6">
+                <PurchaseTimelineTab watches={watches} />
+              </TabsContent>
+              
+              <TabsContent value="analytics" className="mt-6">
+                <SpendingAnalyticsTab watches={watches} />
+              </TabsContent>
+            </Tabs>
           )}
         </CardContent>
       </Card>
