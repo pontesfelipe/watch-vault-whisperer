@@ -1,6 +1,6 @@
 import { Calendar, DollarSign } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { format } from "date-fns";
+import { formatPurchaseDateForDisplay, parsePurchaseDate } from "@/lib/date";
 
 interface Watch {
   id: string;
@@ -19,19 +19,11 @@ interface PurchaseTimelineTabProps {
 export function PurchaseTimelineTab({ watches }: PurchaseTimelineTabProps) {
   // Sort watches by purchase date (oldest first)
   const sortedWatches = [...watches].sort((a, b) => {
-    // Get comparable dates for sorting
     const getDate = (watch: Watch): Date => {
-      if (watch.when_bought) {
-        // Try to parse as ISO date (YYYY-MM-DD)
-        const date = new Date(watch.when_bought);
-        if (!isNaN(date.getTime())) {
-          return date;
-        }
-      }
-      // Fallback to created_at
-      return new Date(watch.created_at);
+      const parsed = parsePurchaseDate(watch.when_bought, watch.created_at);
+      return parsed.date;
     };
-    
+
     return getDate(a).getTime() - getDate(b).getTime();
   });
 
@@ -67,12 +59,8 @@ export function PurchaseTimelineTab({ watches }: PurchaseTimelineTabProps) {
                         <p className="text-sm text-muted-foreground flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
                           {(() => {
-                            try {
-                              const date = new Date(watch.when_bought);
-                              return !isNaN(date.getTime()) ? format(date, "MMMM d, yyyy") : watch.when_bought;
-                            } catch {
-                              return watch.when_bought;
-                            }
+                            const parsed = parsePurchaseDate(watch.when_bought, watch.created_at);
+                            return formatPurchaseDateForDisplay(parsed.date, parsed.precision);
                           })()}
                         </p>
                       )}

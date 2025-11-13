@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Pencil } from "lucide-react";
+import { formatPurchaseDateForDisplay, parsePurchaseDate } from "@/lib/date";
 
 interface Watch {
   id: string;
@@ -42,7 +43,7 @@ export function PersonalNotesTable({ watches, onEdit }: PersonalNotesTableProps)
               <TableCell className="max-w-[200px]">
                 <div className="truncate">{watch.why_bought || "-"}</div>
               </TableCell>
-              <TableCell>{watch.when_bought || "-"}</TableCell>
+              <TableCell>{watch.when_bought ? (() => { const p = parsePurchaseDate(watch.when_bought, watch.created_at); return formatPurchaseDateForDisplay(p.date, p.precision); })() : "-"}</TableCell>
               <TableCell className="max-w-[200px]">
                 <div className="truncate">{watch.what_i_like || "-"}</div>
               </TableCell>

@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DollarSign, TrendingUp, Calendar, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
+import { formatPurchaseDateForDisplay, parsePurchaseDate } from "@/lib/date";
 
 interface Watch {
   id: string;
@@ -28,9 +29,9 @@ export function SpendingAnalyticsTab({ watches }: SpendingAnalyticsTabProps) {
   
   // Group watches by year
   const watchesByYear = watches.reduce((acc, watch) => {
-    const date = watch.when_bought ? new Date(watch.when_bought) : new Date(watch.created_at);
-    const year = date.getFullYear();
-    
+    const parsed = parsePurchaseDate(watch.when_bought, watch.created_at);
+    const year = parsed.date.getFullYear();
+
     if (!acc[year]) {
       acc[year] = [];
     }
@@ -52,8 +53,8 @@ export function SpendingAnalyticsTab({ watches }: SpendingAnalyticsTabProps) {
   const getMonthlyBreakdown = (year: number) => {
     const yearWatches = watchesByYear[year] || [];
     const monthlyData = yearWatches.reduce((acc, watch) => {
-      const date = watch.when_bought ? new Date(watch.when_bought) : new Date(watch.created_at);
-      const month = date.getMonth(); // 0-11
+      const parsed = parsePurchaseDate(watch.when_bought, watch.created_at);
+      const month = parsed.date.getMonth(); // 0-11
       
       if (!acc[month]) {
         acc[month] = [];
@@ -179,7 +180,10 @@ export function SpendingAnalyticsTab({ watches }: SpendingAnalyticsTabProps) {
                           <div>
                             <p className="font-semibold">{watch.brand} {watch.model}</p>
                             <p className="text-xs text-muted-foreground">
-                              {watch.when_bought ? format(new Date(watch.when_bought), "MMM d, yyyy") : "Date unknown"}
+                              {(() => {
+                                const parsed = parsePurchaseDate(watch.when_bought, watch.created_at);
+                                return watch.when_bought ? formatPurchaseDateForDisplay(parsed.date, parsed.precision) : "Date unknown";
+                              })()}
                             </p>
                           </div>
                           <p className="font-bold">${watch.cost.toLocaleString()}</p>
