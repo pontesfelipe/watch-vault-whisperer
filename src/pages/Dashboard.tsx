@@ -1,4 +1,4 @@
-import { Watch, Calendar, TrendingUp, Target, Palette, Shirt, Flame, Plane, Droplets } from "lucide-react";
+import { Watch, Calendar, TrendingUp, Target, Palette, Shirt, Flame, Plane, Droplets, TrendingDown } from "lucide-react";
 import { StatsCard } from "@/components/StatsCard";
 import { UsageChart } from "@/components/UsageChart";
 import { QuickAddWearDialog } from "@/components/QuickAddWearDialog";
@@ -72,7 +72,7 @@ const Dashboard = () => {
             variant="compact"
           />
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           <StatsCard
             title="Most Worn Style"
             value={stats.mostWornStyle || "N/A"}
@@ -83,6 +83,13 @@ const Dashboard = () => {
             title="Trending (30 Days)"
             value={stats.trendingWatch ? `${stats.trendingWatch.brand} ${stats.trendingWatch.model}` : "N/A"}
             icon={Flame}
+            variant="compact"
+          />
+          <StatsCard
+            title="Trending Down (90d)"
+            value={stats.trendingDownWatch ? `${stats.trendingDownWatch.brand} ${stats.trendingDownWatch.model}` : "N/A"}
+            subtitle={stats.trendingDownCount ? `${stats.trendingDownCount} watches ↓` : undefined}
+            icon={TrendingDown}
             variant="compact"
           />
           <StatsCard

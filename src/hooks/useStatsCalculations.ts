@@ -129,6 +129,57 @@ export const useStatsCalculations = (
     )[0]?.[0];
     const topWaterWatch = watches.find((w) => w.id === topWaterWatchId);
 
+    // Trending down watches (comparing last 90 days vs previous 90 days)
+    const ninetyDaysAgo = new Date();
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+    const oneEightyDaysAgo = new Date();
+    oneEightyDaysAgo.setDate(oneEightyDaysAgo.getDate() - 180);
+
+    const last90DaysWears = wearEntries.filter(
+      (entry) => new Date(entry.wear_date) >= ninetyDaysAgo
+    );
+    const previous90DaysWears = wearEntries.filter(
+      (entry) => new Date(entry.wear_date) >= oneEightyDaysAgo && new Date(entry.wear_date) < ninetyDaysAgo
+    );
+
+    const last90DaysCounts = last90DaysWears.reduce(
+      (acc, entry) => {
+        acc[entry.watch_id] = (acc[entry.watch_id] || 0) + (entry.days || 1);
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+
+    const previous90DaysCounts = previous90DaysWears.reduce(
+      (acc, entry) => {
+        acc[entry.watch_id] = (acc[entry.watch_id] || 0) + (entry.days || 1);
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+
+    // Find watches trending down (significant decrease in usage)
+    const trendingDownWatches = watches
+      .map((watch) => {
+        const lastCount = last90DaysCounts[watch.id] || 0;
+        const prevCount = previous90DaysCounts[watch.id] || 0;
+        const change = lastCount - prevCount;
+        const percentChange = prevCount > 0 ? ((change / prevCount) * 100) : 0;
+        
+        return {
+          watch,
+          lastCount,
+          prevCount,
+          change,
+          percentChange,
+          trend: change < 0 ? 'down' : change > 0 ? 'up' : 'stable'
+        };
+      })
+      .filter((item) => item.trend === 'down' && item.prevCount > 0)
+      .sort((a, b) => a.percentChange - b.percentChange);
+
+    const topTrendingDownWatch = trendingDownWatches[0]?.watch;
+
     return {
       totalWatches,
       totalDaysWorn,
@@ -139,6 +190,8 @@ export const useStatsCalculations = (
       trendingWatch,
       topTripWatch,
       topWaterWatch,
+      trendingDownWatch: topTrendingDownWatch,
+      trendingDownCount: trendingDownWatches.length,
     };
   }, [watches, wearEntries, trips, waterUsages]);
 };
