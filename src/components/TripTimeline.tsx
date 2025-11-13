@@ -138,10 +138,8 @@ export const TripTimeline = ({ trips, limit, type, watches, onUpdate }: TripTime
       const totalDays = parseFloat(formData.totalDays);
       const watchDaysSum = Object.values(formData.watchDays).reduce((sum, days) => sum + days, 0);
       
-      if (watchDaysSum !== totalDays) {
-        toast.error(`Watch days (${watchDaysSum}) must equal total days (${totalDays})`);
-        setLoading(false);
-        return;
+      if (watchDaysSum !== totalDays && watchDaysSum > 0) {
+        toast.warning(`Watch days (${watchDaysSum}) don't match total days (${totalDays}), but updating anyway`);
       }
 
       const table = type === "trip" ? "trips" : "events";
