@@ -95,7 +95,7 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <Button onClick={handleOpenDialog} variant="outline" size="sm" className="gap-2">
+      <Button onClick={() => setOpen(true)} variant="outline" size="sm" className="gap-2">
         <Calendar className="w-4 h-4" />
         Log Wear
       </Button>
