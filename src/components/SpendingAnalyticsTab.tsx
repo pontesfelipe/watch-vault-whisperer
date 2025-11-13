@@ -21,9 +21,28 @@ export function SpendingAnalyticsTab({ watches }: SpendingAnalyticsTabProps) {
   // Calculate average price
   const averagePrice = watches.length > 0 ? totalSpent / watches.length : 0;
   
-  // Group by year
   const spendingByYear = watches.reduce((acc, watch) => {
-    const year = new Date(watch.created_at).getFullYear();
+    // Parse year from when_bought field (formats like "March-24", "Circa 2013", "December-23")
+    let year: number | null = null;
+    
+    if (watch.when_bought) {
+      // Try to extract year from various formats
+      const yearMatch = watch.when_bought.match(/\b(19|20)\d{2}\b/); // Matches 4-digit years
+      const shortYearMatch = watch.when_bought.match(/\b\d{2}\b$/); // Matches 2-digit years at the end
+      
+      if (yearMatch) {
+        year = parseInt(yearMatch[0]);
+      } else if (shortYearMatch) {
+        const shortYear = parseInt(shortYearMatch[0]);
+        year = shortYear > 50 ? 1900 + shortYear : 2000 + shortYear;
+      }
+    }
+    
+    // Fallback to created_at if when_bought doesn't have a parseable year
+    if (!year) {
+      year = new Date(watch.created_at).getFullYear();
+    }
+    
     if (!acc[year]) {
       acc[year] = { count: 0, total: 0 };
     }

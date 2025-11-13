@@ -79,24 +79,31 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
   };
 
   const handleDelete = async () => {
-    const { error } = await supabase.from("watches").delete().eq("id", watch.id);
+    try {
+      // Delete related data first
+      await supabase.from("wear_entries").delete().eq("watch_id", watch.id);
+      await supabase.from("water_usage").delete().eq("watch_id", watch.id);
+      await supabase.from("watch_specs").delete().eq("watch_id", watch.id);
+      
+      // Delete the watch
+      const { error } = await supabase.from("watches").delete().eq("id", watch.id);
 
-    if (error) {
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Watch and all related data removed from collection",
+      });
+
+      setShowDeleteDialog(false);
+      onDelete();
+    } catch (error) {
       toast({
         title: "Error",
         description: "Failed to delete watch",
         variant: "destructive",
       });
-      return;
     }
-
-    toast({
-      title: "Success",
-      description: "Watch removed from collection",
-    });
-
-    setShowDeleteDialog(false);
-    onDelete();
   };
 
   const costPerUse = totalDays > 0 ? watch.cost / totalDays : watch.cost;
