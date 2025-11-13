@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Droplets, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface AddWaterUsageDialogProps {
   watches: { id: string; brand: string; model: string }[];
@@ -17,6 +18,7 @@ interface AddWaterUsageDialogProps {
 export const AddWaterUsageDialog = ({ watches, onSuccess }: AddWaterUsageDialogProps) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -40,6 +42,7 @@ export const AddWaterUsageDialog = ({ watches, onSuccess }: AddWaterUsageDialogP
         duration_minutes: data.durationMinutes,
         depth_meters: data.depthMeters,
         notes: data.notes,
+        user_id: user?.id,
       });
 
       if (error) throw error;

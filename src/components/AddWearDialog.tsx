@@ -8,7 +8,7 @@ import { Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
-import { usePasscode } from "@/contexts/PasscodeContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 const wearSchema = z.object({
   watchId: z.string().uuid(),
@@ -21,11 +21,7 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const { requestVerification } = usePasscode();
-
-  const handleOpenDialog = () => {
-    requestVerification(() => setOpen(true));
-  };
+  const { user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -55,6 +51,7 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
         wear_date: formattedDate,
         days: roundedDays,
         notes: data.notes,
+        user_id: user?.id,
       });
 
       if (error) {

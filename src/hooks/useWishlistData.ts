@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface WishlistItem {
   id: string;
@@ -14,13 +15,21 @@ interface WishlistItem {
 export const useWishlistData = () => {
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   const fetchData = async () => {
+    if (!user) {
+      setWishlist([]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
       const result = await supabase
         .from("wishlist")
         .select("*")
+        .eq("user_id", user.id)
         .order("rank", { ascending: true });
 
       if (result.data) setWishlist(result.data);
@@ -33,7 +42,7 @@ export const useWishlistData = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [user]);
 
   return { wishlist, loading, refetch: fetchData };
 };

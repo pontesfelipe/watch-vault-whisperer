@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface WaterUsage {
   id: string;
@@ -13,13 +14,21 @@ interface WaterUsage {
 export const useWaterUsageData = () => {
   const [waterUsages, setWaterUsages] = useState<WaterUsage[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   const fetchData = async () => {
+    if (!user) {
+      setWaterUsages([]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
       const result = await supabase
         .from("water_usage")
         .select("*")
+        .eq("user_id", user.id)
         .order("activity_date", { ascending: false });
 
       if (result.data) setWaterUsages(result.data);
@@ -32,7 +41,7 @@ export const useWaterUsageData = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [user]);
 
   return { waterUsages, loading, refetch: fetchData };
 };

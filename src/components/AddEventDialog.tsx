@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
-import { usePasscode } from "@/contexts/PasscodeContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface AddEventDialogProps {
   watches: { id: string; brand: string; model: string }[];
@@ -17,7 +17,7 @@ interface AddEventDialogProps {
 export const AddEventDialog = ({ watches, onSuccess }: AddEventDialogProps) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { requestVerification } = usePasscode();
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     location: "",
     startDate: "",
@@ -25,10 +25,6 @@ export const AddEventDialog = ({ watches, onSuccess }: AddEventDialogProps) => {
     totalDays: "0.5",
     purpose: "",
   });
-
-  const handleOpenDialog = () => {
-    requestVerification(() => setOpen(true));
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,6 +45,7 @@ export const AddEventDialog = ({ watches, onSuccess }: AddEventDialogProps) => {
         watch_model: formData.watchDays,
         days: totalDays,
         purpose: formData.purpose,
+        user_id: user?.id,
       });
 
       if (error) throw error;
@@ -73,7 +70,7 @@ export const AddEventDialog = ({ watches, onSuccess }: AddEventDialogProps) => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <Button onClick={handleOpenDialog}>
+      <Button onClick={() => setOpen(true)}>
         <Plus className="w-4 h-4 mr-2" />
         Add Event
       </Button>

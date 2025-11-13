@@ -15,6 +15,7 @@ interface AddWishlistDialogProps {
 export const AddWishlistDialog = ({ onSuccess }: AddWishlistDialogProps) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
   const [formValues, setFormValues] = useState({
     brand: "",
     model: "",
@@ -44,6 +45,7 @@ export const AddWishlistDialog = ({ onSuccess }: AddWishlistDialogProps) => {
           rank: formValues.rank || 0,
           notes: formValues.notes,
           is_ai_suggested: false,
+          user_id: user?.id,
         },
       ]);
 
