@@ -10,6 +10,7 @@ import { EditPersonalNotesDialog } from "@/components/EditPersonalNotesDialog";
 import { PersonalNotesTable } from "@/components/PersonalNotesTable";
 import { PurchaseTimelineTab } from "@/components/PurchaseTimelineTab";
 import { SpendingAnalyticsTab } from "@/components/SpendingAnalyticsTab";
+import { DateNormalizationTool } from "@/components/DateNormalizationTool";
 
 interface Watch {
   id: string;
@@ -123,6 +124,8 @@ export default function PersonalNotes() {
           )}
         </CardContent>
       </Card>
+
+      <DateNormalizationTool onComplete={fetchWatches} />
 
       {editingWatch && (
         <EditPersonalNotesDialog
