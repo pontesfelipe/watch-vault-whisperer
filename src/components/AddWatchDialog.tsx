@@ -60,6 +60,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
     hasSapphire: null as boolean | null,
     averageResalePrice: "",
     warrantyDate: "",
+    whenBought: "",
     warrantyCardFile: null as File | null,
   });
   const { toast } = useToast();
@@ -96,6 +97,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         hasSapphire: null,
         averageResalePrice: "",
         warrantyDate: "",
+        whenBought: "",
         warrantyCardFile: null,
       });
         toast({
@@ -134,6 +136,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         hasSapphire: data.hasSapphire,
         averageResalePrice: data.averageResalePrice ? data.averageResalePrice.toString() : "",
         warrantyDate: "",
+        whenBought: "",
         warrantyCardFile: null,
       });
       
@@ -207,6 +210,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         has_sapphire: formValues.hasSapphire,
         average_resale_price: data.averageResalePrice || null,
         warranty_date: data.warrantyDate || null,
+        when_bought: formValues.whenBought || null,
         warranty_card_url: warrantyCardUrl,
       });
 
@@ -232,6 +236,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         hasSapphire: null,
         averageResalePrice: "",
         warrantyDate: "",
+        whenBought: "",
         warrantyCardFile: null,
       });
       onSuccess();
@@ -383,6 +388,19 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
                 ? "✓ Auto-populated from US resale marketplaces" 
                 : "Will be fetched automatically when you click Search above"}
             </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="whenBought">Date of Purchase - Optional</Label>
+            <Input
+              id="whenBought"
+              value={formValues.whenBought}
+              onChange={(e) => setFormValues({ ...formValues, whenBought: e.target.value })}
+              placeholder="e.g., March-24, Circa 2013, Christmas 2023"
+              maxLength={50}
+              className="bg-background border-border"
+            />
+            <p className="text-xs text-muted-foreground">Enter in any format you prefer</p>
           </div>
 
           <div className="space-y-2">
