@@ -4,6 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -30,6 +35,9 @@ export function EditPersonalNotesDialog({ watch, onSuccess, onClose }: EditPerso
     what_i_like: watch.what_i_like || "",
     what_i_dont_like: watch.what_i_dont_like || "",
   });
+  const [date, setDate] = useState<Date | undefined>(
+    watch.when_bought ? new Date(watch.when_bought) : undefined
+  );
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -37,9 +45,14 @@ export function EditPersonalNotesDialog({ watch, onSuccess, onClose }: EditPerso
     setLoading(true);
 
     try {
+      const updateData = {
+        ...formData,
+        when_bought: date ? format(date, "yyyy-MM-dd") : formData.when_bought,
+      };
+
       const { error } = await supabase
         .from("watches")
-        .update(formData as any)
+        .update(updateData as any)
         .eq("id", watch.id);
 
       if (error) throw error;
@@ -76,12 +89,39 @@ export function EditPersonalNotesDialog({ watch, onSuccess, onClose }: EditPerso
 
           <div className="space-y-2">
             <Label htmlFor="when_bought">When I bought</Label>
-            <Input
-              id="when_bought"
-              value={formData.when_bought}
-              onChange={(e) => setFormData({ ...formData, when_bought: e.target.value })}
-              placeholder="e.g., March-24, Christmas 2023, etc."
-            />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !date && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {date ? format(date, "PPP") : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={setDate}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                  disabled={(date) => date > new Date()}
+                />
+              </PopoverContent>
+            </Popover>
+            <p className="text-xs text-muted-foreground">
+              Or keep the custom text: 
+              <Input
+                className="mt-1"
+                value={formData.when_bought}
+                onChange={(e) => setFormData({ ...formData, when_bought: e.target.value })}
+                placeholder="e.g., March-24, Christmas 2023"
+              />
+            </p>
           </div>
 
           <div className="space-y-2">
