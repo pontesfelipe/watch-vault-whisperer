@@ -3,10 +3,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Loader2 } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Plus, Search, Loader2, CalendarIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 // Watch reference database for auto-population
 const WATCH_REFERENCES: Record<string, {
@@ -47,6 +51,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [modelRef, setModelRef] = useState("");
+  const [purchaseDate, setPurchaseDate] = useState<Date | undefined>();
   const [formValues, setFormValues] = useState({
     brand: "",
     model: "",
@@ -60,7 +65,6 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
     hasSapphire: null as boolean | null,
     averageResalePrice: "",
     warrantyDate: "",
-    whenBought: "",
     warrantyCardFile: null as File | null,
   });
   const { toast } = useToast();
@@ -97,7 +101,6 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         hasSapphire: null,
         averageResalePrice: "",
         warrantyDate: "",
-        whenBought: "",
         warrantyCardFile: null,
       });
         toast({
@@ -136,7 +139,6 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         hasSapphire: data.hasSapphire,
         averageResalePrice: data.averageResalePrice ? data.averageResalePrice.toString() : "",
         warrantyDate: "",
-        whenBought: "",
         warrantyCardFile: null,
       });
       
@@ -210,7 +212,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         has_sapphire: formValues.hasSapphire,
         average_resale_price: data.averageResalePrice || null,
         warranty_date: data.warrantyDate || null,
-        when_bought: formValues.whenBought || null,
+        when_bought: purchaseDate ? format(purchaseDate, "yyyy-MM-dd") : null,
         warranty_card_url: warrantyCardUrl,
       });
 
@@ -223,6 +225,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
 
       setOpen(false);
       setModelRef("");
+      setPurchaseDate(undefined);
       setFormValues({
         brand: "",
         model: "",
@@ -236,7 +239,6 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         hasSapphire: null,
         averageResalePrice: "",
         warrantyDate: "",
-        whenBought: "",
         warrantyCardFile: null,
       });
       onSuccess();
@@ -392,15 +394,32 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
 
           <div className="space-y-2">
             <Label htmlFor="whenBought">Date of Purchase - Optional</Label>
-            <Input
-              id="whenBought"
-              value={formValues.whenBought}
-              onChange={(e) => setFormValues({ ...formValues, whenBought: e.target.value })}
-              placeholder="e.g., March-24, Circa 2013, Christmas 2023"
-              maxLength={50}
-              className="bg-background border-border"
-            />
-            <p className="text-xs text-muted-foreground">Enter in any format you prefer</p>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal bg-background border-border",
+                    !purchaseDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {purchaseDate ? format(purchaseDate, "PPP") : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={purchaseDate}
+                  onSelect={setPurchaseDate}
+                  initialFocus
+                  captionLayout="dropdown-buttons"
+                  fromYear={2000}
+                  toYear={new Date().getFullYear()}
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
           </div>
 
           <div className="space-y-2">
