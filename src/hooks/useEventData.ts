@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Event {
   id: string;
@@ -13,13 +14,21 @@ interface Event {
 export const useEventData = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   const fetchData = async () => {
+    if (!user) {
+      setEvents([]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
       const result = await supabase
         .from("events")
         .select("*")
+        .eq("user_id", user.id)
         .order("start_date", { ascending: false });
 
       if (result.data) setEvents(result.data);
@@ -32,7 +41,7 @@ export const useEventData = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [user]);
 
   return { events, loading, refetch: fetchData };
 };

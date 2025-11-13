@@ -1,7 +1,7 @@
-import { Watch, Heart, Plane, Calendar, Droplets, BarChart3, LogOut, BookHeart } from "lucide-react";
+import { Watch, Heart, Plane, Calendar, Droplets, BarChart3, LogOut, BookHeart, Shield } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
-import { usePasscode } from "@/contexts/PasscodeContext";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Sidebar,
   SidebarContent,
@@ -30,7 +30,18 @@ const navItems = [
 export function AppNavigation() {
   const { open } = useSidebar();
   const location = useLocation();
-  const { resetVerification, isVerified } = usePasscode();
+  const { user, isAdmin, signOut } = useAuth();
+
+  const navItems = [
+    { title: "Dashboard", url: "/", icon: BarChart3 },
+    { title: "Collection", url: "/collection", icon: Watch },
+    { title: "Wishlist", url: "/wishlist", icon: Heart },
+    { title: "Trips", url: "/trips", icon: Plane },
+    { title: "Events", url: "/events", icon: Calendar },
+    { title: "Water Usage", url: "/water-usage", icon: Droplets },
+    { title: "Collection Insights", url: "/personal-notes", icon: BookHeart },
+    ...(isAdmin ? [{ title: "Admin", url: "/admin", icon: Shield }] : []),
+  ];
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border">
@@ -64,16 +75,21 @@ export function AppNavigation() {
       </SidebarContent>
       
       <SidebarFooter>
-        {isVerified && open && (
-          <Button
-            onClick={resetVerification}
-            variant="outline"
-            size="sm"
-            className="w-full"
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            Lock App
-          </Button>
+        {open && user && (
+          <div className="space-y-2">
+            <div className="px-2 py-1 text-xs text-muted-foreground truncate">
+              {user.email}
+            </div>
+            <Button
+              onClick={signOut}
+              variant="outline"
+              size="sm"
+              className="w-full"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
         )}
       </SidebarFooter>
     </Sidebar>
