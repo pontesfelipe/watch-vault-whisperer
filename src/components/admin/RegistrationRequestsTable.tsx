@@ -44,11 +44,11 @@ export function RegistrationRequestsTable() {
 
   const handleApprove = async (request: RegistrationRequest) => {
     try {
-      // Add to allowed_users
+      // Add to allowed_users with normalized email
       const { error: allowError } = await ((supabase as any)
         .from('allowed_users')
         .insert({
-          email: request.email,
+          email: request.email.toLowerCase().trim(),
           notes: `${request.first_name} ${request.last_name}`,
         }));
 
