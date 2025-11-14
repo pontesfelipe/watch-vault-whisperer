@@ -14,7 +14,7 @@ interface Event {
 export const useEventData = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   const fetchData = async () => {
     if (!user) {
@@ -25,11 +25,13 @@ export const useEventData = () => {
 
     setLoading(true);
     try {
-      const result = await supabase
-        .from("events")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("start_date", { ascending: false });
+      const query = supabase.from("events").select("*");
+      
+      if (!isAdmin) {
+        query.eq("user_id", user.id);
+      }
+      
+      const result = await query.order("start_date", { ascending: false });
 
       if (result.data) setEvents(result.data);
     } catch (error) {
@@ -41,7 +43,7 @@ export const useEventData = () => {
 
   useEffect(() => {
     fetchData();
-  }, [user]);
+  }, [user, isAdmin]);
 
   return { events, loading, refetch: fetchData };
 };

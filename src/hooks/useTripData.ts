@@ -14,7 +14,7 @@ interface Trip {
 export const useTripData = () => {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   const fetchData = async () => {
     if (!user) {
@@ -25,11 +25,13 @@ export const useTripData = () => {
 
     setLoading(true);
     try {
-      const result = await supabase
-        .from("trips")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("start_date", { ascending: false });
+      const query = supabase.from("trips").select("*");
+      
+      if (!isAdmin) {
+        query.eq("user_id", user.id);
+      }
+      
+      const result = await query.order("start_date", { ascending: false });
 
       if (result.data) setTrips(result.data);
     } catch (error) {
@@ -41,7 +43,7 @@ export const useTripData = () => {
 
   useEffect(() => {
     fetchData();
-  }, [user]);
+  }, [user, isAdmin]);
 
   return { trips, loading, refetch: fetchData };
 };
