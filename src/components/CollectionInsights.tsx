@@ -29,13 +29,20 @@ export const CollectionInsights = ({ watchCount, watches }: CollectionInsightsPr
       const { data, error } = await supabase
         .from("collection_insights")
         .select("*")
+        .order('updated_at', { ascending: false })
         .limit(1)
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error loading insights:", error);
+        throw error;
+      }
       
       if (data?.insights) {
+        console.log("Loaded insights from database");
         setInsights(data.insights);
+      } else {
+        console.log("No saved insights found");
       }
     } catch (error) {
       console.error("Error loading insights:", error);
@@ -58,7 +65,11 @@ export const CollectionInsights = ({ watchCount, watches }: CollectionInsightsPr
       const newInsights = data.insights;
       setInsights(newInsights);
 
-      // Save to database
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
+
+      // Save to database with explicit user_id
       const { data: existing } = await supabase
         .from("collection_insights")
         .select("id")
@@ -66,21 +77,35 @@ export const CollectionInsights = ({ watchCount, watches }: CollectionInsightsPr
         .maybeSingle();
 
       if (existing) {
-        await supabase
+        const { error: updateError } = await supabase
           .from("collection_insights")
           .update({ insights: newInsights, updated_at: new Date().toISOString() })
           .eq("id", existing.id);
+        
+        if (updateError) {
+          console.error("Error updating insights:", updateError);
+          throw updateError;
+        }
       } else {
-        await supabase
+        const { error: insertError } = await supabase
           .from("collection_insights")
-          .insert([{ insights: newInsights }]);
+          .insert([{ 
+            insights: newInsights,
+            user_id: user.id
+          }]);
+        
+        if (insertError) {
+          console.error("Error inserting insights:", insertError);
+          throw insertError;
+        }
       }
 
       toast({
         title: "Insights Updated",
-        description: "Your collection insights have been refreshed",
+        description: "Your collection insights have been refreshed and saved",
       });
     } catch (error: any) {
+      console.error("Error generating insights:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to generate insights",
