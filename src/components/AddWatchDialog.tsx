@@ -270,7 +270,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         <Plus className="w-4 h-4" />
         Add to Collection
       </Button>
-      <DialogContent className="bg-card border-border max-w-md">
+      <DialogContent className="bg-card border-border max-w-md max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-foreground">Add New Watch</DialogTitle>
         </DialogHeader>
@@ -281,246 +281,239 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="brand">Brand</Label>
-            <Input
-              id="brand"
-              value={formValues.brand}
-              onChange={(e) => setFormValues({ ...formValues, brand: e.target.value })}
-              required
-              maxLength={100}
-              placeholder="e.g., Omega, Rolex, IWC"
-              className="bg-background border-border"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="modelRef">Model Reference (Optional)</Label>
-            <div className="flex gap-2">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+          <div className="space-y-4 overflow-y-auto pr-2 flex-1">
+            <div className="space-y-2">
+              <Label htmlFor="brand">Brand</Label>
               <Input
-                id="modelRef"
-                value={modelRef}
-                onChange={(e) => setModelRef(e.target.value)}
-                placeholder="e.g., 310.30.42.50.01.001"
+                id="brand"
+                value={formValues.brand}
+                onChange={(e) => setFormValues({ ...formValues, brand: e.target.value })}
+                required
+                maxLength={100}
+                placeholder="e.g., Omega, Rolex, IWC"
                 className="bg-background border-border"
               />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleLookupReference}
-                disabled={!modelRef || !formValues.brand || loading}
-                className="shrink-0"
-              >
-                {loading ? (
-                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                ) : (
-                  <Search className="w-4 h-4 mr-1" />
-                )}
-                {loading ? "Searching..." : "Search"}
-              </Button>
             </div>
-            <p className="text-xs text-muted-foreground">
-              With brand entered above, click Search to auto-fill remaining fields
-            </p>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="model">Model</Label>
-            <Input
-              id="model"
-              value={formValues.model}
-              onChange={(e) => setFormValues({ ...formValues, model: e.target.value })}
-              required
-              maxLength={200}
-              className="bg-background border-border"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="dialColor">Dial Color</Label>
-            <Input
-              id="dialColor"
-              value={formValues.dialColor}
-              onChange={(e) => setFormValues({ ...formValues, dialColor: e.target.value })}
-              required
-              maxLength={50}
-              className="bg-background border-border"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="type">Type</Label>
-            <Input
-              id="type"
-              value={formValues.type}
-              onChange={(e) => setFormValues({ ...formValues, type: e.target.value })}
-              placeholder="e.g., Diver, Chronograph, Pilot"
-              required
-              maxLength={100}
-              className="bg-background border-border"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="cost">Cost ($)</Label>
-            <Input
-              id="cost"
-              value={formValues.cost}
-              onChange={(e) => setFormValues({ ...formValues, cost: e.target.value })}
-              type="number"
-              step="0.01"
-              min="0"
-              required
-              className="bg-background border-border"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="averageResalePrice">Avg. US Resale Price (Auto-fetched) - Optional</Label>
-            <Input
-              id="averageResalePrice"
-              value={formValues.averageResalePrice}
-              onChange={(e) => setFormValues({ ...formValues, averageResalePrice: e.target.value })}
-              type="number"
-              step="0.01"
-              min="0"
-              placeholder="Auto-filled from online sources (editable)"
-              className="bg-background border-border"
-            />
-            <p className="text-xs text-muted-foreground">
-              {formValues.averageResalePrice 
-                ? "✓ Auto-populated from US resale marketplaces" 
-                : "Will be fetched automatically when you click Search above"}
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="whenBought">Date of Purchase - Optional</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal bg-background border-border",
-                    !purchaseDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {purchaseDate ? format(purchaseDate, "PPP") : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={purchaseDate}
-                  onSelect={setPurchaseDate}
-                  initialFocus
-                  captionLayout="dropdown-buttons"
-                  fromYear={2000}
-                  toYear={new Date().getFullYear()}
-                  className={cn("p-3 pointer-events-auto")}
+            <div className="space-y-2">
+              <Label htmlFor="modelRef">Model Reference (Optional)</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="modelRef"
+                  value={modelRef}
+                  onChange={(e) => setModelRef(e.target.value)}
+                  placeholder="e.g., 310.30.42.50.01.001"
+                  className="bg-background border-border"
                 />
-              </PopoverContent>
-            </Popover>
-          </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleLookupReference}
+                  disabled={!modelRef || !formValues.brand || loading}
+                  className="shrink-0"
+                >
+                  {loading ? (
+                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                  ) : (
+                    <Search className="w-4 h-4 mr-1" />
+                  )}
+                  {loading ? "Searching..." : "Search"}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                With brand entered above, click Search to auto-fill remaining fields
+              </p>
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="warrantyDate">Warranty Expiration Date - Optional</Label>
-            <Input
-              id="warrantyDate"
-              value={formValues.warrantyDate}
-              onChange={(e) => setFormValues({ ...formValues, warrantyDate: e.target.value })}
-              type="date"
-              className="bg-background border-border"
-            />
-            {formValues.warrantyDate && new Date(formValues.warrantyDate) < new Date() && (
-              <p className="text-xs text-destructive">Warranty has expired</p>
+            <div className="space-y-2">
+              <Label htmlFor="model">Model</Label>
+              <Input
+                id="model"
+                value={formValues.model}
+                onChange={(e) => setFormValues({ ...formValues, model: e.target.value })}
+                required
+                maxLength={200}
+                className="bg-background border-border"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="dialColor">Dial Color</Label>
+              <Input
+                id="dialColor"
+                value={formValues.dialColor}
+                onChange={(e) => setFormValues({ ...formValues, dialColor: e.target.value })}
+                required
+                maxLength={50}
+                className="bg-background border-border"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="type">Type</Label>
+              <Input
+                id="type"
+                value={formValues.type}
+                onChange={(e) => setFormValues({ ...formValues, type: e.target.value })}
+                placeholder="e.g., Diver, Chronograph, Pilot"
+                required
+                maxLength={100}
+                className="bg-background border-border"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="cost">Cost ($)</Label>
+              <Input
+                id="cost"
+                value={formValues.cost}
+                onChange={(e) => setFormValues({ ...formValues, cost: e.target.value })}
+                type="number"
+                step="0.01"
+                min="0"
+                required
+                className="bg-background border-border"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="averageResalePrice">Avg. US Resale Price (Optional)</Label>
+              <Input
+                id="averageResalePrice"
+                value={formValues.averageResalePrice}
+                onChange={(e) => setFormValues({ ...formValues, averageResalePrice: e.target.value })}
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="Auto-filled from online sources"
+                className="bg-background border-border"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="whenBought">Date of Purchase (Optional)</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal bg-background border-border",
+                      !purchaseDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {purchaseDate ? format(purchaseDate, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={purchaseDate}
+                    onSelect={setPurchaseDate}
+                    initialFocus
+                    captionLayout="dropdown-buttons"
+                    fromYear={2000}
+                    toYear={new Date().getFullYear()}
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="warrantyDate">Warranty Expiration (Optional)</Label>
+              <Input
+                id="warrantyDate"
+                value={formValues.warrantyDate}
+                onChange={(e) => setFormValues({ ...formValues, warrantyDate: e.target.value })}
+                type="date"
+                className="bg-background border-border"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="warrantyCard">Warranty Card (Optional)</Label>
+              <Input
+                id="warrantyCard"
+                type="file"
+                accept="image/*,.pdf"
+                onChange={(e) => setFormValues({ ...formValues, warrantyCardFile: e.target.files?.[0] || null })}
+                className="bg-background border-border"
+              />
+            </div>
+
+            {/* Optional Specifications Section */}
+            {(formValues.caseSize || formValues.lugToLugSize || formValues.casebackMaterial || 
+              formValues.movement || formValues.hasSapphire !== null) && (
+              <div className="space-y-3 pt-4 border-t border-border">
+                <h3 className="text-sm font-semibold text-foreground">Additional Specifications</h3>
+                
+                {formValues.caseSize && (
+                  <div className="space-y-1">
+                    <Label htmlFor="caseSize" className="text-xs">Case Size</Label>
+                    <Input
+                      id="caseSize"
+                      value={formValues.caseSize}
+                      onChange={(e) => setFormValues({ ...formValues, caseSize: e.target.value })}
+                      className="bg-background border-border text-sm"
+                      placeholder="e.g., 41mm"
+                    />
+                  </div>
+                )}
+                
+                {formValues.lugToLugSize && (
+                  <div className="space-y-1">
+                    <Label htmlFor="lugToLugSize" className="text-xs">Lug to Lug</Label>
+                    <Input
+                      id="lugToLugSize"
+                      value={formValues.lugToLugSize}
+                      onChange={(e) => setFormValues({ ...formValues, lugToLugSize: e.target.value })}
+                      className="bg-background border-border text-sm"
+                      placeholder="e.g., 48mm"
+                    />
+                  </div>
+                )}
+                
+                {formValues.casebackMaterial && (
+                  <div className="space-y-1">
+                    <Label htmlFor="casebackMaterial" className="text-xs">Caseback Material</Label>
+                    <Input
+                      id="casebackMaterial"
+                      value={formValues.casebackMaterial}
+                      onChange={(e) => setFormValues({ ...formValues, casebackMaterial: e.target.value })}
+                      className="bg-background border-border text-sm"
+                      placeholder="e.g., Stainless Steel"
+                    />
+                  </div>
+                )}
+                
+                {formValues.movement && (
+                  <div className="space-y-1">
+                    <Label htmlFor="movement" className="text-xs">Movement</Label>
+                    <Input
+                      id="movement"
+                      value={formValues.movement}
+                      onChange={(e) => setFormValues({ ...formValues, movement: e.target.value })}
+                      className="bg-background border-border text-sm"
+                      placeholder="e.g., Omega Co-Axial 8800"
+                    />
+                  </div>
+                )}
+                
+                {formValues.hasSapphire !== null && (
+                  <div className="space-y-1">
+                    <Label className="text-xs">Sapphire Crystal</Label>
+                    <div className="text-sm text-foreground">
+                      {formValues.hasSapphire ? "Yes" : "No"}
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="warrantyCard">Warranty Card - Optional</Label>
-            <Input
-              id="warrantyCard"
-              type="file"
-              accept="image/*,.pdf"
-              onChange={(e) => setFormValues({ ...formValues, warrantyCardFile: e.target.files?.[0] || null })}
-              className="bg-background border-border"
-            />
-            <p className="text-xs text-muted-foreground">Upload warranty card image or PDF</p>
-          </div>
-
-          {/* Optional Specifications Section */}
-          {(formValues.caseSize || formValues.lugToLugSize || formValues.casebackMaterial || 
-            formValues.movement || formValues.hasSapphire !== null) && (
-            <div className="space-y-3 pt-4 border-t border-border">
-              <h3 className="text-sm font-semibold text-foreground">Additional Specifications</h3>
-              
-              {formValues.caseSize && (
-                <div className="space-y-1">
-                  <Label htmlFor="caseSize" className="text-xs text-muted-foreground">Case Size</Label>
-                  <Input
-                    id="caseSize"
-                    value={formValues.caseSize}
-                    onChange={(e) => setFormValues({ ...formValues, caseSize: e.target.value })}
-                    className="bg-background border-border text-sm"
-                    placeholder="e.g., 41mm"
-                  />
-                </div>
-              )}
-              
-              {formValues.lugToLugSize && (
-                <div className="space-y-1">
-                  <Label htmlFor="lugToLugSize" className="text-xs text-muted-foreground">Lug to Lug</Label>
-                  <Input
-                    id="lugToLugSize"
-                    value={formValues.lugToLugSize}
-                    onChange={(e) => setFormValues({ ...formValues, lugToLugSize: e.target.value })}
-                    className="bg-background border-border text-sm"
-                    placeholder="e.g., 48mm"
-                  />
-                </div>
-              )}
-              
-              {formValues.casebackMaterial && (
-                <div className="space-y-1">
-                  <Label htmlFor="casebackMaterial" className="text-xs text-muted-foreground">Caseback Material</Label>
-                  <Input
-                    id="casebackMaterial"
-                    value={formValues.casebackMaterial}
-                    onChange={(e) => setFormValues({ ...formValues, casebackMaterial: e.target.value })}
-                    className="bg-background border-border text-sm"
-                    placeholder="e.g., Stainless Steel, Sapphire Crystal"
-                  />
-                </div>
-              )}
-              
-              {formValues.movement && (
-                <div className="space-y-1">
-                  <Label htmlFor="movement" className="text-xs text-muted-foreground">Movement</Label>
-                  <Input
-                    id="movement"
-                    value={formValues.movement}
-                    onChange={(e) => setFormValues({ ...formValues, movement: e.target.value })}
-                    className="bg-background border-border text-sm"
-                    placeholder="e.g., Omega Co-Axial 8800"
-                  />
-                </div>
-              )}
-              
-              {formValues.hasSapphire !== null && (
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Sapphire Crystal</Label>
-                  <div className="text-sm text-foreground">
-                    {formValues.hasSapphire ? "Yes" : "No"}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          <div className="flex gap-2">
+          <div className="flex gap-2 pt-4 border-t border-border mt-4">
             <Button type="submit" disabled={loading} className="flex-1">
               {loading ? "Adding..." : "Add Watch"}
             </Button>
