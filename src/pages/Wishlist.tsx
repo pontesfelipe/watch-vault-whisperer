@@ -62,7 +62,7 @@ const Wishlist = () => {
 
       if (error) throw error;
 
-      setGapSuggestions(data.suggestions || []);
+      setGapSuggestions((data.suggestions || []).slice(0, 3));
     } catch (error: any) {
       console.error("Error generating gap suggestions:", error);
     } finally {
@@ -238,7 +238,7 @@ const Wishlist = () => {
               rank: s.rank || idx + 1,
               notes: s.reason || s.notes,
               is_ai_suggested: true
-            }))} onDelete={handleGenerateGapSuggestions} showDeleteButton={false} />
+            }))} onDelete={handleGenerateGapSuggestions} showDeleteButton={false} showAISuggested />
           ) : (
             <p className="text-sm text-muted-foreground py-4">
               No gap analysis available yet. Click refresh to analyze your collection.
@@ -288,7 +288,7 @@ const Wishlist = () => {
               Clear All
             </Button>
           </div>
-          <WishlistTable items={aiSuggestions} onDelete={refetch} />
+          <WishlistTable items={aiSuggestions} onDelete={refetch} showAISuggested />
         </Card>
       )}
 
