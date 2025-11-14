@@ -201,6 +201,12 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         warrantyCardUrl = publicUrl;
       }
 
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
+
       const { error } = await supabase.from("watches").insert({
         brand: data.brand,
         model: data.model,
@@ -217,6 +223,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         when_bought: purchaseDate ? format(purchaseDate, "yyyy-MM-dd") : null,
         warranty_card_url: warrantyCardUrl,
         collection_id: selectedCollectionId,
+        user_id: user.id,
       });
 
       if (error) throw error;
