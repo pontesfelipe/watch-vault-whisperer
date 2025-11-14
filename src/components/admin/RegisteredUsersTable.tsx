@@ -3,9 +3,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Shield, User, Pencil } from "lucide-react";
+import { Shield, User, Pencil, AlertCircle } from "lucide-react";
 import { EditUserRoleDialog } from "./EditUserRoleDialog";
 
 interface RegisteredUser {
@@ -67,6 +68,13 @@ export function RegisteredUsersTable() {
 
   return (
     <div className="space-y-4">
+      <Alert>
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          This shows users who have created accounts. Users in "Allowed Users" are pre-approved but may not have signed up yet.
+        </AlertDescription>
+      </Alert>
+      
       <p className="text-sm text-muted-foreground">
         {users.length} {users.length === 1 ? "user" : "users"} registered
       </p>
