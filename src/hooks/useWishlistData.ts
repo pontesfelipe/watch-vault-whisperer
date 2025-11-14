@@ -15,7 +15,7 @@ interface WishlistItem {
 export const useWishlistData = () => {
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   const fetchData = async () => {
     if (!user) {
@@ -26,11 +26,13 @@ export const useWishlistData = () => {
 
     setLoading(true);
     try {
-      const result = await supabase
-        .from("wishlist")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("rank", { ascending: true });
+      const query = supabase.from("wishlist").select("*");
+      
+      if (!isAdmin) {
+        query.eq("user_id", user.id);
+      }
+      
+      const result = await query.order("rank", { ascending: true });
 
       if (result.data) setWishlist(result.data);
     } catch (error) {
@@ -42,7 +44,7 @@ export const useWishlistData = () => {
 
   useEffect(() => {
     fetchData();
-  }, [user]);
+  }, [user, isAdmin]);
 
   return { wishlist, loading, refetch: fetchData };
 };

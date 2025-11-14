@@ -25,7 +25,7 @@ export const useWatchData = () => {
   const [watches, setWatches] = useState<Watch[]>([]);
   const [wearEntries, setWearEntries] = useState<WearEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   const fetchData = async () => {
     if (!user) {
@@ -37,9 +37,18 @@ export const useWatchData = () => {
 
     setLoading(true);
     try {
+      // Admins can see all data, regular users see only their own
+      const watchesQuery = supabase.from("watches").select("*");
+      const wearEntriesQuery = supabase.from("wear_entries").select("*");
+      
+      if (!isAdmin) {
+        watchesQuery.eq("user_id", user.id);
+        wearEntriesQuery.eq("user_id", user.id);
+      }
+      
       const [watchesResult, wearEntriesResult] = await Promise.all([
-        supabase.from("watches").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
-        supabase.from("wear_entries").select("*").eq("user_id", user.id),
+        watchesQuery.order("created_at", { ascending: false }),
+        wearEntriesQuery,
       ]);
 
       if (watchesResult.data) setWatches(watchesResult.data);
@@ -53,7 +62,7 @@ export const useWatchData = () => {
 
   useEffect(() => {
     fetchData();
-  }, [user]);
+  }, [user, isAdmin]);
 
   return { watches, wearEntries, loading, refetch: fetchData };
 };
