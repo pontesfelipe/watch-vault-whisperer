@@ -34,14 +34,17 @@ export const useAllowedUserCheck = () => {
           return;
         }
 
-        // Check if user email is in allowed_users (normalize for comparison)
-        const { data: allowedData } = await ((supabase as any)
-          .from('allowed_users')
-          .select('email')
-          .eq('email', user.email?.toLowerCase().trim())
-          .maybeSingle());
+        // Check if user is in allowed_users using secure RPC
+        const { data: allowed, error } = await (supabase as any).rpc('is_allowed_user', { 
+          _user_id: user.id 
+        });
 
-        setIsAllowed(!!allowedData);
+        if (error) {
+          console.error('Error checking allowed status via RPC:', error);
+          setIsAllowed(false);
+        } else {
+          setIsAllowed(Boolean(allowed));
+        }
       } catch (error) {
         console.error('Error checking allowed status:', error);
         setIsAllowed(false);
