@@ -38,6 +38,42 @@ export type Database = {
         }
         Relationships: []
       }
+      collection_gap_suggestions: {
+        Row: {
+          brand: string
+          created_at: string
+          dial_colors: string
+          id: string
+          model: string
+          notes: string | null
+          rank: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          brand: string
+          created_at?: string
+          dial_colors?: string
+          id?: string
+          model: string
+          notes?: string | null
+          rank?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          brand?: string
+          created_at?: string
+          dial_colors?: string
+          id?: string
+          model?: string
+          notes?: string | null
+          rank?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       collection_insights: {
         Row: {
           created_at: string

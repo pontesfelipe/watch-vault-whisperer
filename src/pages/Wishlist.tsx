@@ -25,10 +25,32 @@ const Wishlist = () => {
   }, []);
 
   useEffect(() => {
-    if (isAllowed && !loading && watchCount >= 3 && gapSuggestions.length === 0) {
-      handleGenerateGapSuggestions();
+    if (isAllowed && !loading && watchCount >= 3) {
+      loadGapSuggestions();
     }
   }, [isAllowed, loading, watchCount]);
+
+  const loadGapSuggestions = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("collection_gap_suggestions")
+        .select("*")
+        .order('rank', { ascending: true })
+        .limit(3);
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        console.log("Loaded saved gap suggestions");
+        setGapSuggestions(data);
+      } else {
+        console.log("No saved gap suggestions, generating new ones");
+        handleGenerateGapSuggestions();
+      }
+    } catch (error) {
+      console.error("Error loading gap suggestions:", error);
+    }
+  };
 
   const fetchWatchCount = async () => {
     try {
@@ -62,9 +84,47 @@ const Wishlist = () => {
 
       if (error) throw error;
 
-      setGapSuggestions((data.suggestions || []).slice(0, 3));
+      const suggestions = (data.suggestions || []).slice(0, 3);
+      setGapSuggestions(suggestions);
+
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
+
+      // Clear old gap suggestions and save new ones
+      await supabase
+        .from("collection_gap_suggestions")
+        .delete()
+        .eq('user_id', user.id);
+
+      if (suggestions.length > 0) {
+        const { error: insertError } = await supabase
+          .from("collection_gap_suggestions")
+          .insert(
+            suggestions.map((s: any, idx: number) => ({
+              user_id: user.id,
+              brand: s.brand,
+              model: s.model,
+              dial_colors: s.dialColors || s.dial_colors || "",
+              rank: s.rank || idx + 1,
+              notes: s.reason || s.notes || ""
+            }))
+          );
+
+        if (insertError) {
+          console.error("Error saving gap suggestions:", insertError);
+          throw insertError;
+        }
+        
+        console.log("Gap suggestions saved to database");
+      }
     } catch (error: any) {
       console.error("Error generating gap suggestions:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to generate gap suggestions",
+        variant: "destructive",
+      });
     } finally {
       setIsGenerating(false);
     }
@@ -231,12 +291,12 @@ const Wishlist = () => {
             </div>
           ) : gapSuggestions.length > 0 ? (
             <WishlistTable items={gapSuggestions.map((s, idx) => ({
-              id: `gap-${idx}`,
+              id: s.id || `gap-${idx}`,
               brand: s.brand,
               model: s.model,
-              dial_colors: s.dialColors || s.dial_colors || "",
+              dial_colors: s.dial_colors || s.dialColors || "",
               rank: s.rank || idx + 1,
-              notes: s.reason || s.notes,
+              notes: s.notes || s.reason || "",
               is_ai_suggested: true
             }))} onDelete={handleGenerateGapSuggestions} showDeleteButton={false} showAISuggested />
           ) : (
