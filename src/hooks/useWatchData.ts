@@ -12,6 +12,7 @@ interface Watch {
   case_size?: string;
   type: string;
   average_resale_price?: number;
+  when_bought?: string;
 }
 
 interface WearEntry {
