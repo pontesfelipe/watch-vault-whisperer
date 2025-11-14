@@ -25,13 +25,13 @@ export const useTripData = () => {
 
     setLoading(true);
     try {
-      const query = supabase.from("trips").select("*");
+      const query: any = (supabase.from('trips' as any) as any).select('*');
       
       if (!isAdmin) {
-        query.eq("user_id", user.id);
+        query.eq('user_id', user.id);
       }
       
-      const result = await query.order("start_date", { ascending: false });
+      const result = await query.order('start_date', { ascending: false });
 
       if (result.data) setTrips(result.data);
     } catch (error) {

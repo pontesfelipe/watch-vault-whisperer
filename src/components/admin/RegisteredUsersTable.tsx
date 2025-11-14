@@ -26,20 +26,20 @@ export function RegisteredUsersTable() {
     setLoading(true);
     try {
       const { data: profiles, error: profilesError } = await supabase
-        .from("profiles")
-        .select("id, email, full_name, created_at")
-        .order("created_at", { ascending: false });
+        .from('profiles' as any)
+        .select('id, email, full_name, created_at')
+        .order('created_at', { ascending: false });
 
       if (profilesError) throw profilesError;
 
       // Fetch roles for each user
       const usersWithRoles = await Promise.all(
-        (profiles || []).map(async (profile) => {
+        (profiles as any[] || []).map(async (profile: any) => {
           const { data: roleData } = await supabase
-            .from("user_roles")
-            .select("role")
-            .eq("user_id", profile.id)
-            .eq("role", "admin")
+            .from('user_roles' as any)
+            .select('role')
+            .eq('user_id', profile.id)
+            .eq('role', 'admin')
             .maybeSingle();
 
           return {

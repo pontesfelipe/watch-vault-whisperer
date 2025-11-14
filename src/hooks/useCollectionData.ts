@@ -22,35 +22,34 @@ export const useCollectionData = () => {
 
     try {
       const { data: userCollections, error: userCollectionsError } = await supabase
-        .from("user_collections")
-        .select("collection_id, role")
-        .eq("user_id", user.id);
+        .from('user_collections' as any)
+        .select('collection_id, role')
+        .eq('user_id', user.id);
 
       if (userCollectionsError) throw userCollectionsError;
 
-      if (!userCollections || userCollections.length === 0) {
+      if (!userCollections || (userCollections as any[]).length === 0) {
         setCollections([]);
         return;
       }
 
-      const collectionIds = userCollections.map(uc => uc.collection_id);
+      const userCollectionsArr = (userCollections as any[]) || [];
+      const collectionIds = userCollectionsArr.map((uc: any) => uc.collection_id);
       
       const { data: collectionsData, error: collectionsError } = await supabase
-        .from("collections")
-        .select("*")
-        .in("id", collectionIds);
+        .from('collections' as any)
+        .select('*')
+        .in('id', collectionIds as any);
 
       if (collectionsError) throw collectionsError;
 
-      const collectionsWithRoles = collectionsData.map(collection => {
-        const userCollection = userCollections.find(uc => uc.collection_id === collection.id);
-        return {
-          ...collection,
-          role: userCollection?.role as 'owner' | 'editor' | 'viewer'
-        };
-      });
+      const collectionsArr = (collectionsData as any[]) || [];
+      const collectionsWithRoles = collectionsArr.map((collection: any) => ({
+        ...collection,
+        role: userCollectionsArr.find((uc: any) => uc.collection_id === collection.id)?.role as 'owner' | 'editor' | 'viewer'
+      }));
 
-      setCollections(collectionsWithRoles);
+      setCollections(collectionsWithRoles as any);
     } catch (error: any) {
       console.error("Error fetching collections:", error);
       toast.error("Failed to load collections");
