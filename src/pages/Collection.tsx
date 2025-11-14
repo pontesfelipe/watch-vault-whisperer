@@ -77,7 +77,10 @@ const Collection = () => {
             )}
           </div>
         </div>
-        <QuickAddWearDialog watches={watches} onSuccess={refetch} />
+        <div className="flex gap-2">
+          <QuickAddWearDialog watches={watches} onSuccess={refetch} />
+          <AddWatchDialog onSuccess={refetch} />
+        </div>
       </div>
 
       <div className="flex gap-4 flex-col sm:flex-row">
