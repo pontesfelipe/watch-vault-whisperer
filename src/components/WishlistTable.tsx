@@ -30,9 +30,10 @@ interface WishlistTableProps {
   items: WishlistItem[];
   onDelete: () => void;
   showAISuggested?: boolean;
+  showDeleteButton?: boolean;
 }
 
-export const WishlistTable = ({ items, onDelete, showAISuggested = false }: WishlistTableProps) => {
+export const WishlistTable = ({ items, onDelete, showAISuggested = false, showDeleteButton = true }: WishlistTableProps) => {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -87,7 +88,7 @@ export const WishlistTable = ({ items, onDelete, showAISuggested = false }: Wish
             <TableHead>Model</TableHead>
             <TableHead>Dial Colors</TableHead>
             <TableHead>Notes</TableHead>
-            <TableHead className="w-[100px]">Actions</TableHead>
+            {showDeleteButton && <TableHead className="w-[100px]">Actions</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -107,15 +108,17 @@ export const WishlistTable = ({ items, onDelete, showAISuggested = false }: Wish
               <TableCell className="max-w-xs truncate">
                 {item.notes || "-"}
               </TableCell>
-              <TableCell>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setDeleteId(item.id)}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </TableCell>
+              {showDeleteButton && (
+                <TableCell>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setDeleteId(item.id)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </TableCell>
+              )}
             </TableRow>
           ))}
         </TableBody>
