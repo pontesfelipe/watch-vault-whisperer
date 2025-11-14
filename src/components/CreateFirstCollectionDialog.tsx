@@ -3,9 +3,11 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
+import { useAllowedUserCheck } from "@/hooks/useAllowedUserCheck";
 
 interface CreateFirstCollectionDialogProps {
   onSuccess: () => void;
@@ -15,6 +17,7 @@ export const CreateFirstCollectionDialog = ({ onSuccess }: CreateFirstCollection
   const [name, setName] = useState("My Collection");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { isAllowed, loading: checkingAccess } = useAllowedUserCheck();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,6 +77,42 @@ export const CreateFirstCollectionDialog = ({ onSuccess }: CreateFirstCollection
       setLoading(false);
     }
   };
+
+  if (checkingAccess) {
+    return (
+      <Dialog open={true}>
+        <DialogContent className="sm:max-w-[425px]" onInteractOutside={(e) => e.preventDefault()}>
+          <div className="flex items-center justify-center p-8">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  if (isAllowed === false) {
+    return (
+      <Dialog open={true}>
+        <DialogContent className="sm:max-w-[425px]" onInteractOutside={(e) => e.preventDefault()}>
+          <DialogHeader>
+            <DialogTitle>Access Required</DialogTitle>
+            <DialogDescription>
+              Your account needs to be approved before you can create collections.
+            </DialogDescription>
+          </DialogHeader>
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Please contact an administrator to request access to the watch tracker application. You can submit a registration request from the sign-in page.
+            </AlertDescription>
+          </Alert>
+          <Button onClick={() => window.location.href = '/auth'} className="w-full">
+            Go to Sign In Page
+          </Button>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={true}>
