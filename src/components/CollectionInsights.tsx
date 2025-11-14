@@ -48,7 +48,7 @@ export const CollectionInsights = ({ watchCount, watches }: CollectionInsightsPr
             <Sparkles className="w-6 h-6 text-primary" />
           </div>
           <div className="flex-1">
-            <h3 className="text-lg font-semibold mb-2 text-foreground">Collection Insights</h3>
+            <h3 className="text-lg font-semibold mb-2 text-foreground">About Me</h3>
             <p className="text-muted-foreground text-sm leading-relaxed">
               I don't know you much yet, but soon I'll be able to tell you more about your collection and taste. 
               Add at least {3 - watchCount} more {3 - watchCount === 1 ? "watch" : "watches"} to unlock AI-powered 
@@ -68,7 +68,7 @@ export const CollectionInsights = ({ watchCount, watches }: CollectionInsightsPr
         </div>
         <div className="flex-1">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold text-foreground">Collection Insights</h3>
+            <h3 className="text-lg font-semibold text-foreground">About Me</h3>
             {!insights && (
               <Button
                 onClick={handleGenerateInsights}

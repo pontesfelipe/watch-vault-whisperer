@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Plus, Trash2, AlertCircle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, Trash2, AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -15,8 +15,41 @@ const Wishlist = () => {
   const { wishlist, loading, refetch } = useWishlistData();
   const [showAddWishlist, setShowAddWishlist] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [gapSuggestions, setGapSuggestions] = useState<any[]>([]);
   const { toast } = useToast();
   const { isAllowed, loading: checkingAccess } = useAllowedUserCheck();
+
+  useEffect(() => {
+    if (isAllowed && !loading) {
+      handleGenerateGapSuggestions();
+    }
+  }, [isAllowed, loading]);
+
+  const handleGenerateGapSuggestions = async () => {
+    setIsGenerating(true);
+    try {
+      // Fetch current watch collection to inform suggestions
+      const { data: watches } = await supabase
+        .from("watches")
+        .select("brand, model, dial_color, type, cost");
+
+      const { data, error } = await supabase.functions.invoke("suggest-watches", {
+        body: { 
+          tasteDescription: "Analyze my collection and suggest watches to fill gaps",
+          collection: watches || [],
+          focusOnGaps: true
+        },
+      });
+
+      if (error) throw error;
+
+      setGapSuggestions(data.suggestions || []);
+    } catch (error: any) {
+      console.error("Error generating gap suggestions:", error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const handleGenerateSuggestions = async (tasteDescription: string, focusOnGaps: boolean = false) => {
     if (!isAllowed) {
@@ -144,10 +177,55 @@ const Wishlist = () => {
       )}
 
       {isAllowed && (
-        <TastePreferences
-          onSuggest={handleGenerateSuggestions}
-          isGenerating={isGenerating}
-        />
+        <>
+          <TastePreferences
+            onSuggest={handleGenerateSuggestions}
+            isGenerating={isGenerating}
+          />
+
+          <Card className="border-border bg-card p-6">
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h2 className="text-xl font-semibold text-foreground">Collection Gap Analysis</h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  AI-powered suggestions to complement and complete your collection
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleGenerateGapSuggestions}
+                disabled={isGenerating}
+                className="gap-2"
+              >
+                <RefreshCw className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
+                Refresh Analysis
+              </Button>
+            </div>
+            {isGenerating && gapSuggestions.length === 0 ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                  <p className="mt-2 text-sm text-muted-foreground">Analyzing your collection...</p>
+                </div>
+              </div>
+            ) : gapSuggestions.length > 0 ? (
+              <WishlistTable items={gapSuggestions.map((s, idx) => ({
+                id: `gap-${idx}`,
+                brand: s.brand,
+                model: s.model,
+                dial_colors: s.dialColors || s.dial_colors || "",
+                rank: s.rank || idx + 1,
+                notes: s.reason || s.notes,
+                is_ai_suggested: true
+              }))} onDelete={handleGenerateGapSuggestions} showDeleteButton={false} />
+            ) : (
+              <p className="text-sm text-muted-foreground py-4">
+                No gap analysis available yet. Click refresh to analyze your collection.
+              </p>
+            )}
+          </Card>
+        </>
       )}
 
       <Card className="border-border bg-card p-6">
