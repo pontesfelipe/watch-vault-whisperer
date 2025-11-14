@@ -36,6 +36,7 @@ interface WatchCardProps {
     average_resale_price?: number;
     warranty_date?: string;
     warranty_card_url?: string;
+    when_bought?: string;
   };
   totalDays: number;
   onDelete: () => void;
@@ -112,11 +113,22 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
   const handleFetchPrice = async () => {
     setIsFetchingPrice(true);
     try {
+      // Extract year from when_bought
+      let year: number | undefined;
+      if (watch.when_bought) {
+        const yearMatch = watch.when_bought.match(/\d{4}/);
+        if (yearMatch) {
+          year = parseInt(yearMatch[0]);
+        }
+      }
+
       const { data, error } = await supabase.functions.invoke('fetch-watch-price', {
         body: { 
           brand: watch.brand, 
           model: watch.model,
-          watchId: watch.id
+          watchId: watch.id,
+          dialColor: watch.dial_color,
+          year
         }
       });
 

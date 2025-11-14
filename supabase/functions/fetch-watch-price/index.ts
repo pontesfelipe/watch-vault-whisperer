@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { brand, model, watchId } = await req.json();
+    const { brand, model, watchId, dialColor, year } = await req.json();
 
     if (!brand || !model) {
       return new Response(
@@ -21,7 +21,7 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Fetching price for ${brand} ${model}`);
+    console.log(`Fetching price for ${year || ''} ${brand} ${model}${dialColor ? ` with ${dialColor} dial` : ''}`);
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -40,11 +40,11 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: "You are a watch market analyst. Search for current resale prices from multiple sources (Chrono24, WatchCharts, eBay, etc.) and provide an average market price in USD. Be precise and only return numerical data."
+            content: "You are a watch market analyst. Search for current resale prices from multiple sources (Chrono24, WatchCharts, eBay, etc.) and provide an average market price in USD. Consider the specific dial color variant and year of manufacture when searching, as these significantly impact value. Be precise and only return numerical data."
           },
           {
             role: "user",
-            content: `What is the current average resale price for a ${brand} ${model} watch in USD? Search multiple marketplaces and provide a single average price. Only respond with the number, no currency symbols or text.`
+            content: `What is the current average resale price for a ${year ? `${year} ` : ''}${brand} ${model}${dialColor ? ` with ${dialColor} dial` : ''} watch in USD? ${dialColor ? 'Pay special attention to this specific dial color variant as it affects pricing. ' : ''}${year ? 'Consider the year for age-related depreciation. ' : ''}Search multiple marketplaces (Chrono24, WatchCharts, eBay) and provide a single average price. Only respond with the number, no currency symbols or text.`
           }
         ],
         tools: [
