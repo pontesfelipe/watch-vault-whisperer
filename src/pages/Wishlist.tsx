@@ -25,7 +25,7 @@ const Wishlist = () => {
   }, []);
 
   useEffect(() => {
-    if (isAllowed && !loading && watchCount >= 3) {
+    if (isAllowed && !loading && watchCount >= 3 && gapSuggestions.length === 0) {
       handleGenerateGapSuggestions();
     }
   }, [isAllowed, loading, watchCount]);
@@ -70,7 +70,7 @@ const Wishlist = () => {
     }
   };
 
-  const handleGenerateSuggestions = async (tasteDescription: string, focusOnGaps: boolean = false) => {
+  const handleGenerateSuggestions = async (tasteDescription: string) => {
     if (!isAllowed) {
       toast({
         title: "Access Required",
@@ -91,7 +91,7 @@ const Wishlist = () => {
         body: { 
           tasteDescription,
           collection: watches || [],
-          focusOnGaps
+          focusOnGaps: false
         },
       });
 
@@ -195,56 +195,56 @@ const Wishlist = () => {
         </Alert>
       )}
 
-      {isAllowed && watchCount >= 3 && (
-        <>
-          <TastePreferences
-            onSuggest={handleGenerateSuggestions}
-            isGenerating={isGenerating}
-          />
+      {isAllowed && (
+        <TastePreferences
+          onSuggest={handleGenerateSuggestions}
+          isGenerating={isGenerating}
+        />
+      )}
 
-          <Card className="border-border bg-card p-6">
-            <div className="flex justify-between items-center mb-4">
-              <div>
-                <h2 className="text-xl font-semibold text-foreground">Collection Gap Analysis</h2>
-                <p className="text-sm text-muted-foreground mt-1">
-                  AI-powered suggestions to complement and complete your collection
-                </p>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleGenerateGapSuggestions}
-                disabled={isGenerating}
-                className="gap-2"
-              >
-                <RefreshCw className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
-                Refresh Analysis
-              </Button>
-            </div>
-            {isGenerating && gapSuggestions.length === 0 ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                  <p className="mt-2 text-sm text-muted-foreground">Analyzing your collection...</p>
-                </div>
-              </div>
-            ) : gapSuggestions.length > 0 ? (
-              <WishlistTable items={gapSuggestions.map((s, idx) => ({
-                id: `gap-${idx}`,
-                brand: s.brand,
-                model: s.model,
-                dial_colors: s.dialColors || s.dial_colors || "",
-                rank: s.rank || idx + 1,
-                notes: s.reason || s.notes,
-                is_ai_suggested: true
-              }))} onDelete={handleGenerateGapSuggestions} showDeleteButton={false} />
-            ) : (
-              <p className="text-sm text-muted-foreground py-4">
-                No gap analysis available yet. Click refresh to analyze your collection.
+      {isAllowed && watchCount >= 3 && (
+        <Card className="border-border bg-card p-6">
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <h2 className="text-xl font-semibold text-foreground">Collection Gap Analysis</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                AI-powered suggestions to complement and complete your collection
               </p>
-            )}
-          </Card>
-        </>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleGenerateGapSuggestions}
+              disabled={isGenerating}
+              className="gap-2"
+            >
+              <RefreshCw className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
+              Refresh Analysis
+            </Button>
+          </div>
+          {isGenerating && gapSuggestions.length === 0 ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                <p className="mt-2 text-sm text-muted-foreground">Analyzing your collection...</p>
+              </div>
+            </div>
+          ) : gapSuggestions.length > 0 ? (
+            <WishlistTable items={gapSuggestions.map((s, idx) => ({
+              id: `gap-${idx}`,
+              brand: s.brand,
+              model: s.model,
+              dial_colors: s.dialColors || s.dial_colors || "",
+              rank: s.rank || idx + 1,
+              notes: s.reason || s.notes,
+              is_ai_suggested: true
+            }))} onDelete={handleGenerateGapSuggestions} showDeleteButton={false} />
+          ) : (
+            <p className="text-sm text-muted-foreground py-4">
+              No gap analysis available yet. Click refresh to analyze your collection.
+            </p>
+          )}
+        </Card>
       )}
 
       {isAllowed && watchCount < 3 && (
@@ -263,13 +263,6 @@ const Wishlist = () => {
             </div>
           </div>
         </Card>
-      )}
-
-      {isAllowed && (
-        <TastePreferences
-          onSuggest={handleGenerateSuggestions}
-          isGenerating={isGenerating}
-        />
       )}
 
       <Card className="border-border bg-card p-6">
