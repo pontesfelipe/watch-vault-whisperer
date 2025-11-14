@@ -53,7 +53,12 @@ const Events = () => {
         onUpdate={refetch}
       />
 
-      <AddEventDialog watches={watches} onSuccess={refetch} />
+      <AddEventDialog 
+        watches={watches} 
+        onSuccess={refetch} 
+        open={showAddEvent}
+        onOpenChange={setShowAddEvent}
+      />
     </div>
   );
 };

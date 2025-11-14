@@ -13,10 +13,11 @@ import { useAuth } from "@/contexts/AuthContext";
 interface AddWaterUsageDialogProps {
   watches: { id: string; brand: string; model: string }[];
   onSuccess: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export const AddWaterUsageDialog = ({ watches, onSuccess }: AddWaterUsageDialogProps) => {
-  const [open, setOpen] = useState(false);
+export const AddWaterUsageDialog = ({ watches, onSuccess, open, onOpenChange }: AddWaterUsageDialogProps) => {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
@@ -48,7 +49,7 @@ export const AddWaterUsageDialog = ({ watches, onSuccess }: AddWaterUsageDialogP
       if (error) throw error;
 
       toast.success("Water usage entry added successfully");
-      setOpen(false);
+      onOpenChange(false);
       onSuccess();
       (e.target as HTMLFormElement).reset();
     } catch (error) {
@@ -60,14 +61,7 @@ export const AddWaterUsageDialog = ({ watches, onSuccess }: AddWaterUsageDialogP
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="gap-2 bg-primary hover:bg-primary/90">
-          <Plus className="w-4 h-4" />
-          <Droplets className="w-4 h-4" />
-          Add Water Usage
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -173,7 +167,7 @@ export const AddWaterUsageDialog = ({ watches, onSuccess }: AddWaterUsageDialogP
             <Button
               type="button"
               variant="outline"
-              onClick={() => setOpen(false)}
+              onClick={() => onOpenChange(false)}
               disabled={loading}
             >
               Cancel
