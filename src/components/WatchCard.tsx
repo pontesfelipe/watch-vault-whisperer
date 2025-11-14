@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { usePasscode } from "@/contexts/PasscodeContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { EditWatchDialog } from "@/components/EditWatchDialog";
 import {
   AlertDialog,
@@ -43,8 +44,9 @@ interface WatchCardProps {
 export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isAdmin } = useAuth();
   const { requestVerification, isVerified } = usePasscode();
-  const [showCost, setShowCost] = useState(false);
+  const [showCost, setShowCost] = useState(isAdmin);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const handleToggleCost = () => {
@@ -61,12 +63,12 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
     }
   };
 
-  // Auto-show cost if already verified
+  // Auto-show cost if already verified or if admin
   useEffect(() => {
-    if (isVerified) {
+    if (isVerified || isAdmin) {
       setShowCost(true);
     }
-  }, [isVerified]);
+  }, [isVerified, isAdmin]);
 
   const handleDeleteClick = () => {
     if (!isVerified) {

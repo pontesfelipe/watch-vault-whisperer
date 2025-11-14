@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/tooltip";
 import { MonthlyWearGrid } from "./MonthlyWearGrid";
 import { usePasscode } from "@/contexts/PasscodeContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -65,9 +66,10 @@ const getSeasonFromMonth = (monthIndex: number): Season => {
 };
 
 export const UsageChart = ({ watches, wearEntries, onDataChange }: UsageChartProps) => {
+  const { isAdmin } = useAuth();
   const [showAllBestValue, setShowAllBestValue] = useState(false);
   const [showAllNeedsWear, setShowAllNeedsWear] = useState(false);
-  const [showCost, setShowCost] = useState(false);
+  const [showCost, setShowCost] = useState(isAdmin);
   const { requestVerification, isVerified } = usePasscode();
 
   const handleToggleCost = () => {
@@ -84,12 +86,12 @@ export const UsageChart = ({ watches, wearEntries, onDataChange }: UsageChartPro
     }
   };
 
-  // Auto-show cost if already verified
+  // Auto-show cost if already verified or if admin
   useEffect(() => {
-    if (isVerified) {
+    if (isVerified || isAdmin) {
       setShowCost(true);
     }
-  }, [isVerified]);
+  }, [isVerified, isAdmin]);
 
   // Calculate monthly breakdown by watch
   const monthlyBreakdown = Array(12).fill(0).map(() => ({})) as Array<Record<string, number>>;
