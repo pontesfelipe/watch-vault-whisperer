@@ -7,6 +7,7 @@ interface Watch {
   cost: number;
   dial_color: string;
   type: string;
+  average_resale_price?: number;
 }
 
 interface WearEntry {
@@ -180,6 +181,41 @@ export const useStatsCalculations = (
 
     const topTrendingDownWatch = trendingDownWatches[0]?.watch;
 
+    // Depreciation Analysis
+    const totalCollectionValue = watches.reduce((sum, watch) => sum + (watch.cost || 0), 0);
+    
+    const watchesWithResaleData = watches.filter(w => w.average_resale_price != null && w.average_resale_price > 0);
+    const currentMarketValue = watchesWithResaleData.reduce((sum, watch) => sum + (watch.average_resale_price || 0), 0);
+    
+    const totalDepreciation = totalCollectionValue - currentMarketValue;
+    const depreciationPercentage = totalCollectionValue > 0 
+      ? ((totalDepreciation / totalCollectionValue) * 100) 
+      : 0;
+
+    // Calculate depreciation per watch
+    const watchDepreciations = watchesWithResaleData.map(watch => {
+      const depreciation = (watch.cost || 0) - (watch.average_resale_price || 0);
+      const depreciationPercent = watch.cost > 0 ? (depreciation / watch.cost) * 100 : 0;
+      return {
+        watch,
+        depreciation,
+        depreciationPercent,
+      };
+    });
+
+    // Most depreciated watch
+    const mostDepreciatedWatch = watchDepreciations.length > 0
+      ? watchDepreciations.sort((a, b) => b.depreciation - a.depreciation)[0]
+      : null;
+
+    // Best value retention (least depreciation or appreciation)
+    const bestValueRetention = watchDepreciations.length > 0
+      ? watchDepreciations.sort((a, b) => a.depreciation - b.depreciation)[0]
+      : null;
+
+    // Watches with appreciation
+    const appreciatingWatches = watchDepreciations.filter(w => w.depreciation < 0);
+
     return {
       totalWatches,
       totalDaysWorn,
@@ -192,6 +228,15 @@ export const useStatsCalculations = (
       topWaterWatch,
       trendingDownWatch: topTrendingDownWatch,
       trendingDownCount: trendingDownWatches.length,
+      // Depreciation stats
+      totalCollectionValue,
+      currentMarketValue,
+      totalDepreciation,
+      depreciationPercentage,
+      mostDepreciatedWatch,
+      bestValueRetention,
+      appreciatingWatchesCount: appreciatingWatches.length,
+      watchesWithResaleDataCount: watchesWithResaleData.length,
     };
   }, [watches, wearEntries, trips, waterUsages]);
 };

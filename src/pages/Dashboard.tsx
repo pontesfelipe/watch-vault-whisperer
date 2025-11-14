@@ -1,7 +1,9 @@
-import { Watch, Calendar, TrendingUp, Target, Palette, Shirt, Flame, Plane, Droplets, TrendingDown } from "lucide-react";
+import { Watch, Calendar, TrendingUp, Target, Palette, Shirt, Flame, Plane, Droplets, TrendingDown, DollarSign } from "lucide-react";
 import { StatsCard } from "@/components/StatsCard";
 import { UsageChart } from "@/components/UsageChart";
 import { QuickAddWearDialog } from "@/components/QuickAddWearDialog";
+import { DepreciationCard } from "@/components/DepreciationCard";
+import { DepreciationChart } from "@/components/DepreciationChart";
 import { useWatchData } from "@/hooks/useWatchData";
 import { useTripData } from "@/hooks/useTripData";
 import { useWaterUsageData } from "@/hooks/useWaterUsageData";
@@ -108,6 +110,63 @@ const Dashboard = () => {
           />
         </div>
       </div>
+
+      {stats.watchesWithResaleDataCount > 0 && (
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-2xl font-bold mb-4 text-foreground">Collection Value & Depreciation</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+              <DepreciationCard
+                totalInvested={stats.totalCollectionValue}
+                currentValue={stats.currentMarketValue}
+                depreciation={stats.totalDepreciation}
+                depreciationPercent={stats.depreciationPercentage}
+              />
+              <StatsCard
+                title="Most Depreciated"
+                value={
+                  stats.mostDepreciatedWatch
+                    ? `${stats.mostDepreciatedWatch.watch.brand} ${stats.mostDepreciatedWatch.watch.model}`
+                    : "N/A"
+                }
+                subtitle={
+                  stats.mostDepreciatedWatch
+                    ? `-$${Math.abs(stats.mostDepreciatedWatch.depreciation).toFixed(0)} (${Math.abs(stats.mostDepreciatedWatch.depreciationPercent).toFixed(1)}%)`
+                    : undefined
+                }
+                icon={TrendingDown}
+                variant="default"
+              />
+              <StatsCard
+                title="Best Value Retention"
+                value={
+                  stats.bestValueRetention
+                    ? `${stats.bestValueRetention.watch.brand} ${stats.bestValueRetention.watch.model}`
+                    : "N/A"
+                }
+                subtitle={
+                  stats.bestValueRetention
+                    ? stats.bestValueRetention.depreciation < 0
+                      ? `+$${Math.abs(stats.bestValueRetention.depreciation).toFixed(0)} (${Math.abs(stats.bestValueRetention.depreciationPercent).toFixed(1)}%)`
+                      : `-$${Math.abs(stats.bestValueRetention.depreciation).toFixed(0)} (${Math.abs(stats.bestValueRetention.depreciationPercent).toFixed(1)}%)`
+                    : undefined
+                }
+                icon={stats.bestValueRetention?.depreciation < 0 ? TrendingUp : DollarSign}
+                variant="default"
+              />
+            </div>
+            {stats.appreciatingWatchesCount > 0 && (
+              <div className="mb-4">
+                <p className="text-sm text-muted-foreground">
+                  {stats.appreciatingWatchesCount} watch{stats.appreciatingWatchesCount > 1 ? "es" : ""} currently worth more than purchase price
+                </p>
+              </div>
+            )}
+          </div>
+          
+          <DepreciationChart watches={watches} />
+        </div>
+      )}
 
       <div>
         <UsageChart watches={watches} wearEntries={wearEntries} />
