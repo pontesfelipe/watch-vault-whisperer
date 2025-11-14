@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { WishlistTable } from "@/components/WishlistTable";
 import { TastePreferences } from "@/components/TastePreferences";
 import { AddWishlistDialog } from "@/components/AddWishlistDialog";
 import { useWishlistData } from "@/hooks/useWishlistData";
+import { useAllowedUserCheck } from "@/hooks/useAllowedUserCheck";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -14,8 +16,18 @@ const Wishlist = () => {
   const [showAddWishlist, setShowAddWishlist] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
+  const { isAllowed, loading: checkingAccess } = useAllowedUserCheck();
 
   const handleGenerateSuggestions = async (tasteDescription: string) => {
+    if (!isAllowed) {
+      toast({
+        title: "Access Required",
+        description: "You need to be an approved user to use AI features",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsGenerating(true);
     try {
       const { data, error } = await supabase.functions.invoke("suggest-watches", {
@@ -82,7 +94,7 @@ const Wishlist = () => {
     }
   };
 
-  if (loading) {
+  if (loading || checkingAccess) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -113,10 +125,21 @@ const Wishlist = () => {
         </Button>
       </div>
 
-      <TastePreferences
-        onSuggest={handleGenerateSuggestions}
-        isGenerating={isGenerating}
-      />
+      {!isAllowed && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            AI wishlist features are only available to approved users. Please contact an administrator to request access.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {isAllowed && (
+        <TastePreferences
+          onSuggest={handleGenerateSuggestions}
+          isGenerating={isGenerating}
+        />
+      )}
 
       <Card className="border-border bg-card p-6">
         <div className="flex justify-between items-center mb-4">

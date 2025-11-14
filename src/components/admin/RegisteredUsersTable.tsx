@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Shield, User } from "lucide-react";
+import { Shield, User, Pencil } from "lucide-react";
+import { EditUserRoleDialog } from "./EditUserRoleDialog";
 
 interface RegisteredUser {
   id: string;
@@ -17,6 +19,7 @@ interface RegisteredUser {
 export function RegisteredUsersTable() {
   const [users, setUsers] = useState<RegisteredUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingUser, setEditingUser] = useState<RegisteredUser | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -81,6 +84,7 @@ export function RegisteredUsersTable() {
                 <TableHead>Name</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead>Joined Date</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -104,11 +108,31 @@ export function RegisteredUsersTable() {
                     </Badge>
                   </TableCell>
                   <TableCell>{format(new Date(user.created_at), "MMM d, yyyy")}</TableCell>
+                  <TableCell>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setEditingUser(user)}
+                      className="gap-1"
+                    >
+                      <Pencil className="h-3 w-3" />
+                      Edit Role
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </div>
+      )}
+      
+      {editingUser && (
+        <EditUserRoleDialog
+          user={editingUser}
+          open={!!editingUser}
+          onOpenChange={(open) => !open && setEditingUser(null)}
+          onSuccess={fetchUsers}
+        />
       )}
     </div>
   );

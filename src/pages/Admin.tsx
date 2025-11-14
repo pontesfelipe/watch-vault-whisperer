@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AllowedUsersTable } from "@/components/admin/AllowedUsersTable";
 import { RegisteredUsersTable } from "@/components/admin/RegisteredUsersTable";
+import { RegistrationRequestsTable } from "@/components/admin/RegistrationRequestsTable";
 import { ManageCollectionsDialog } from "@/components/admin/ManageCollectionsDialog";
 import { Shield, Users, UserCog } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
@@ -47,8 +48,12 @@ export default function Admin() {
           <ManageCollectionsDialog />
         </div>
 
-        <Tabs defaultValue="allowed" className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
+        <Tabs defaultValue="requests" className="w-full">
+          <TabsList className="grid w-full max-w-2xl grid-cols-3">
+            <TabsTrigger value="requests" className="flex items-center gap-2">
+              <UserCog className="h-4 w-4" />
+              Registration Requests
+            </TabsTrigger>
             <TabsTrigger value="allowed" className="flex items-center gap-2">
               <UserCog className="h-4 w-4" />
               Allowed Users
@@ -58,6 +63,20 @@ export default function Admin() {
               Registered Users
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="requests" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Registration Requests</CardTitle>
+                <CardDescription>
+                  Review and approve user registration requests
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <RegistrationRequestsTable />
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="allowed" className="space-y-4">
             <Card>
