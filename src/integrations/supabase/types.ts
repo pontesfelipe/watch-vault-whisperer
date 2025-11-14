@@ -38,6 +38,30 @@ export type Database = {
         }
         Relationships: []
       }
+      collection_insights: {
+        Row: {
+          created_at: string
+          id: string
+          insights: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          insights: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          insights?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       collections: {
         Row: {
           created_at: string
