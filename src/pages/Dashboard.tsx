@@ -6,9 +6,11 @@ import { useWatchData } from "@/hooks/useWatchData";
 import { useTripData } from "@/hooks/useTripData";
 import { useWaterUsageData } from "@/hooks/useWaterUsageData";
 import { useStatsCalculations } from "@/hooks/useStatsCalculations";
+import { useCollection } from "@/contexts/CollectionContext";
 
 const Dashboard = () => {
-  const { watches, wearEntries, loading: watchLoading, refetch } = useWatchData();
+  const { selectedCollectionId } = useCollection();
+  const { watches, wearEntries, loading: watchLoading, refetch } = useWatchData(selectedCollectionId);
   const { trips, loading: tripLoading } = useTripData();
   const { waterUsages, loading: waterLoading } = useWaterUsageData();
 

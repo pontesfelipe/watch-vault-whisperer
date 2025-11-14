@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useCollection } from "@/contexts/CollectionContext";
 
 // Watch reference database for auto-population
 const WATCH_REFERENCES: Record<string, {
@@ -68,6 +69,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
     warrantyCardFile: null as File | null,
   });
   const { toast } = useToast();
+  const { selectedCollectionId } = useCollection();
 
   const handleLookupReference = async () => {
     const searchBrand = formValues.brand.trim();
@@ -214,6 +216,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         warranty_date: data.warrantyDate || null,
         when_bought: purchaseDate ? format(purchaseDate, "yyyy-MM-dd") : null,
         warranty_card_url: warrantyCardUrl,
+        collection_id: selectedCollectionId,
       });
 
       if (error) throw error;
