@@ -58,7 +58,12 @@ const WaterUsage = () => {
 
       <WaterUsageList usages={waterUsages} watches={watches} />
 
-      <AddWaterUsageDialog watches={watches} onSuccess={refetch} />
+      <AddWaterUsageDialog 
+        watches={watches} 
+        onSuccess={refetch}
+        open={showAddWaterUsage}
+        onOpenChange={setShowAddWaterUsage}
+      />
     </div>
   );
 };

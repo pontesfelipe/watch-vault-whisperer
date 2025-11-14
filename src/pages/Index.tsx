@@ -67,6 +67,8 @@ const Index = () => {
   const [selectedBrand, setSelectedBrand] = useState<string>("all");
   const [loading, setLoading] = useState(true);
   const [generatingSuggestions, setGeneratingSuggestions] = useState(false);
+  const [showAddEvent, setShowAddEvent] = useState(false);
+  const [showAddWaterUsage, setShowAddWaterUsage] = useState(false);
   const { isVerified, requestVerification } = usePasscode();
   const { toast } = useToast();
 
@@ -536,15 +538,21 @@ const Index = () => {
           <TabsContent value="events" className="space-y-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-semibold text-foreground">Special Events</h2>
-              <AddEventDialog watches={watches} onSuccess={fetchData} />
+              <Button onClick={() => setShowAddEvent(true)}>Add Event</Button>
             </div>
             <TripTimeline trips={events} type="event" watches={watches} onUpdate={fetchData} />
+            <AddEventDialog 
+              watches={watches} 
+              onSuccess={fetchData}
+              open={showAddEvent}
+              onOpenChange={setShowAddEvent}
+            />
           </TabsContent>
 
           <TabsContent value="water" className="space-y-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-semibold text-foreground">Water Usage Tracking</h2>
-              <AddWaterUsageDialog watches={watches} onSuccess={fetchData} />
+              <Button onClick={() => setShowAddWaterUsage(true)}>Add Water Usage</Button>
             </div>
             {topWaterWatch && (
               <div className="bg-card border border-border rounded-lg p-4 mb-4">
@@ -561,6 +569,12 @@ const Index = () => {
               </div>
             )}
             <WaterUsageList usages={waterUsages} watches={watches} />
+            <AddWaterUsageDialog 
+              watches={watches} 
+              onSuccess={fetchData}
+              open={showAddWaterUsage}
+              onOpenChange={setShowAddWaterUsage}
+            />
           </TabsContent>
         </Tabs>
       </main>

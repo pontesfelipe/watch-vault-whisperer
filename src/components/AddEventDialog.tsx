@@ -12,10 +12,11 @@ import { useAuth } from "@/contexts/AuthContext";
 interface AddEventDialogProps {
   watches: { id: string; brand: string; model: string }[];
   onSuccess: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export const AddEventDialog = ({ watches, onSuccess }: AddEventDialogProps) => {
-  const [open, setOpen] = useState(false);
+export const AddEventDialog = ({ watches, onSuccess, open, onOpenChange }: AddEventDialogProps) => {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const [formData, setFormData] = useState({
@@ -51,7 +52,7 @@ export const AddEventDialog = ({ watches, onSuccess }: AddEventDialogProps) => {
       if (error) throw error;
 
       toast.success("Event added successfully");
-      setOpen(false);
+      onOpenChange(false);
       setFormData({
         location: "",
         startDate: "",
@@ -69,11 +70,7 @@ export const AddEventDialog = ({ watches, onSuccess }: AddEventDialogProps) => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <Button onClick={() => setOpen(true)}>
-        <Plus className="w-4 h-4 mr-2" />
-        Add Event
-      </Button>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add Event</DialogTitle>
@@ -165,7 +162,7 @@ export const AddEventDialog = ({ watches, onSuccess }: AddEventDialogProps) => {
             <Button type="submit" disabled={loading}>
               {loading ? "Adding..." : "Add Event"}
             </Button>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
           </div>
