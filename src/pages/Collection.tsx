@@ -7,6 +7,7 @@ import { WatchCard } from "@/components/WatchCard";
 import { AddWatchDialog } from "@/components/AddWatchDialog";
 import { QuickAddWearDialog } from "@/components/QuickAddWearDialog";
 import { EditCollectionDialog } from "@/components/EditCollectionDialog";
+import { CreateFirstCollectionDialog } from "@/components/CreateFirstCollectionDialog";
 import { useWatchData } from "@/hooks/useWatchData";
 import { useStatsCalculations } from "@/hooks/useStatsCalculations";
 import { useTripData } from "@/hooks/useTripData";
@@ -26,6 +27,11 @@ const Collection = () => {
   
   // Use first collection as default (user's primary collection)
   const currentCollection = collections[0];
+
+  // Show onboarding dialog if user has no collections
+  if (!collectionsLoading && collections.length === 0) {
+    return <CreateFirstCollectionDialog onSuccess={refetchCollections} />;
+  }
 
   if (loading || collectionsLoading) {
     return (
