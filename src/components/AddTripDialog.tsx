@@ -12,10 +12,11 @@ import { useAuth } from "@/contexts/AuthContext";
 interface AddTripDialogProps {
   watches: { id: string; brand: string; model: string }[];
   onSuccess: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export const AddTripDialog = ({ watches, onSuccess }: AddTripDialogProps) => {
-  const [open, setOpen] = useState(false);
+export const AddTripDialog = ({ watches, onSuccess, open, onOpenChange }: AddTripDialogProps) => {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const [formData, setFormData] = useState({
@@ -51,7 +52,7 @@ export const AddTripDialog = ({ watches, onSuccess }: AddTripDialogProps) => {
       if (error) throw error;
 
       toast.success("Trip added successfully");
-      setOpen(false);
+      onOpenChange(false);
       setFormData({
         location: "",
         startDate: "",
@@ -69,11 +70,7 @@ export const AddTripDialog = ({ watches, onSuccess }: AddTripDialogProps) => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <Button onClick={() => setOpen(true)}>
-        <Plus className="w-4 h-4 mr-2" />
-        Add Trip
-      </Button>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add Trip</DialogTitle>
@@ -170,7 +167,7 @@ export const AddTripDialog = ({ watches, onSuccess }: AddTripDialogProps) => {
             <Button type="submit" disabled={loading}>
               {loading ? "Adding..." : "Add Trip"}
             </Button>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
           </div>
