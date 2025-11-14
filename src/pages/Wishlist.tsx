@@ -18,7 +18,7 @@ const Wishlist = () => {
   const { toast } = useToast();
   const { isAllowed, loading: checkingAccess } = useAllowedUserCheck();
 
-  const handleGenerateSuggestions = async (tasteDescription: string) => {
+  const handleGenerateSuggestions = async (tasteDescription: string, focusOnGaps: boolean = false) => {
     if (!isAllowed) {
       toast({
         title: "Access Required",
@@ -33,12 +33,13 @@ const Wishlist = () => {
       // Fetch current watch collection to inform suggestions
       const { data: watches } = await supabase
         .from("watches")
-        .select("brand, model, dial_color, type");
+        .select("brand, model, dial_color, type, cost");
 
       const { data, error } = await supabase.functions.invoke("suggest-watches", {
         body: { 
           tasteDescription,
-          collection: watches || []
+          collection: watches || [],
+          focusOnGaps
         },
       });
 

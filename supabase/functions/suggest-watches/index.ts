@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { collection, tasteDescription } = await req.json();
+    const { collection, tasteDescription, focusOnGaps } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
@@ -23,11 +23,30 @@ serve(async (req) => {
     // Build analysis prompt
     const collectionSummary = collection && collection.length > 0
       ? collection.map((w: any) => 
-          `${w.brand} ${w.model} (${w.dial_color}, ${w.type})`
+          `${w.brand} ${w.model} (${w.dial_color}, ${w.type}${w.cost ? `, $${w.cost}` : ''})`
         ).join(', ')
       : "No watches in collection yet";
 
-    const prompt = `You are a watch expert and enthusiast. Analyze this watch collection and user preferences to suggest 5 watches they would love.
+    const basePrompt = focusOnGaps 
+      ? `You are a watch expert specialized in collection building. Analyze this collection to identify gaps and suggest watches that would complement and complete it.
+
+Current Collection: ${collectionSummary}
+
+User's Taste Description: ${tasteDescription || "Not provided - analyze collection patterns only"}
+
+Focus on finding gaps in the collection:
+- Missing watch categories (dress, sport, dive, pilot, GMT, chronograph, etc.)
+- Missing price ranges (entry luxury, mid-range, high-end)
+- Missing dial colors or case materials
+- Missing complications or features
+- Style gaps (casual, formal, tool watch, etc.)
+
+Suggest 5 specific watches that would fill these gaps and make the collection more well-rounded. Consider:
+- What types of watches are missing?
+- What occasions or use cases are not covered?
+- What brands would add diversity?
+- What price points would balance the collection?`
+      : `You are a watch expert and enthusiast. Analyze this watch collection and user preferences to suggest 5 watches they would love.
 
 Current Collection: ${collectionSummary}
 
@@ -38,13 +57,16 @@ Based on the collection's brands, styles, dial colors, and complications, sugges
 - Dial color preferences
 - Watch style preferences (dress, sport, dive, pilot, etc.)
 - Price range consistency
-- Collection gaps (what's missing?)
+- Collection gaps (what's missing?)`;
+
+    const prompt = `${basePrompt}
 
 For each suggestion, provide:
 1. Brand name
 2. Exact model name
 3. Preferred dial color options (be specific, e.g., "Blue sunburst", "Black", "Green")
 4. Rank (1-5, with 1 being the highest priority)
+5. Brief explanation of ${focusOnGaps ? 'what gap this fills' : 'why this watch fits the collection'}
 
 Format your response as a JSON array with this structure:
 [
@@ -53,7 +75,7 @@ Format your response as a JSON array with this structure:
     "model": "Exact Model Name",
     "dial_colors": "Color options",
     "rank": 1,
-    "notes": "Brief explanation of why this watch fits the collection"
+    "notes": "Brief explanation"
   }
 ]
 
