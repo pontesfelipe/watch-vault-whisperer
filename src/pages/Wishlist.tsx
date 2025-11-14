@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Trash2, AlertCircle, RefreshCw } from "lucide-react";
+import { Plus, Trash2, AlertCircle, RefreshCw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -16,16 +16,35 @@ const Wishlist = () => {
   const [showAddWishlist, setShowAddWishlist] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [gapSuggestions, setGapSuggestions] = useState<any[]>([]);
+  const [watchCount, setWatchCount] = useState(0);
   const { toast } = useToast();
   const { isAllowed, loading: checkingAccess } = useAllowedUserCheck();
 
   useEffect(() => {
-    if (isAllowed && !loading) {
+    fetchWatchCount();
+  }, []);
+
+  useEffect(() => {
+    if (isAllowed && !loading && watchCount >= 3) {
       handleGenerateGapSuggestions();
     }
-  }, [isAllowed, loading]);
+  }, [isAllowed, loading, watchCount]);
+
+  const fetchWatchCount = async () => {
+    try {
+      const { count } = await supabase
+        .from("watches")
+        .select("*", { count: "exact", head: true });
+      
+      setWatchCount(count || 0);
+    } catch (error) {
+      console.error("Error fetching watch count:", error);
+    }
+  };
 
   const handleGenerateGapSuggestions = async () => {
+    if (watchCount < 3) return;
+
     setIsGenerating(true);
     try {
       // Fetch current watch collection to inform suggestions
@@ -176,7 +195,7 @@ const Wishlist = () => {
         </Alert>
       )}
 
-      {isAllowed && (
+      {isAllowed && watchCount >= 3 && (
         <>
           <TastePreferences
             onSuggest={handleGenerateSuggestions}
@@ -226,6 +245,31 @@ const Wishlist = () => {
             )}
           </Card>
         </>
+      )}
+
+      {isAllowed && watchCount < 3 && (
+        <Card className="border-border bg-card p-6">
+          <div className="flex items-start gap-4">
+            <div className="p-3 rounded-lg bg-primary/10">
+              <Sparkles className="w-6 h-6 text-primary" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-xl font-semibold mb-2 text-foreground">Collection Gap Analysis</h2>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Add at least {3 - watchCount} more {3 - watchCount === 1 ? "watch" : "watches"} to your collection 
+                to unlock AI-powered gap analysis. I'll help you identify what types of watches would complement 
+                and complete your collection.
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {isAllowed && (
+        <TastePreferences
+          onSuggest={handleGenerateSuggestions}
+          isGenerating={isGenerating}
+        />
       )}
 
       <Card className="border-border bg-card p-6">

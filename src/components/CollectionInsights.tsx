@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Loader2 } from "lucide-react";
@@ -14,10 +14,37 @@ interface CollectionInsightsProps {
 export const CollectionInsights = ({ watchCount, watches }: CollectionInsightsProps) => {
   const [insights, setInsights] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const { isAllowed } = useAllowedUserCheck();
 
-  if (!isAllowed) return null;
+  useEffect(() => {
+    if (isAllowed) {
+      loadInsights();
+    }
+  }, [isAllowed]);
+
+  const loadInsights = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("collection_insights")
+        .select("*")
+        .limit(1)
+        .maybeSingle();
+
+      if (error) throw error;
+      
+      if (data?.insights) {
+        setInsights(data.insights);
+      }
+    } catch (error) {
+      console.error("Error loading insights:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (!isAllowed || isLoading) return null;
 
   const handleGenerateInsights = async () => {
     setIsGenerating(true);
@@ -28,7 +55,31 @@ export const CollectionInsights = ({ watchCount, watches }: CollectionInsightsPr
 
       if (error) throw error;
 
-      setInsights(data.insights);
+      const newInsights = data.insights;
+      setInsights(newInsights);
+
+      // Save to database
+      const { data: existing } = await supabase
+        .from("collection_insights")
+        .select("id")
+        .limit(1)
+        .maybeSingle();
+
+      if (existing) {
+        await supabase
+          .from("collection_insights")
+          .update({ insights: newInsights, updated_at: new Date().toISOString() })
+          .eq("id", existing.id);
+      } else {
+        await supabase
+          .from("collection_insights")
+          .insert([{ insights: newInsights }]);
+      }
+
+      toast({
+        title: "Insights Updated",
+        description: "Your collection insights have been refreshed",
+      });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -69,7 +120,39 @@ export const CollectionInsights = ({ watchCount, watches }: CollectionInsightsPr
         <div className="flex-1">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-lg font-semibold text-foreground">About Me</h3>
-            {!insights && (
+            <Button
+              onClick={handleGenerateInsights}
+              disabled={isGenerating}
+              size="sm"
+              variant="outline"
+              className="gap-2"
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Analyzing...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4" />
+                  {insights ? "Refresh" : "Analyze"}
+                </>
+              )}
+            </Button>
+          </div>
+          
+          {insights ? (
+            <div className="prose prose-sm max-w-none text-muted-foreground">
+              {insights.split('\n').map((paragraph, idx) => (
+                paragraph.trim() && <p key={idx} className="mb-2">{paragraph}</p>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Discover personalized insights about your collection and taste. AI will analyze your watches, 
+                brands, styles, and preferences to give you a unique perspective on your collecting journey.
+              </p>
               <Button
                 onClick={handleGenerateInsights}
                 disabled={isGenerating}
@@ -88,41 +171,7 @@ export const CollectionInsights = ({ watchCount, watches }: CollectionInsightsPr
                   </>
                 )}
               </Button>
-            )}
-          </div>
-          
-          {insights ? (
-            <div className="space-y-4">
-              <div className="prose prose-sm max-w-none text-muted-foreground">
-                {insights.split('\n').map((paragraph, idx) => (
-                  paragraph.trim() && <p key={idx} className="mb-2">{paragraph}</p>
-                ))}
-              </div>
-              <Button
-                onClick={handleGenerateInsights}
-                disabled={isGenerating}
-                variant="outline"
-                size="sm"
-                className="gap-2"
-              >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Regenerating...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4" />
-                    Regenerate Insights
-                  </>
-                )}
-              </Button>
             </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              Discover personalized insights about your collection and taste. AI will analyze your watches, 
-              brands, styles, and preferences to give you a unique perspective on your collecting journey.
-            </p>
           )}
         </div>
       </div>
