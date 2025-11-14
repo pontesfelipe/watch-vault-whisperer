@@ -70,6 +70,7 @@ const Index = () => {
   const [showAddEvent, setShowAddEvent] = useState(false);
   const [showAddWaterUsage, setShowAddWaterUsage] = useState(false);
   const [showAddTrip, setShowAddTrip] = useState(false);
+  const [showAddWishlist, setShowAddWishlist] = useState(false);
   const { isVerified, requestVerification } = usePasscode();
   const { toast } = useToast();
 
@@ -453,7 +454,7 @@ const Index = () => {
           <TabsContent value="wishlist" className="space-y-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-semibold text-foreground">Your Wishlist</h2>
-              <AddWishlistDialog onSuccess={fetchData} />
+              <Button onClick={() => setShowAddWishlist(true)}>Add to Wishlist</Button>
             </div>
             
             <TastePreferences 
@@ -584,6 +585,11 @@ const Index = () => {
             />
           </TabsContent>
         </Tabs>
+        <AddWishlistDialog 
+          open={showAddWishlist}
+          onOpenChange={setShowAddWishlist}
+          onSuccess={fetchData}
+        />
       </main>
     </div>
   );

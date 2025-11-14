@@ -168,7 +168,11 @@ const Wishlist = () => {
         </Card>
       )}
 
-      <AddWishlistDialog onSuccess={refetch} />
+      <AddWishlistDialog 
+        open={showAddWishlist} 
+        onOpenChange={setShowAddWishlist}
+        onSuccess={refetch} 
+      />
     </div>
   );
 };
