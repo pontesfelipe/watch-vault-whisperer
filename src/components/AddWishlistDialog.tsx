@@ -11,11 +11,12 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface AddWishlistDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
 }
 
-export const AddWishlistDialog = ({ onSuccess }: AddWishlistDialogProps) => {
-  const [open, setOpen] = useState(false);
+export const AddWishlistDialog = ({ open, onOpenChange, onSuccess }: AddWishlistDialogProps) => {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const [formValues, setFormValues] = useState({
@@ -65,7 +66,7 @@ export const AddWishlistDialog = ({ onSuccess }: AddWishlistDialogProps) => {
         rank: 0,
         notes: "",
       });
-      setOpen(false);
+      onOpenChange(false);
       onSuccess?.();
     } catch (error) {
       console.error("Error adding to wishlist:", error);
@@ -80,11 +81,7 @@ export const AddWishlistDialog = ({ onSuccess }: AddWishlistDialogProps) => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <Button onClick={() => setOpen(true)} className="gap-2" variant="outline">
-        <Plus className="w-4 h-4" />
-        Add to Wishlist
-      </Button>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add Watch to Wishlist</DialogTitle>
@@ -146,7 +143,7 @@ export const AddWishlistDialog = ({ onSuccess }: AddWishlistDialogProps) => {
           </div>
 
           <div className="flex gap-2 justify-end pt-4">
-            <Button variant="outline" onClick={() => setOpen(false)}>
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
             <Button onClick={handleSubmit} disabled={loading}>

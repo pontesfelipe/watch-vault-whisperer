@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      allowed_users: {
+        Row: {
+          added_at: string | null
+          added_by: string | null
+          email: string
+          id: string
+          notes: string | null
+        }
+        Insert: {
+          added_at?: string | null
+          added_by?: string | null
+          email: string
+          id?: string
+          notes?: string | null
+        }
+        Update: {
+          added_at?: string | null
+          added_by?: string | null
+          email?: string
+          id?: string
+          notes?: string | null
+        }
+        Relationships: []
+      }
+      collections: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           created_at: string
@@ -23,6 +71,7 @@ export type Database = {
           purpose: string
           start_date: string
           updated_at: string
+          user_id: string | null
           watch_model: Json | null
         }
         Insert: {
@@ -33,6 +82,7 @@ export type Database = {
           purpose: string
           start_date: string
           updated_at?: string
+          user_id?: string | null
           watch_model?: Json | null
         }
         Update: {
@@ -43,7 +93,62 @@ export type Database = {
           purpose?: string
           start_date?: string
           updated_at?: string
+          user_id?: string | null
           watch_model?: Json | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          email: string
+          full_name: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email: string
+          full_name?: string | null
+          id: string
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      registration_requests: {
+        Row: {
+          created_at: string
+          email: string
+          first_name: string
+          id: string
+          last_name: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          first_name: string
+          id?: string
+          last_name: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          status?: string
         }
         Relationships: []
       }
@@ -56,6 +161,7 @@ export type Database = {
           purpose: string
           start_date: string
           updated_at: string
+          user_id: string | null
           watch_model: Json | null
         }
         Insert: {
@@ -66,6 +172,7 @@ export type Database = {
           purpose: string
           start_date: string
           updated_at?: string
+          user_id?: string | null
           watch_model?: Json | null
         }
         Update: {
@@ -76,9 +183,42 @@ export type Database = {
           purpose?: string
           start_date?: string
           updated_at?: string
+          user_id?: string | null
           watch_model?: Json | null
         }
         Relationships: []
+      }
+      user_collections: {
+        Row: {
+          collection_id: string
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["collection_role"]
+          user_id: string
+        }
+        Insert: {
+          collection_id: string
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["collection_role"]
+          user_id: string
+        }
+        Update: {
+          collection_id?: string
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["collection_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_collections_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_preferences: {
         Row: {
@@ -86,18 +226,42 @@ export type Database = {
           id: string
           taste_description: string | null
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
           id?: string
           taste_description?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
           id?: string
           taste_description?: string | null
           updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
         }
         Relationships: []
       }
@@ -115,6 +279,7 @@ export type Database = {
           power_reserve: string | null
           price: number
           updated_at: string
+          user_id: string | null
           watch_id: string
           water_resistance: string | null
         }
@@ -131,6 +296,7 @@ export type Database = {
           power_reserve?: string | null
           price?: number
           updated_at?: string
+          user_id?: string | null
           watch_id: string
           water_resistance?: string | null
         }
@@ -147,6 +313,7 @@ export type Database = {
           power_reserve?: string | null
           price?: number
           updated_at?: string
+          user_id?: string | null
           watch_id?: string
           water_resistance?: string | null
         }
@@ -166,6 +333,7 @@ export type Database = {
           brand: string
           case_size: string | null
           caseback_material: string | null
+          collection_id: string | null
           cost: number
           created_at: string
           dial_color: string
@@ -176,14 +344,20 @@ export type Database = {
           movement: string | null
           type: string
           updated_at: string
+          user_id: string | null
           warranty_card_url: string | null
           warranty_date: string | null
+          what_i_dont_like: string | null
+          what_i_like: string | null
+          when_bought: string | null
+          why_bought: string | null
         }
         Insert: {
           average_resale_price?: number | null
           brand: string
           case_size?: string | null
           caseback_material?: string | null
+          collection_id?: string | null
           cost?: number
           created_at?: string
           dial_color: string
@@ -194,14 +368,20 @@ export type Database = {
           movement?: string | null
           type: string
           updated_at?: string
+          user_id?: string | null
           warranty_card_url?: string | null
           warranty_date?: string | null
+          what_i_dont_like?: string | null
+          what_i_like?: string | null
+          when_bought?: string | null
+          why_bought?: string | null
         }
         Update: {
           average_resale_price?: number | null
           brand?: string
           case_size?: string | null
           caseback_material?: string | null
+          collection_id?: string | null
           cost?: number
           created_at?: string
           dial_color?: string
@@ -212,10 +392,23 @@ export type Database = {
           movement?: string | null
           type?: string
           updated_at?: string
+          user_id?: string | null
           warranty_card_url?: string | null
           warranty_date?: string | null
+          what_i_dont_like?: string | null
+          what_i_like?: string | null
+          when_bought?: string | null
+          why_bought?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "watches_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       water_usage: {
         Row: {
@@ -227,6 +420,7 @@ export type Database = {
           id: string
           notes: string | null
           updated_at: string
+          user_id: string | null
           watch_id: string
         }
         Insert: {
@@ -238,6 +432,7 @@ export type Database = {
           id?: string
           notes?: string | null
           updated_at?: string
+          user_id?: string | null
           watch_id: string
         }
         Update: {
@@ -249,6 +444,7 @@ export type Database = {
           id?: string
           notes?: string | null
           updated_at?: string
+          user_id?: string | null
           watch_id?: string
         }
         Relationships: [
@@ -268,6 +464,7 @@ export type Database = {
           id: string
           notes: string | null
           updated_at: string
+          user_id: string | null
           watch_id: string
           wear_date: string
         }
@@ -277,6 +474,7 @@ export type Database = {
           id?: string
           notes?: string | null
           updated_at?: string
+          user_id?: string | null
           watch_id: string
           wear_date: string
         }
@@ -286,6 +484,7 @@ export type Database = {
           id?: string
           notes?: string | null
           updated_at?: string
+          user_id?: string | null
           watch_id?: string
           wear_date?: string
         }
@@ -310,6 +509,7 @@ export type Database = {
           notes: string | null
           rank: number
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           brand: string
@@ -321,6 +521,7 @@ export type Database = {
           notes?: string | null
           rank?: number
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           brand?: string
@@ -332,6 +533,7 @@ export type Database = {
           notes?: string | null
           rank?: number
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -340,10 +542,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_collection: { Args: { _name: string }; Returns: string }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_allowed_user: { Args: { _user_id: string }; Returns: boolean }
+      is_collection_owner: {
+        Args: { _collection_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
+      collection_role: "owner" | "editor" | "viewer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -470,6 +685,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+      collection_role: ["owner", "editor", "viewer"],
+    },
   },
 } as const
