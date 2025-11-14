@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Briefcase, Palmtree, Eye, EyeOff, Pencil, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { usePasscode } from "@/contexts/PasscodeContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -55,8 +56,9 @@ export const TripTimeline = ({ trips, limit, type, watches, onUpdate }: TripTime
       });
   
   const displayTrips = limit ? filteredTrips.slice(0, limit) : filteredTrips;
+  const { isAdmin } = useAuth();
   const { isVerified, requestVerification } = usePasscode();
-  const [showLocation, setShowLocation] = useState(false);
+  const [showLocation, setShowLocation] = useState(isAdmin);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editItem, setEditItem] = useState<Trip | null>(null);
   const [loading, setLoading] = useState(false);
@@ -82,12 +84,12 @@ export const TripTimeline = ({ trips, limit, type, watches, onUpdate }: TripTime
     }
   };
 
-  // Auto-show location if already verified
+  // Auto-show location if already verified or if admin
   useEffect(() => {
-    if (isVerified) {
+    if (isVerified || isAdmin) {
       setShowLocation(true);
     }
-  }, [isVerified]);
+  }, [isVerified, isAdmin]);
 
   const handleDelete = async () => {
     if (!deleteId) return;

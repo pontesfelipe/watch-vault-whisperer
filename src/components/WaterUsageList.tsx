@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Droplets, Eye, EyeOff } from "lucide-react";
 import { useState, useEffect } from "react";
 import { usePasscode } from "@/contexts/PasscodeContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 
 interface WaterUsage {
@@ -41,8 +42,9 @@ const getActivityColor = (activityType: string) => {
 };
 
 export const WaterUsageList = ({ usages, watches }: WaterUsageListProps) => {
+  const { isAdmin } = useAuth();
   const { isVerified, requestVerification } = usePasscode();
-  const [showLocation, setShowLocation] = useState(false);
+  const [showLocation, setShowLocation] = useState(isAdmin);
 
   const handleToggleLocation = () => {
     if (!showLocation) {
@@ -58,12 +60,12 @@ export const WaterUsageList = ({ usages, watches }: WaterUsageListProps) => {
     }
   };
 
-  // Auto-show location if already verified
+  // Auto-show location if already verified or if admin
   useEffect(() => {
-    if (isVerified) {
+    if (isVerified || isAdmin) {
       setShowLocation(true);
     }
-  }, [isVerified]);
+  }, [isVerified, isAdmin]);
 
   if (usages.length === 0) {
     return (
