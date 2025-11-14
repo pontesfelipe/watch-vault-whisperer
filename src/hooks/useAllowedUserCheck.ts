@@ -31,11 +31,11 @@ export const useAllowedUserCheck = () => {
           return;
         }
 
-        // Check if user email is in allowed_users
+        // Check if user email is in allowed_users (normalize for comparison)
         const { data: allowedData } = await ((supabase as any)
           .from('allowed_users')
           .select('email')
-          .eq('email', user.email)
+          .eq('email', user.email?.toLowerCase().trim())
           .maybeSingle());
 
         setIsAllowed(!!allowedData);

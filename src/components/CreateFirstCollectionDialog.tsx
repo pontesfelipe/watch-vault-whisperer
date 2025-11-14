@@ -16,6 +16,7 @@ interface CreateFirstCollectionDialogProps {
 export const CreateFirstCollectionDialog = ({ onSuccess }: CreateFirstCollectionDialogProps) => {
   const [name, setName] = useState("My Collection");
   const [loading, setLoading] = useState(false);
+  const [checkKey, setCheckKey] = useState(0);
   const { toast } = useToast();
   const { isAllowed, loading: checkingAccess } = useAllowedUserCheck();
 
@@ -106,9 +107,14 @@ export const CreateFirstCollectionDialog = ({ onSuccess }: CreateFirstCollection
               Please contact an administrator to request access to the watch tracker application. You can submit a registration request from the sign-in page.
             </AlertDescription>
           </Alert>
-          <Button onClick={() => window.location.href = '/auth'} className="w-full">
-            Go to Sign In Page
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={() => window.location.reload()} variant="outline" className="flex-1">
+              Refresh Status
+            </Button>
+            <Button onClick={() => window.location.href = '/auth'} className="flex-1">
+              Sign In Page
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     );
