@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { PasscodeProvider } from "@/contexts/PasscodeContext";
 import { CollectionProvider } from "@/contexts/CollectionContext";
 import { AppLayout } from "@/components/AppLayout";
 import Dashboard from "./pages/Dashboard";
@@ -41,8 +42,9 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <CollectionProvider>
-        <TooltipProvider>
+      <PasscodeProvider>
+        <CollectionProvider>
+          <TooltipProvider>
           <Toaster />
           <Sonner />
           <BrowserRouter>
@@ -63,6 +65,7 @@ const App = () => (
           </BrowserRouter>
         </TooltipProvider>
       </CollectionProvider>
+      </PasscodeProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
