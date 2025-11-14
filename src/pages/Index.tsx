@@ -69,6 +69,7 @@ const Index = () => {
   const [generatingSuggestions, setGeneratingSuggestions] = useState(false);
   const [showAddEvent, setShowAddEvent] = useState(false);
   const [showAddWaterUsage, setShowAddWaterUsage] = useState(false);
+  const [showAddTrip, setShowAddTrip] = useState(false);
   const { isVerified, requestVerification } = usePasscode();
   const { toast } = useToast();
 
@@ -516,7 +517,7 @@ const Index = () => {
           <TabsContent value="trips" className="space-y-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-semibold text-foreground">Travel History</h2>
-              <AddTripDialog watches={watches} onSuccess={fetchData} />
+              <Button onClick={() => setShowAddTrip(true)}>Add Trip</Button>
             </div>
             {topTripWatch && (
               <div className="bg-card border border-border rounded-lg p-4 mb-4">
@@ -533,6 +534,12 @@ const Index = () => {
               </div>
             )}
             <TripTimeline trips={trips} type="trip" watches={watches} onUpdate={fetchData} />
+            <AddTripDialog 
+              watches={watches} 
+              onSuccess={fetchData}
+              open={showAddTrip}
+              onOpenChange={setShowAddTrip}
+            />
           </TabsContent>
 
           <TabsContent value="events" className="space-y-6">

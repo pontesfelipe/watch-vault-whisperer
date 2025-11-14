@@ -70,7 +70,12 @@ const Trips = () => {
         onUpdate={refetch}
       />
 
-      <AddTripDialog watches={watches} onSuccess={refetch} />
+      <AddTripDialog 
+        watches={watches} 
+        onSuccess={refetch}
+        open={showAddTrip}
+        onOpenChange={setShowAddTrip}
+      />
     </div>
   );
 };
