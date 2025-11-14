@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 interface TastePreferencesProps {
-  onSuggest: (description: string) => void;
+  onSuggest: (description: string, focusOnGaps?: boolean) => void;
   isGenerating: boolean;
 }
 
@@ -107,12 +107,21 @@ export const TastePreferences = ({ onSuggest, isGenerating }: TastePreferencesPr
             {saved ? "Saved" : "Save Preferences"}
           </Button>
           <Button
-            onClick={() => onSuggest(tasteDescription)}
+            onClick={() => onSuggest(tasteDescription, false)}
             disabled={isGenerating || !tasteDescription.trim()}
             className="gap-2"
           >
             <Sparkles className="w-4 h-4" />
-            {isGenerating ? "Generating..." : "Generate AI Suggestions"}
+            {isGenerating ? "Generating..." : "Generate Taste Suggestions"}
+          </Button>
+          <Button
+            onClick={() => onSuggest(tasteDescription, true)}
+            disabled={isGenerating || !tasteDescription.trim()}
+            variant="secondary"
+            className="gap-2"
+          >
+            <Sparkles className="w-4 h-4" />
+            {isGenerating ? "Generating..." : "Find Collection Gaps"}
           </Button>
         </div>
       </CardContent>
