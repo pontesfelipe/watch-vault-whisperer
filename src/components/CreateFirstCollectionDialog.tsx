@@ -18,7 +18,7 @@ export const CreateFirstCollectionDialog = ({ onSuccess }: CreateFirstCollection
   const [loading, setLoading] = useState(false);
   const [checkKey, setCheckKey] = useState(0);
   const { toast } = useToast();
-  const { isAllowed, loading: checkingAccess } = useAllowedUserCheck();
+  const { isAllowed, loading: checkingAccess, refresh } = useAllowedUserCheck();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,8 +93,8 @@ export const CreateFirstCollectionDialog = ({ onSuccess }: CreateFirstCollection
 
   if (isAllowed === false) {
     return (
-      <Dialog open={true}>
-        <DialogContent className="sm:max-w-[425px]" onInteractOutside={(e) => e.preventDefault()}>
+      <Dialog open={true} onOpenChange={(open) => !open && window.history.back()}>
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Access Required</DialogTitle>
             <DialogDescription>
@@ -108,11 +108,11 @@ export const CreateFirstCollectionDialog = ({ onSuccess }: CreateFirstCollection
             </AlertDescription>
           </Alert>
           <div className="flex gap-2">
-            <Button onClick={() => window.location.reload()} variant="outline" className="flex-1">
+            <Button onClick={refresh} variant="outline" className="flex-1">
               Refresh Status
             </Button>
-            <Button onClick={() => window.location.href = '/auth'} className="flex-1">
-              Sign In Page
+            <Button onClick={() => window.history.back()} className="flex-1">
+              Go Back
             </Button>
           </div>
         </DialogContent>
@@ -121,8 +121,8 @@ export const CreateFirstCollectionDialog = ({ onSuccess }: CreateFirstCollection
   }
 
   return (
-    <Dialog open={true}>
-      <DialogContent className="sm:max-w-[425px]" onInteractOutside={(e) => e.preventDefault()}>
+    <Dialog open={true} onOpenChange={(open) => !open && window.history.back()}>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Welcome! Create Your First Collection</DialogTitle>
           <DialogDescription>
