@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AllowedUsersTable } from "@/components/admin/AllowedUsersTable";
 import { RegisteredUsersTable } from "@/components/admin/RegisteredUsersTable";
+import { ManageCollectionsDialog } from "@/components/admin/ManageCollectionsDialog";
 import { Shield, Users, UserCog } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 
@@ -33,14 +34,17 @@ export default function Admin() {
   return (
     <AppLayout>
       <div className="space-y-6">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <Shield className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold">Admin Panel</h1>
+        <div className="flex justify-between items-start">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <Shield className="h-8 w-8 text-primary" />
+              <h1 className="text-3xl font-bold">Admin Panel</h1>
+            </div>
+            <p className="text-muted-foreground">
+              Manage user access and view registered users
+            </p>
           </div>
-          <p className="text-muted-foreground">
-            Manage user access and view registered users
-          </p>
+          <ManageCollectionsDialog />
         </div>
 
         <Tabs defaultValue="allowed" className="w-full">
