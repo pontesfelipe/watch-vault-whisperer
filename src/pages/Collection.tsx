@@ -8,14 +8,17 @@ import { AddWatchDialog } from "@/components/AddWatchDialog";
 import { QuickAddWearDialog } from "@/components/QuickAddWearDialog";
 import { EditCollectionDialog } from "@/components/EditCollectionDialog";
 import { CreateFirstCollectionDialog } from "@/components/CreateFirstCollectionDialog";
+import { CollectionSwitcher } from "@/components/CollectionSwitcher";
 import { useWatchData } from "@/hooks/useWatchData";
 import { useStatsCalculations } from "@/hooks/useStatsCalculations";
 import { useTripData } from "@/hooks/useTripData";
 import { useWaterUsageData } from "@/hooks/useWaterUsageData";
 import { useCollectionData } from "@/hooks/useCollectionData";
+import { useCollection } from "@/contexts/CollectionContext";
 
 const Collection = () => {
-  const { watches, wearEntries, loading, refetch } = useWatchData();
+  const { selectedCollectionId, currentCollection } = useCollection();
+  const { watches, wearEntries, loading, refetch } = useWatchData(selectedCollectionId);
   const { trips } = useTripData();
   const { waterUsages } = useWaterUsageData();
   const { collections, loading: collectionsLoading, refetch: refetchCollections } = useCollectionData();
@@ -24,16 +27,13 @@ const Collection = () => {
   const [showAddWatch, setShowAddWatch] = useState(false);
 
   const stats = useStatsCalculations(watches, wearEntries, trips, waterUsages);
-  
-  // Use first collection as default (user's primary collection)
-  const currentCollection = collections[0];
 
   // Show onboarding dialog if user has no collections
   if (!collectionsLoading && collections.length === 0) {
     return <CreateFirstCollectionDialog onSuccess={refetchCollections} />;
   }
 
-  if (loading || collectionsLoading) {
+  if (loading || collectionsLoading || !selectedCollectionId) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -58,22 +58,25 @@ const Collection = () => {
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <div>
-            <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-              {currentCollection?.name || "My Collection"}
-            </h1>
-            <p className="text-muted-foreground">
-              {watches.length} {watches.length === 1 ? "watch" : "watches"} in your collection
-            </p>
+        <div className="flex items-center gap-4">
+          <CollectionSwitcher />
+          <div className="flex items-center gap-2">
+            <div>
+              <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                {currentCollection?.name || "My Collection"}
+              </h1>
+              <p className="text-muted-foreground">
+                {watches.length} {watches.length === 1 ? "watch" : "watches"} in your collection
+              </p>
+            </div>
+            {currentCollection && currentCollection.role === 'owner' && (
+              <EditCollectionDialog 
+                collectionId={currentCollection.id}
+                currentName={currentCollection.name}
+                onSuccess={refetchCollections}
+              />
+            )}
           </div>
-          {currentCollection && currentCollection.role === 'owner' && (
-            <EditCollectionDialog 
-              collectionId={currentCollection.id}
-              currentName={currentCollection.name}
-              onSuccess={refetchCollections}
-            />
-          )}
         </div>
         <div className="flex gap-2">
           <QuickAddWearDialog watches={watches} onSuccess={refetch} />

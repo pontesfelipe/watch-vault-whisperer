@@ -21,7 +21,7 @@ interface WearEntry {
   days: number;
 }
 
-export const useWatchData = () => {
+export const useWatchData = (collectionId?: string | null) => {
   const [watches, setWatches] = useState<Watch[]>([]);
   const [wearEntries, setWearEntries] = useState<WearEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,20 +38,37 @@ export const useWatchData = () => {
     setLoading(true);
     try {
       const watchesQuery: any = (supabase.from('watches' as any) as any).select('*');
-      const wearEntriesQuery: any = (supabase.from('wear_entries' as any) as any).select('*');
       
       if (!isAdmin) {
         watchesQuery.eq('user_id', user.id);
-        wearEntriesQuery.eq('user_id', user.id);
       }
       
-      const [watchesResult, wearEntriesResult] = await Promise.all([
-        watchesQuery.order("created_at", { ascending: false }),
-        wearEntriesQuery,
-      ]);
+      // Filter by collection if provided
+      if (collectionId) {
+        watchesQuery.eq('collection_id', collectionId);
+      }
+      
+      const watchesResult = await watchesQuery.order("created_at", { ascending: false });
 
-      if (watchesResult.data) setWatches(watchesResult.data);
-      if (wearEntriesResult.data) setWearEntries(wearEntriesResult.data);
+      if (watchesResult.data) {
+        setWatches(watchesResult.data);
+        
+        // Fetch wear entries for the watches in this collection
+        const watchIds = watchesResult.data.map((w: Watch) => w.id);
+        const wearEntriesQuery: any = (supabase.from('wear_entries' as any) as any)
+          .select('*')
+          .in('watch_id', watchIds);
+        
+        if (!isAdmin) {
+          wearEntriesQuery.eq('user_id', user.id);
+        }
+        
+        const wearEntriesResult = await wearEntriesQuery;
+        if (wearEntriesResult.data) setWearEntries(wearEntriesResult.data);
+      } else {
+        setWatches([]);
+        setWearEntries([]);
+      }
     } catch (error) {
       console.error("Error fetching watch data:", error);
     } finally {
@@ -61,7 +78,7 @@ export const useWatchData = () => {
 
   useEffect(() => {
     fetchData();
-  }, [user, isAdmin]);
+  }, [user, isAdmin, collectionId]);
 
   return { watches, wearEntries, loading, refetch: fetchData };
 };
