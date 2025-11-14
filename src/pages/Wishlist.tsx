@@ -30,8 +30,16 @@ const Wishlist = () => {
 
     setIsGenerating(true);
     try {
+      // Fetch current watch collection to inform suggestions
+      const { data: watches } = await supabase
+        .from("watches")
+        .select("brand, model, dial_color, type");
+
       const { data, error } = await supabase.functions.invoke("suggest-watches", {
-        body: { tasteDescription },
+        body: { 
+          tasteDescription,
+          collection: watches || []
+        },
       });
 
       if (error) throw error;

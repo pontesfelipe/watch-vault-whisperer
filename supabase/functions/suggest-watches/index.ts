@@ -21,9 +21,11 @@ serve(async (req) => {
     console.log("Analyzing collection and taste preferences...");
 
     // Build analysis prompt
-    const collectionSummary = collection.map((w: any) => 
-      `${w.brand} ${w.model} (${w.dial_color}, ${w.type})`
-    ).join(', ');
+    const collectionSummary = collection && collection.length > 0
+      ? collection.map((w: any) => 
+          `${w.brand} ${w.model} (${w.dial_color}, ${w.type})`
+        ).join(', ')
+      : "No watches in collection yet";
 
     const prompt = `You are a watch expert and enthusiast. Analyze this watch collection and user preferences to suggest 5 watches they would love.
 
