@@ -39,11 +39,13 @@ export const useWatchData = (collectionId?: string | null) => {
     try {
       const watchesQuery: any = (supabase.from('watches' as any) as any).select('*');
       
+      // Admins can see all watches across all collections
+      // Regular users only see their own watches
       if (!isAdmin) {
         watchesQuery.eq('user_id', user.id);
       }
       
-      // Filter by collection if provided
+      // Filter by collection if provided (both admin and regular users)
       if (collectionId) {
         watchesQuery.eq('collection_id', collectionId);
       }
