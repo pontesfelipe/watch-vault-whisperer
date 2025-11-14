@@ -16,45 +16,87 @@ interface DepreciationChartProps {
 
 export const DepreciationChart = ({ watches }: DepreciationChartProps) => {
   const [filterType, setFilterType] = useState<string>("all");
-  const [filterValue, setFilterValue] = useState<string>("all");
+  const [selectedWatch, setSelectedWatch] = useState<string>("");
 
   const watchesWithResale = watches.filter(
     (w) => w.average_resale_price != null && w.average_resale_price > 0
   );
 
-  // Get unique brands and models
+  // Get unique brands and individual watches
   const brands = useMemo(() => {
     const uniqueBrands = Array.from(new Set(watchesWithResale.map(w => w.brand)));
     return uniqueBrands.sort();
   }, [watchesWithResale]);
 
-  const models = useMemo(() => {
-    const uniqueModels = Array.from(new Set(watchesWithResale.map(w => w.model)));
-    return uniqueModels.sort();
+  const individualWatches = useMemo(() => {
+    return watchesWithResale.map(w => ({
+      id: `${w.brand}-${w.model}`,
+      label: `${w.brand} ${w.model}`,
+      brand: w.brand,
+      model: w.model
+    }));
   }, [watchesWithResale]);
 
-  // Filter watches based on selection
-  const filteredWatches = useMemo(() => {
-    if (filterType === "all") return watchesWithResale;
+  // Calculate chart data based on filter
+  const chartData = useMemo(() => {
     if (filterType === "brand") {
-      return watchesWithResale.filter(w => w.brand === filterValue);
-    }
-    if (filterType === "model") {
-      return watchesWithResale.filter(w => w.model === filterValue);
-    }
-    return watchesWithResale;
-  }, [watchesWithResale, filterType, filterValue]);
+      // Group by brand and sum values
+      const brandGroups = watchesWithResale.reduce((acc, watch) => {
+        if (!acc[watch.brand]) {
+          acc[watch.brand] = {
+            invested: 0,
+            current: 0,
+            count: 0
+          };
+        }
+        acc[watch.brand].invested += watch.cost;
+        acc[watch.brand].current += watch.average_resale_price || 0;
+        acc[watch.brand].count += 1;
+        return acc;
+      }, {} as Record<string, { invested: number; current: number; count: number }>);
 
-  const chartData = filteredWatches
-    .map((watch, index) => ({
-      name: `Watch ${index + 1}`,
-      brand: watch.brand,
-      model: watch.model,
-      invested: watch.cost,
-      current: watch.average_resale_price || 0,
-      change: (watch.average_resale_price || 0) - watch.cost,
-    }))
-    .sort((a, b) => b.change - a.change);
+      return Object.entries(brandGroups)
+        .map(([brand, data]) => ({
+          name: brand,
+          brand,
+          model: `${data.count} watches`,
+          invested: data.invested,
+          current: data.current,
+          change: data.current - data.invested,
+        }))
+        .sort((a, b) => b.change - a.change);
+    } else if (filterType === "watch" && selectedWatch) {
+      // Show single selected watch
+      const watch = watchesWithResale.find(w => `${w.brand}-${w.model}` === selectedWatch);
+      if (!watch) return [];
+      
+      return [{
+        name: `${watch.brand}\n${watch.model}`,
+        brand: watch.brand,
+        model: watch.model,
+        invested: watch.cost,
+        current: watch.average_resale_price || 0,
+        change: (watch.average_resale_price || 0) - watch.cost,
+      }];
+    } else {
+      // Show all watches with abbreviated names
+      return watchesWithResale
+        .map((watch) => {
+          // Create abbreviated name (first 3 letters of brand + first 3 of model)
+          const abbrevBrand = watch.brand.substring(0, 3).toUpperCase();
+          const abbrevModel = watch.model.split(' ')[0].substring(0, 4);
+          return {
+            name: `${abbrevBrand}-${abbrevModel}`,
+            brand: watch.brand,
+            model: watch.model,
+            invested: watch.cost,
+            current: watch.average_resale_price || 0,
+            change: (watch.average_resale_price || 0) - watch.cost,
+          };
+        })
+        .sort((a, b) => b.change - a.change);
+    }
+  }, [watchesWithResale, filterType, selectedWatch]);
 
   if (chartData.length === 0) {
     return (
@@ -87,7 +129,7 @@ export const DepreciationChart = ({ watches }: DepreciationChartProps) => {
         <div className="flex gap-2 mt-4">
           <Select value={filterType} onValueChange={(value) => {
             setFilterType(value);
-            setFilterValue("all");
+            setSelectedWatch("");
           }}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Filter by..." />
@@ -95,33 +137,18 @@ export const DepreciationChart = ({ watches }: DepreciationChartProps) => {
             <SelectContent>
               <SelectItem value="all">All Collection</SelectItem>
               <SelectItem value="brand">By Brand</SelectItem>
-              <SelectItem value="model">By Model</SelectItem>
+              <SelectItem value="watch">By Watch</SelectItem>
             </SelectContent>
           </Select>
           
-          {filterType === "brand" && (
-            <Select value={filterValue} onValueChange={setFilterValue}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select brand..." />
+          {filterType === "watch" && (
+            <Select value={selectedWatch} onValueChange={setSelectedWatch}>
+              <SelectTrigger className="w-[250px]">
+                <SelectValue placeholder="Select watch..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Brands</SelectItem>
-                {brands.map(brand => (
-                  <SelectItem key={brand} value={brand}>{brand}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-          
-          {filterType === "model" && (
-            <Select value={filterValue} onValueChange={setFilterValue}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select model..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Models</SelectItem>
-                {models.map(model => (
-                  <SelectItem key={model} value={model}>{model}</SelectItem>
+                {individualWatches.map(watch => (
+                  <SelectItem key={watch.id} value={watch.id}>{watch.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
