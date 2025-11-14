@@ -24,7 +24,8 @@ const Collection = () => {
 
   const stats = useStatsCalculations(watches, wearEntries, trips, waterUsages);
   
-  const currentCollection = collections[0]; // For now, use the first collection
+  // Use first collection as default (user's primary collection)
+  const currentCollection = collections[0];
 
   if (loading || collectionsLoading) {
     return (
