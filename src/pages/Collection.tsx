@@ -6,22 +6,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { WatchCard } from "@/components/WatchCard";
 import { AddWatchDialog } from "@/components/AddWatchDialog";
 import { QuickAddWearDialog } from "@/components/QuickAddWearDialog";
+import { EditCollectionDialog } from "@/components/EditCollectionDialog";
 import { useWatchData } from "@/hooks/useWatchData";
 import { useStatsCalculations } from "@/hooks/useStatsCalculations";
 import { useTripData } from "@/hooks/useTripData";
 import { useWaterUsageData } from "@/hooks/useWaterUsageData";
+import { useCollectionData } from "@/hooks/useCollectionData";
 
 const Collection = () => {
   const { watches, wearEntries, loading, refetch } = useWatchData();
   const { trips } = useTripData();
   const { waterUsages } = useWaterUsageData();
+  const { collections, loading: collectionsLoading, refetch: refetchCollections } = useCollectionData();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBrand, setSelectedBrand] = useState<string>("all");
   const [showAddWatch, setShowAddWatch] = useState(false);
 
   const stats = useStatsCalculations(watches, wearEntries, trips, waterUsages);
+  
+  const currentCollection = collections[0]; // For now, use the first collection
 
-  if (loading) {
+  if (loading || collectionsLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -46,13 +51,22 @@ const Collection = () => {
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            My Collection
-          </h1>
-          <p className="text-muted-foreground">
-            {watches.length} {watches.length === 1 ? "watch" : "watches"} in your collection
-          </p>
+        <div className="flex items-center gap-2">
+          <div>
+            <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              {currentCollection?.name || "My Collection"}
+            </h1>
+            <p className="text-muted-foreground">
+              {watches.length} {watches.length === 1 ? "watch" : "watches"} in your collection
+            </p>
+          </div>
+          {currentCollection && currentCollection.role === 'owner' && (
+            <EditCollectionDialog 
+              collectionId={currentCollection.id}
+              currentName={currentCollection.name}
+              onSuccess={refetchCollections}
+            />
+          )}
         </div>
         <div className="flex gap-2">
           <QuickAddWearDialog watches={watches} onSuccess={refetch} />
