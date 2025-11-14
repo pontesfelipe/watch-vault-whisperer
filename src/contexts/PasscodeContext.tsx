@@ -1,4 +1,6 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { useAuth } from "./AuthContext";
+import { useAllowedUserCheck } from "@/hooks/useAllowedUserCheck";
 
 const CORRECT_PASSCODE = "8595";
 
@@ -16,6 +18,15 @@ const PasscodeContext = createContext<PasscodeContextType | undefined>(undefined
 export const PasscodeProvider = ({ children }: { children: ReactNode }) => {
   const [isVerified, setIsVerified] = useState(false);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
+  const { isAdmin } = useAuth();
+  const { isAllowed } = useAllowedUserCheck();
+
+  // Auto-verify if user is admin or allowed
+  useEffect(() => {
+    if (isAdmin || isAllowed) {
+      setIsVerified(true);
+    }
+  }, [isAdmin, isAllowed]);
 
   const verifyPasscode = (passcode: string): boolean => {
     if (passcode === CORRECT_PASSCODE) {
