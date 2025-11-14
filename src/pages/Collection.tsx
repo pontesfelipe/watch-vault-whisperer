@@ -24,7 +24,6 @@ const Collection = () => {
   const { collections, loading: collectionsLoading, refetch: refetchCollections } = useCollectionData();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBrand, setSelectedBrand] = useState<string>("all");
-  const [showAddWatch, setShowAddWatch] = useState(false);
 
   const stats = useStatsCalculations(watches, wearEntries, trips, waterUsages);
 
@@ -78,13 +77,7 @@ const Collection = () => {
             )}
           </div>
         </div>
-        <div className="flex gap-2">
-          <QuickAddWearDialog watches={watches} onSuccess={refetch} />
-          <Button onClick={() => setShowAddWatch(true)} className="gap-2">
-            <Plus className="w-4 h-4" />
-            Add Watch
-          </Button>
-        </div>
+        <QuickAddWearDialog watches={watches} onSuccess={refetch} />
       </div>
 
       <div className="flex gap-4 flex-col sm:flex-row">
