@@ -128,8 +128,6 @@ const Collection = () => {
           ))}
         </div>
       )}
-
-      <AddWatchDialog onSuccess={refetch} />
     </div>
   );
 };
