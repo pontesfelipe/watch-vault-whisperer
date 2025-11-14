@@ -6,6 +6,9 @@ export const useAllowedUserCheck = () => {
   const { user } = useAuth();
   const [isAllowed, setIsAllowed] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const refresh = () => setRefreshKey(prev => prev + 1);
 
   useEffect(() => {
     const checkAllowedStatus = async () => {
@@ -48,7 +51,7 @@ export const useAllowedUserCheck = () => {
     };
 
     checkAllowedStatus();
-  }, [user]);
+  }, [user, refreshKey]);
 
-  return { isAllowed, loading };
+  return { isAllowed, loading, refresh };
 };
