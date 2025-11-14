@@ -25,13 +25,13 @@ export const useEventData = () => {
 
     setLoading(true);
     try {
-      const query = supabase.from("events").select("*");
+      const query: any = (supabase.from('events' as any) as any).select('*');
       
       if (!isAdmin) {
-        query.eq("user_id", user.id);
+        query.eq('user_id', user.id);
       }
       
-      const result = await query.order("start_date", { ascending: false });
+      const result = await query.order('start_date', { ascending: false });
 
       if (result.data) setEvents(result.data);
     } catch (error) {

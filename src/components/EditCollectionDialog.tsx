@@ -38,9 +38,9 @@ export const EditCollectionDialog = ({ collectionId, currentName, onSuccess }: E
 
     try {
       const { error } = await supabase
-        .from("collections")
-        .update({ name: name.trim() })
-        .eq("id", collectionId);
+        .from('collections' as any)
+        .update({ name: name.trim() } as any)
+        .eq('id', collectionId);
 
       if (error) throw error;
 

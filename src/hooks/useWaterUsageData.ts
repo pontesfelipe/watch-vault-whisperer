@@ -25,13 +25,13 @@ export const useWaterUsageData = () => {
 
     setLoading(true);
     try {
-      const query = supabase.from("water_usage").select("*");
+      const query: any = (supabase.from('water_usage' as any) as any).select('*');
       
       if (!isAdmin) {
-        query.eq("user_id", user.id);
+        query.eq('user_id', user.id);
       }
       
-      const result = await query.order("activity_date", { ascending: false });
+      const result = await query.order('activity_date', { ascending: false });
 
       if (result.data) setWaterUsages(result.data);
     } catch (error) {

@@ -48,15 +48,15 @@ export const ManageCollectionsDialog = () => {
   const fetchData = async () => {
     try {
       const [collectionsRes, usersRes] = await Promise.all([
-        supabase.from("collections").select("id, name"),
-        supabase.from("profiles").select("id, email")
+        supabase.from('collections' as any).select('id, name'),
+        supabase.from('profiles' as any).select('id, email')
       ]);
 
       if (collectionsRes.error) throw collectionsRes.error;
       if (usersRes.error) throw usersRes.error;
 
-      setCollections(collectionsRes.data || []);
-      setUsers(usersRes.data || []);
+      setCollections((collectionsRes.data as any) || []);
+      setUsers((usersRes.data as any) || []);
     } catch (error: any) {
       console.error("Error fetching data:", error);
       toast.error("Failed to load data");
@@ -75,13 +75,13 @@ export const ManageCollectionsDialog = () => {
 
     try {
       const { error } = await supabase
-        .from("user_collections")
+        .from('user_collections' as any)
         .upsert({
           user_id: selectedUser,
           collection_id: selectedCollection,
           role: selectedRole,
-        }, {
-          onConflict: "user_id,collection_id"
+        } as any, {
+          onConflict: 'user_id,collection_id'
         });
 
       if (error) throw error;

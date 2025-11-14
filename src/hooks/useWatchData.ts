@@ -37,13 +37,12 @@ export const useWatchData = () => {
 
     setLoading(true);
     try {
-      // Admins can see all data, regular users see only their own
-      const watchesQuery = supabase.from("watches").select("*");
-      const wearEntriesQuery = supabase.from("wear_entries").select("*");
+      const watchesQuery: any = (supabase.from('watches' as any) as any).select('*');
+      const wearEntriesQuery: any = (supabase.from('wear_entries' as any) as any).select('*');
       
       if (!isAdmin) {
-        watchesQuery.eq("user_id", user.id);
-        wearEntriesQuery.eq("user_id", user.id);
+        watchesQuery.eq('user_id', user.id);
+        wearEntriesQuery.eq('user_id', user.id);
       }
       
       const [watchesResult, wearEntriesResult] = await Promise.all([

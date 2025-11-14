@@ -26,13 +26,13 @@ export const useWishlistData = () => {
 
     setLoading(true);
     try {
-      const query = supabase.from("wishlist").select("*");
+      const query: any = (supabase.from('wishlist' as any) as any).select('*');
       
       if (!isAdmin) {
-        query.eq("user_id", user.id);
+        query.eq('user_id', user.id);
       }
       
-      const result = await query.order("rank", { ascending: true });
+      const result = await query.order('rank', { ascending: true });
 
       if (result.data) setWishlist(result.data);
     } catch (error) {

@@ -23,12 +23,12 @@ export function AllowedUsersTable() {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from("allowed_users")
-        .select("*")
-        .order("added_at", { ascending: false });
+        .from('allowed_users' as any)
+        .select('*')
+        .order('added_at', { ascending: false });
 
       if (error) throw error;
-      setAllowedUsers(data || []);
+      setAllowedUsers((data as any as AllowedUser[]) || []);
     } catch (error) {
       console.error("Error fetching allowed users:", error);
       toast.error("Failed to load allowed users");
@@ -46,9 +46,9 @@ export function AllowedUsersTable() {
 
     try {
       const { error } = await supabase
-        .from("allowed_users")
+        .from('allowed_users' as any)
         .delete()
-        .eq("id", id);
+        .eq('id', id);
 
       if (error) throw error;
 

@@ -39,12 +39,12 @@ export function AddAllowedUserDialog({ open, onOpenChange, onSuccess }: AddAllow
 
     try {
       const { error } = await supabase
-        .from("allowed_users")
+        .from('allowed_users' as any)
         .insert({
           email: email.toLowerCase().trim(),
           notes: notes.trim() || null,
           added_by: user?.id,
-        });
+        } as any);
 
       if (error) {
         if (error.code === "23505") {
