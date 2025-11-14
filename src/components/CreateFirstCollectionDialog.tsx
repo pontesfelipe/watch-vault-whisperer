@@ -35,31 +35,12 @@ export const CreateFirstCollectionDialog = ({ onSuccess }: CreateFirstCollection
     setLoading(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+      // Use secure RPC function to create collection server-side
+      const { data: collectionId, error } = await (supabase as any).rpc('create_collection', {
+        _name: name.trim()
+      });
 
-      // Create the collection
-      const { data: collection, error: collectionError } = await ((supabase as any)
-        .from("collections")
-        .insert({
-          name: name.trim(),
-          created_by: user.id,
-        })
-        .select()
-        .single());
-
-      if (collectionError) throw collectionError;
-
-      // Add user as owner
-      const { error: userCollectionError } = await ((supabase as any)
-        .from("user_collections")
-        .insert({
-          user_id: user.id,
-          collection_id: collection.id,
-          role: 'owner',
-        }));
-
-      if (userCollectionError) throw userCollectionError;
+      if (error) throw error;
 
       toast({
         title: "Success",
