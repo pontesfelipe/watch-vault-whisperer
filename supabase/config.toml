@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.suggest-watches]
 verify_jwt = false
+
+[functions.fetch-watch-price]
+verify_jwt = false

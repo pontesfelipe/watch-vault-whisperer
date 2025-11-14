@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Watch as WatchIcon, Calendar, Eye, EyeOff, Trash2 } from "lucide-react";
+import { Watch as WatchIcon, Calendar, Eye, EyeOff, Trash2, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -48,6 +48,7 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
   const { requestVerification, isVerified } = usePasscode();
   const [showCost, setShowCost] = useState(isAdmin);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isFetchingPrice, setIsFetchingPrice] = useState(false);
 
   const handleToggleCost = () => {
     if (!showCost) {
@@ -105,6 +106,46 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
         description: "Failed to delete watch",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleFetchPrice = async () => {
+    setIsFetchingPrice(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-watch-price', {
+        body: { 
+          brand: watch.brand, 
+          model: watch.model,
+          watchId: watch.id
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.error) {
+        toast({
+          title: "Error",
+          description: data.error,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Price Updated",
+        description: `Market price: $${data.price.toLocaleString()} (${data.confidence} confidence)`,
+      });
+
+      // Refresh the page to show updated price
+      onDelete();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch market price",
+        variant: "destructive",
+      });
+    } finally {
+      setIsFetchingPrice(false);
     }
   };
 
@@ -168,7 +209,7 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
             </div>
           </div>
           
-          {watch.average_resale_price && (
+          {watch.average_resale_price ? (
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Resale Value</span>
               <div className="flex items-center gap-2">
@@ -177,7 +218,31 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
                 ) : (
                   <span className="font-medium text-muted-foreground">••••••</span>
                 )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0"
+                  onClick={handleFetchPrice}
+                  disabled={isFetchingPrice}
+                  title="Update market price"
+                >
+                  <RefreshCw className={`w-3 h-3 text-muted-foreground ${isFetchingPrice ? 'animate-spin' : ''}`} />
+                </Button>
               </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Resale Value</span>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs gap-1"
+                onClick={handleFetchPrice}
+                disabled={isFetchingPrice}
+              >
+                <RefreshCw className={`w-3 h-3 ${isFetchingPrice ? 'animate-spin' : ''}`} />
+                {isFetchingPrice ? 'Fetching...' : 'Get Price'}
+              </Button>
             </div>
           )}
           

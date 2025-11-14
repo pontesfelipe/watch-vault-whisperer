@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -15,6 +15,8 @@ import { useTripData } from "@/hooks/useTripData";
 import { useWaterUsageData } from "@/hooks/useWaterUsageData";
 import { useCollectionData } from "@/hooks/useCollectionData";
 import { useCollection } from "@/contexts/CollectionContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Collection = () => {
   const { selectedCollectionId, currentCollection } = useCollection();
@@ -24,8 +26,52 @@ const Collection = () => {
   const { collections, loading: collectionsLoading, refetch: refetchCollections } = useCollectionData();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBrand, setSelectedBrand] = useState<string>("all");
+  const [isBulkUpdating, setIsBulkUpdating] = useState(false);
+  const { toast } = useToast();
 
   const stats = useStatsCalculations(watches, wearEntries, trips, waterUsages);
+
+  const handleBulkUpdatePrices = async () => {
+    setIsBulkUpdating(true);
+    let successCount = 0;
+    let errorCount = 0;
+
+    toast({
+      title: "Updating Prices",
+      description: `Fetching market prices for ${watches.length} watches...`,
+    });
+
+    for (const watch of watches) {
+      try {
+        const { data, error } = await supabase.functions.invoke('fetch-watch-price', {
+          body: { 
+            brand: watch.brand, 
+            model: watch.model,
+            watchId: watch.id
+          }
+        });
+
+        if (error || data.error) {
+          errorCount++;
+        } else {
+          successCount++;
+        }
+        
+        // Small delay to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      } catch (error) {
+        errorCount++;
+      }
+    }
+
+    setIsBulkUpdating(false);
+    refetch();
+
+    toast({
+      title: "Bulk Update Complete",
+      description: `Updated ${successCount} watches. ${errorCount > 0 ? `${errorCount} failed.` : ''}`,
+    });
+  };
 
   // Show onboarding dialog if user has no collections
   if (!collectionsLoading && collections.length === 0) {
@@ -78,6 +124,16 @@ const Collection = () => {
           </div>
         </div>
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleBulkUpdatePrices}
+            disabled={isBulkUpdating || watches.length === 0}
+            className="gap-2"
+          >
+            <RefreshCw className={`w-4 h-4 ${isBulkUpdating ? 'animate-spin' : ''}`} />
+            {isBulkUpdating ? 'Updating...' : 'Update All Prices'}
+          </Button>
           <QuickAddWearDialog watches={watches} onSuccess={refetch} />
           <AddWatchDialog onSuccess={refetch} />
         </div>
