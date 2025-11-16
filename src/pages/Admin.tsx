@@ -8,12 +8,14 @@ import { RegisteredUsersTable } from "@/components/admin/RegisteredUsersTable";
 import { RegistrationRequestsTable } from "@/components/admin/RegistrationRequestsTable";
 import { TermsAcceptancesTable } from "@/components/admin/TermsAcceptancesTable";
 import { ManageCollectionsDialog } from "@/components/admin/ManageCollectionsDialog";
-import { Shield, Users, UserCog, FileCheck } from "lucide-react";
+import { Shield, Users, UserCog, FileCheck, Calendar } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
+import { Button } from "@/components/ui/button";
 
 export default function Admin() {
   const { user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
+  const goToWearLogs = () => navigate("/admin/wear-logs");
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) {
@@ -46,7 +48,13 @@ export default function Admin() {
               Manage user access and view registered users
             </p>
           </div>
-          <ManageCollectionsDialog />
+          <div className="flex gap-2">
+            <Button onClick={goToWearLogs} variant="outline">
+              <Calendar className="w-4 h-4 mr-2" />
+              Wear Logs
+            </Button>
+            <ManageCollectionsDialog />
+          </div>
         </div>
 
         <Tabs defaultValue="requests" className="w-full">

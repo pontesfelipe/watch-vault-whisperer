@@ -16,6 +16,7 @@ import WaterUsage from "./pages/WaterUsage";
 import PersonalNotes from "./pages/PersonalNotes";
 import WatchDetail from "./pages/WatchDetail";
 import Admin from "./pages/Admin";
+import WearLogsAdmin from "./pages/WearLogsAdmin";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -58,6 +59,7 @@ const App = () => (
               <Route path="/water-usage" element={<ProtectedRoute><AppLayout><WaterUsage /></AppLayout></ProtectedRoute>} />
               <Route path="/personal-notes" element={<ProtectedRoute><AppLayout><PersonalNotes /></AppLayout></ProtectedRoute>} />
               <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+              <Route path="/admin/wear-logs" element={<ProtectedRoute><WearLogsAdmin /></ProtectedRoute>} />
               <Route path="/watch/:id" element={<ProtectedRoute><WatchDetail /></ProtectedRoute>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
