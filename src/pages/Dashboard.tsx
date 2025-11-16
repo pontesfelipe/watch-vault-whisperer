@@ -172,7 +172,7 @@ const Dashboard = () => {
       )}
 
       <div>
-        <UsageChart watches={watches} wearEntries={wearEntries} />
+        <UsageChart watches={watches} wearEntries={wearEntries} onDataChange={refetch} />
       </div>
     </div>
   );
