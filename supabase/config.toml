@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.fetch-watch-price]
 verify_jwt = false
+
+[functions.import-spreadsheet-data]
+verify_jwt = false

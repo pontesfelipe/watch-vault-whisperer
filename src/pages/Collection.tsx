@@ -10,6 +10,7 @@ import { EditCollectionDialog } from "@/components/EditCollectionDialog";
 import { CreateFirstCollectionDialog } from "@/components/CreateFirstCollectionDialog";
 import { CollectionSwitcher } from "@/components/CollectionSwitcher";
 import { AnalyzeWatchMetadataDialog } from "@/components/AnalyzeWatchMetadataDialog";
+import { ImportSpreadsheetDialog } from "@/components/ImportSpreadsheetDialog";
 import { useWatchData } from "@/hooks/useWatchData";
 import { useStatsCalculations } from "@/hooks/useStatsCalculations";
 import { useTripData } from "@/hooks/useTripData";
@@ -207,6 +208,7 @@ const Collection = () => {
           </div>
         </div>
         <div className="flex gap-2">
+          <ImportSpreadsheetDialog />
           <Button
             variant="outline"
             size="sm"
