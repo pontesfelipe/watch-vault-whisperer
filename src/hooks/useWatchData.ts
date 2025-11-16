@@ -51,7 +51,7 @@ export const useWatchData = (collectionId?: string | null) => {
         watchesQuery.eq('collection_id', collectionId);
       }
       
-      const watchesResult = await watchesQuery.order("created_at", { ascending: false });
+      const watchesResult = await watchesQuery.order("brand", { ascending: true }).order("model", { ascending: true });
 
       if (watchesResult.data) {
         setWatches(watchesResult.data);
