@@ -3,6 +3,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Edit } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -16,6 +18,8 @@ const watchSchema = z.object({
   cost: z.number().min(0, "Cost must be positive"),
   averageResalePrice: z.number().min(0, "Resale price must be positive").optional(),
   warrantyDate: z.string().optional(),
+  rarity: z.enum(['common', 'uncommon', 'rare', 'very_rare', 'grail']).optional(),
+  historicalSignificance: z.enum(['regular', 'notable', 'historically_significant']).optional(),
 });
 
 interface Watch {
@@ -33,6 +37,9 @@ interface Watch {
   average_resale_price?: number;
   warranty_date?: string;
   warranty_card_url?: string;
+  rarity?: string;
+  historical_significance?: string;
+  available_for_trade?: boolean;
 }
 
 export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess: () => void }) => {
@@ -52,6 +59,9 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
     averageResalePrice: watch.average_resale_price?.toString() || "",
     warrantyDate: watch.warranty_date || "",
     warrantyCardFile: null as File | null,
+    rarity: (watch.rarity || "common") as "common" | "uncommon" | "rare" | "very_rare" | "grail",
+    historicalSignificance: (watch.historical_significance || "regular") as "regular" | "notable" | "historically_significant",
+    availableForTrade: watch.available_for_trade || false,
   });
   const { toast } = useToast();
 
@@ -71,6 +81,9 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
         averageResalePrice: watch.average_resale_price?.toString() || "",
         warrantyDate: watch.warranty_date || "",
         warrantyCardFile: null,
+        rarity: (watch.rarity || "common") as any,
+        historicalSignificance: (watch.historical_significance || "regular") as any,
+        availableForTrade: watch.available_for_trade || false,
       });
     }
   }, [open, watch]);
@@ -88,6 +101,8 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
         cost: parseFloat(formValues.cost),
         averageResalePrice: formValues.averageResalePrice ? parseFloat(formValues.averageResalePrice) : undefined,
         warrantyDate: formValues.warrantyDate || undefined,
+        rarity: formValues.rarity,
+        historicalSignificance: formValues.historicalSignificance,
       });
 
       // Upload warranty card if provided
@@ -132,6 +147,9 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
           average_resale_price: data.averageResalePrice || null,
           warranty_date: data.warrantyDate || null,
           warranty_card_url: warrantyCardUrl,
+          rarity: data.rarity || 'common',
+          historical_significance: data.historicalSignificance || 'regular',
+          available_for_trade: formValues.availableForTrade,
         })
         .eq("id", watch.id);
 
@@ -237,6 +255,58 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
               required
               className="bg-background border-border"
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="rarity">Rarity</Label>
+            <Select
+              value={formValues.rarity}
+              onValueChange={(value) => setFormValues({ ...formValues, rarity: value as any })}
+            >
+              <SelectTrigger className="bg-background border-border">
+                <SelectValue placeholder="Select rarity" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="common">Common</SelectItem>
+                <SelectItem value="uncommon">Uncommon</SelectItem>
+                <SelectItem value="rare">Rare</SelectItem>
+                <SelectItem value="very_rare">Very Rare</SelectItem>
+                <SelectItem value="grail">Grail</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="historicalSignificance">Historical Significance</Label>
+            <Select
+              value={formValues.historicalSignificance}
+              onValueChange={(value) => setFormValues({ ...formValues, historicalSignificance: value as any })}
+            >
+              <SelectTrigger className="bg-background border-border">
+                <SelectValue placeholder="Select significance" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="regular">Regular</SelectItem>
+                <SelectItem value="notable">Notable</SelectItem>
+                <SelectItem value="historically_significant">Historically Significant</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="availableForTrade"
+              checked={formValues.availableForTrade}
+              onCheckedChange={(checked) =>
+                setFormValues({ ...formValues, availableForTrade: checked === true })
+              }
+            />
+            <Label
+              htmlFor="availableForTrade"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Available for trade/sell
+            </Label>
           </div>
 
           <div className="space-y-2">

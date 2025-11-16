@@ -37,6 +37,9 @@ interface WatchCardProps {
     warranty_date?: string;
     warranty_card_url?: string;
     when_bought?: string;
+    rarity?: string;
+    historical_significance?: string;
+    available_for_trade?: boolean;
   };
   totalDays: number;
   onDelete: () => void;
@@ -186,6 +189,36 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
             <span className="text-muted-foreground">Dial Color</span>
             <span className="font-medium text-foreground">{watch.dial_color}</span>
           </div>
+
+          {watch.rarity && watch.rarity !== 'common' && (
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Rarity</span>
+              <Badge variant={
+                watch.rarity === 'grail' ? 'default' :
+                watch.rarity === 'very_rare' ? 'destructive' :
+                watch.rarity === 'rare' ? 'secondary' : 'outline'
+              } className="text-xs capitalize">
+                {watch.rarity.replace('_', ' ')}
+              </Badge>
+            </div>
+          )}
+
+          {watch.historical_significance && watch.historical_significance !== 'regular' && (
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Historical</span>
+              <Badge variant="secondary" className="text-xs capitalize">
+                {watch.historical_significance.replace('_', ' ')}
+              </Badge>
+            </div>
+          )}
+
+          {watch.available_for_trade && (
+            <div className="flex items-center justify-between text-sm">
+              <Badge variant="outline" className="text-xs border-primary text-primary">
+                Available for Trade/Sell
+              </Badge>
+            </div>
+          )}
 
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Cost</span>

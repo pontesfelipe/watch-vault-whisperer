@@ -389,6 +389,7 @@ export type Database = {
       }
       watches: {
         Row: {
+          available_for_trade: boolean
           average_resale_price: number | null
           brand: string
           case_size: string | null
@@ -398,10 +399,14 @@ export type Database = {
           created_at: string
           dial_color: string
           has_sapphire: boolean | null
+          historical_significance:
+            | Database["public"]["Enums"]["watch_historical_significance"]
+            | null
           id: string
           lug_to_lug_size: string | null
           model: string
           movement: string | null
+          rarity: Database["public"]["Enums"]["watch_rarity"] | null
           sort_order: number
           type: string
           updated_at: string
@@ -414,6 +419,7 @@ export type Database = {
           why_bought: string | null
         }
         Insert: {
+          available_for_trade?: boolean
           average_resale_price?: number | null
           brand: string
           case_size?: string | null
@@ -423,10 +429,14 @@ export type Database = {
           created_at?: string
           dial_color: string
           has_sapphire?: boolean | null
+          historical_significance?:
+            | Database["public"]["Enums"]["watch_historical_significance"]
+            | null
           id?: string
           lug_to_lug_size?: string | null
           model: string
           movement?: string | null
+          rarity?: Database["public"]["Enums"]["watch_rarity"] | null
           sort_order?: number
           type: string
           updated_at?: string
@@ -439,6 +449,7 @@ export type Database = {
           why_bought?: string | null
         }
         Update: {
+          available_for_trade?: boolean
           average_resale_price?: number | null
           brand?: string
           case_size?: string | null
@@ -448,10 +459,14 @@ export type Database = {
           created_at?: string
           dial_color?: string
           has_sapphire?: boolean | null
+          historical_significance?:
+            | Database["public"]["Enums"]["watch_historical_significance"]
+            | null
           id?: string
           lug_to_lug_size?: string | null
           model?: string
           movement?: string | null
+          rarity?: Database["public"]["Enums"]["watch_rarity"] | null
           sort_order?: number
           type?: string
           updated_at?: string
@@ -622,6 +637,11 @@ export type Database = {
     Enums: {
       app_role: "admin" | "user"
       collection_role: "owner" | "editor" | "viewer"
+      watch_historical_significance:
+        | "regular"
+        | "notable"
+        | "historically_significant"
+      watch_rarity: "common" | "uncommon" | "rare" | "very_rare" | "grail"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -751,6 +771,12 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "user"],
       collection_role: ["owner", "editor", "viewer"],
+      watch_historical_significance: [
+        "regular",
+        "notable",
+        "historically_significant",
+      ],
+      watch_rarity: ["common", "uncommon", "rare", "very_rare", "grail"],
     },
   },
 } as const

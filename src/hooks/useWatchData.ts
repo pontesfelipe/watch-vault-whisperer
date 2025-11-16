@@ -14,6 +14,9 @@ interface Watch {
   average_resale_price?: number;
   when_bought?: string;
   sort_order?: number;
+  rarity?: string;
+  historical_significance?: string;
+  available_for_trade?: boolean;
 }
 
 interface WearEntry {
