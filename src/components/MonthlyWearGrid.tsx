@@ -137,6 +137,10 @@ export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyW
     setIsSaving(true);
 
     try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
       // Use the selected year, not "now"
       const year = parseInt(selectedYear, 10);
       const startOfMonthDate = new Date(year, monthIndex, 1);
@@ -166,7 +170,7 @@ export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyW
         const fullDays = Math.floor(rounded);
         const remainder = +(rounded - fullDays).toFixed(1); // 0 or 0.5
 
-        const inserts: { watch_id: string; wear_date: string; days: number }[] = [];
+        const inserts: { watch_id: string; wear_date: string; days: number; user_id: string }[] = [];
 
         // Distribute full-day wears one per calendar day, cycling if needed
         for (let i = 0; i < fullDays; i++) {
@@ -176,6 +180,7 @@ export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyW
             watch_id: watchId,
             wear_date: format(date, 'yyyy-MM-dd'),
             days: 1,
+            user_id: user.id,
           });
         }
 
@@ -187,6 +192,7 @@ export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyW
             watch_id: watchId,
             wear_date: format(date, 'yyyy-MM-dd'),
             days: remainder,
+            user_id: user.id,
           });
         }
 
