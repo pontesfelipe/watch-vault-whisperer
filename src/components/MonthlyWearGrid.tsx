@@ -107,18 +107,10 @@ export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyW
     watchColorMap.set(`${watch.brand} ${watch.model}`, WATCH_COLORS[index % WATCH_COLORS.length]);
   });
 
-  // Calculate monthly totals based on unique dates with entries (not sum of days)
-  const monthlyTotals = Array(12).fill(0).map((_, monthIndex) => {
-    const datesInMonth = new Set<string>();
-    filteredWearEntries.forEach((entry) => {
-      const date = new Date(entry.wear_date);
-      if (date.getMonth() === monthIndex) {
-        // Add the date string to the set to count unique days
-        datesInMonth.add(entry.wear_date);
-      }
-    });
-    return datesInMonth.size;
-  });
+  // Calculate monthly totals by summing all watch-days
+  const monthlyTotals = monthlyBreakdown.map(breakdown => 
+    Object.values(breakdown).reduce((sum, days) => sum + days, 0)
+  );
 
   const handleCellClick = (watchId: string, monthIndex: number, currentValue: number) => {
     requestVerification(() => {
