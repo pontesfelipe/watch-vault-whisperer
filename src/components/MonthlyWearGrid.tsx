@@ -308,32 +308,33 @@ export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyW
                     return (
                       <TableCell 
                         key={monthIndex} 
-                        className="text-center text-sm hover:bg-muted/50 transition-colors"
+                        className={`text-center text-sm transition-colors ${gridEditable ? 'cursor-pointer hover:bg-accent' : ''}`}
                         style={{
                           backgroundColor: days > 0 ? `${watchColorMap.get(watchKey)}20` : 'transparent',
                           fontWeight: days > 0 ? '600' : 'normal',
                         }}
-                        onClick={() => { if (gridEditable && !isEditing) handleCellClick(watch.id, monthIndex, days); }}
+                        onClick={() => { 
+                          if (gridEditable && !isEditing) {
+                            handleCellClick(watch.id, monthIndex, days);
+                          }
+                        }}
                       >
-                        {gridEditable && isEditing ? (
-                          <div className="flex items-center gap-2">
-                            <Input
-                              type="number"
-                              value={editValue}
-                              onChange={(e) => setEditValue(e.target.value)}
-                              onKeyDown={(e) => handleKeyDown(e, watch.id, monthIndex)}
-                              className="w-16 h-7 text-center p-1"
-                              autoFocus
-                              step="0.5"
-                              min="0"
-                            />
-                            <div className="flex gap-1">
-                              <Button size="sm" onClick={() => handleCellUpdate(watch.id, monthIndex)} disabled={isSaving}>Save</Button>
-                              <Button size="sm" variant="outline" onClick={() => setEditingCell(null)} disabled={isSaving}>Cancel</Button>
-                            </div>
-                          </div>
+                        {isEditing ? (
+                          <Input
+                            type="number"
+                            value={editValue}
+                            onChange={(e) => setEditValue(e.target.value)}
+                            onKeyDown={(e) => handleKeyDown(e, watch.id, monthIndex)}
+                            onBlur={() => setEditingCell(null)}
+                            className="w-full h-8 text-center"
+                            autoFocus
+                            step="0.5"
+                            min="0"
+                          />
                         ) : (
-                          days > 0 ? days.toFixed(1) : '-'
+                          <span className={gridEditable ? 'text-primary' : ''}>
+                            {days > 0 ? days.toFixed(1) : '-'}
+                          </span>
                         )}
                       </TableCell>
                     );
