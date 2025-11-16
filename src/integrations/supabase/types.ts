@@ -187,30 +187,92 @@ export type Database = {
       }
       registration_requests: {
         Row: {
+          accepted_privacy: boolean
+          accepted_terms: boolean
           created_at: string
           email: string
           first_name: string
           id: string
           last_name: string
+          privacy_version: string | null
           status: string
+          terms_version: string | null
         }
         Insert: {
+          accepted_privacy?: boolean
+          accepted_terms?: boolean
           created_at?: string
           email: string
           first_name: string
           id?: string
           last_name: string
+          privacy_version?: string | null
           status?: string
+          terms_version?: string | null
         }
         Update: {
+          accepted_privacy?: boolean
+          accepted_terms?: boolean
           created_at?: string
           email?: string
           first_name?: string
           id?: string
           last_name?: string
+          privacy_version?: string | null
           status?: string
+          terms_version?: string | null
         }
         Relationships: []
+      }
+      terms_acceptances: {
+        Row: {
+          accepted_at: string
+          accepted_privacy: boolean
+          accepted_terms: boolean
+          created_at: string
+          email: string
+          id: string
+          ip_address: string | null
+          privacy_version: string
+          registration_request_id: string | null
+          terms_version: string
+          user_agent: string | null
+        }
+        Insert: {
+          accepted_at?: string
+          accepted_privacy?: boolean
+          accepted_terms?: boolean
+          created_at?: string
+          email: string
+          id?: string
+          ip_address?: string | null
+          privacy_version?: string
+          registration_request_id?: string | null
+          terms_version?: string
+          user_agent?: string | null
+        }
+        Update: {
+          accepted_at?: string
+          accepted_privacy?: boolean
+          accepted_terms?: boolean
+          created_at?: string
+          email?: string
+          id?: string
+          ip_address?: string | null
+          privacy_version?: string
+          registration_request_id?: string | null
+          terms_version?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "terms_acceptances_registration_request_id_fkey"
+            columns: ["registration_request_id"]
+            isOneToOne: false
+            referencedRelation: "registration_requests"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       trips: {
         Row: {

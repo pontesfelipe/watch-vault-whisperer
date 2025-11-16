@@ -20,6 +20,7 @@ import { Trip, Event } from "@/types/watch";
 import { Button } from "@/components/ui/button";
 import { usePasscode } from "@/contexts/PasscodeContext";
 import { useToast } from "@/hooks/use-toast";
+import { BetaBadge } from "@/components/BetaBadge";
 
 interface Watch {
   id: string;
@@ -299,7 +300,10 @@ const Index = () => {
                 <Watch className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-foreground">Watch Collection</h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-3xl font-bold text-foreground">Watch Collection</h1>
+                  <BetaBadge />
+                </div>
                 <p className="text-sm text-muted-foreground">Track and manage your timepieces</p>
               </div>
             </div>

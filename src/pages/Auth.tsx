@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Watch } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { RegistrationRequestForm } from "@/components/RegistrationRequestForm";
+import { BetaBadge } from "@/components/BetaBadge";
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -63,7 +64,10 @@ export default function Auth() {
             <Watch className="h-8 w-8 text-primary" />
           </div>
         </div>
-        <h1 className="text-3xl font-bold text-center mb-2">Welcome to Watch Tracker</h1>
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <h1 className="text-3xl font-bold text-center">Welcome to Watch Tracker</h1>
+          <BetaBadge />
+        </div>
         <p className="text-center text-muted-foreground mb-8">
           Sign in or request access to manage your watch collection
         </p>
