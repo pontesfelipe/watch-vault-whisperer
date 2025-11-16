@@ -50,28 +50,41 @@ export const QuickAddWearDialog = ({ watches, onSuccess }: QuickAddWearDialogPro
       const day = String(dateObj.getDate()).padStart(2, '0');
       const formattedDate = `${year}-${month}-${day}`;
       
-      const { error } = await supabase.from("wear_entries").insert({
-        watch_id: data.watchId,
-        wear_date: formattedDate,
-        days: days,
-        user_id: user?.id,
-      });
+      // Check if entry already exists
+      const { data: existing } = await supabase
+        .from("wear_entries")
+        .select("id")
+        .eq("watch_id", data.watchId)
+        .eq("wear_date", formattedDate)
+        .eq("user_id", user?.id)
+        .single();
 
-      if (error) {
-        if (error.code === "23505") {
-          toast({
-            title: "Duplicate Entry",
-            description: "This watch already has a wear entry for this date",
-            variant: "destructive",
-          });
-          return;
-        }
-        throw error;
+      let error;
+      if (existing) {
+        // Update existing entry
+        const result = await supabase
+          .from("wear_entries")
+          .update({
+            days: days,
+          })
+          .eq("id", existing.id);
+        error = result.error;
+      } else {
+        // Insert new entry
+        const result = await supabase.from("wear_entries").insert({
+          watch_id: data.watchId,
+          wear_date: formattedDate,
+          days: days,
+          user_id: user?.id,
+        });
+        error = result.error;
       }
+
+      if (error) throw error;
 
       toast({
         title: "Success",
-        description: "Wear entry added",
+        description: existing ? "Wear entry updated" : "Wear entry added",
       });
 
       setOpen(false);
