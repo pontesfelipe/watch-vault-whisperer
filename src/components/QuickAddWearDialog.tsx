@@ -103,6 +103,15 @@ export const QuickAddWearDialog = ({ watches, onSuccess }: QuickAddWearDialogPro
     return a.model.localeCompare(b.model);
   });
 
+  // Get today's date in local timezone
+  const getTodayDate = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -139,8 +148,8 @@ export const QuickAddWearDialog = ({ watches, onSuccess }: QuickAddWearDialogPro
               name="wearDate"
               type="date"
               required
-              max={new Date().toISOString().split('T')[0]}
-              defaultValue={new Date().toISOString().split('T')[0]}
+              max={getTodayDate()}
+              defaultValue={getTodayDate()}
               className="bg-background border-border"
             />
           </div>
