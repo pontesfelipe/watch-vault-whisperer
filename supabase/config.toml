@@ -1,5 +1,8 @@
 project_id = "thrwpxiahqgubjkjnkgt"
 
+[functions.analyze-watch-metadata]
+verify_jwt = false
+
 [functions.search-watch-info]
 verify_jwt = false
 
