@@ -35,7 +35,8 @@ export const CollectionInsights = ({ watchCount, watches }: CollectionInsightsPr
 
       if (error) {
         console.error("Error loading insights:", error);
-        throw error;
+        // Silently fail on load - don't throw
+        return;
       }
       
       if (data?.insights) {
@@ -46,6 +47,7 @@ export const CollectionInsights = ({ watchCount, watches }: CollectionInsightsPr
       }
     } catch (error) {
       console.error("Error loading insights:", error);
+      // Silently fail on load
     } finally {
       setIsLoading(false);
     }
