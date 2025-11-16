@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Search, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { WatchCard } from "@/components/WatchCard";
+import { SortableWatchCard } from "@/components/SortableWatchCard";
 import { AddWatchDialog } from "@/components/AddWatchDialog";
 import { QuickAddWearDialog } from "@/components/QuickAddWearDialog";
 import { EditCollectionDialog } from "@/components/EditCollectionDialog";
@@ -17,6 +17,21 @@ import { useCollectionData } from "@/hooks/useCollectionData";
 import { useCollection } from "@/contexts/CollectionContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable";
 
 const Collection = () => {
   const { selectedCollectionId, currentCollection } = useCollection();
@@ -27,7 +42,63 @@ const Collection = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBrand, setSelectedBrand] = useState<string>("all");
   const [isBulkUpdating, setIsBulkUpdating] = useState(false);
+  const [localWatches, setLocalWatches] = useState(watches);
   const { toast } = useToast();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Update local watches when watches prop changes
+  useEffect(() => {
+    setLocalWatches(watches);
+  }, [watches]);
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    const oldIndex = localWatches.findIndex((w) => w.id === active.id);
+    const newIndex = localWatches.findIndex((w) => w.id === over.id);
+
+    const newOrder = arrayMove(localWatches, oldIndex, newIndex);
+    setLocalWatches(newOrder);
+
+    // Update sort_order in database
+    try {
+      const updates = newOrder.map((watch, index) => ({
+        id: watch.id,
+        sort_order: index + 1,
+      }));
+
+      for (const update of updates) {
+        await supabase
+          .from("watches")
+          .update({ sort_order: update.sort_order })
+          .eq("id", update.id);
+      }
+
+      toast({
+        title: "Order Updated",
+        description: "Watch order has been saved",
+      });
+    } catch (error) {
+      console.error("Error updating watch order:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update watch order",
+        variant: "destructive",
+      });
+      // Revert on error
+      setLocalWatches(watches);
+    }
+  };
 
   const stats = useStatsCalculations(watches, wearEntries, trips, waterUsages);
 
@@ -100,7 +171,7 @@ const Collection = () => {
     );
   }
 
-  const filteredWatches = watches.filter((watch) => {
+  const filteredWatches = localWatches.filter((watch) => {
     const matchesSearch =
       watch.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
       watch.model.toLowerCase().includes(searchQuery.toLowerCase());
@@ -184,16 +255,27 @@ const Collection = () => {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredWatches.map((watch) => (
-            <WatchCard
-              key={watch.id}
-              watch={watch}
-              totalDays={wearEntries.filter((w) => w.watch_id === watch.id).length}
-              onDelete={refetch}
-            />
-          ))}
-        </div>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={filteredWatches.map((w) => w.id)}
+            strategy={rectSortingStrategy}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredWatches.map((watch) => (
+                <SortableWatchCard
+                  key={watch.id}
+                  watch={watch}
+                  totalDays={wearEntries.filter((w) => w.watch_id === watch.id).length}
+                  onDelete={refetch}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
       )}
     </div>
   );

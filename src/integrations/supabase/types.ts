@@ -402,6 +402,7 @@ export type Database = {
           lug_to_lug_size: string | null
           model: string
           movement: string | null
+          sort_order: number
           type: string
           updated_at: string
           user_id: string | null
@@ -426,6 +427,7 @@ export type Database = {
           lug_to_lug_size?: string | null
           model: string
           movement?: string | null
+          sort_order?: number
           type: string
           updated_at?: string
           user_id?: string | null
@@ -450,6 +452,7 @@ export type Database = {
           lug_to_lug_size?: string | null
           model?: string
           movement?: string | null
+          sort_order?: number
           type?: string
           updated_at?: string
           user_id?: string | null

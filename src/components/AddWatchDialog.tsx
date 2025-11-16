@@ -207,6 +207,17 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         throw new Error("User not authenticated");
       }
 
+      // Get the maximum sort_order for this collection to add the new watch at the end
+      const { data: maxSortData } = await supabase
+        .from("watches")
+        .select("sort_order")
+        .eq("collection_id", selectedCollectionId)
+        .order("sort_order", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const nextSortOrder = maxSortData?.sort_order ? maxSortData.sort_order + 1 : 1;
+
       const { error } = await supabase.from("watches").insert({
         brand: data.brand,
         model: data.model,
@@ -224,6 +235,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         warranty_card_url: warrantyCardUrl,
         collection_id: selectedCollectionId,
         user_id: user.id,
+        sort_order: nextSortOrder,
       });
 
       if (error) throw error;

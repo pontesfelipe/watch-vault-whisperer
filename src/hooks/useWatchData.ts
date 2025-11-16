@@ -13,6 +13,7 @@ interface Watch {
   type: string;
   average_resale_price?: number;
   when_bought?: string;
+  sort_order?: number;
 }
 
 interface WearEntry {
@@ -51,7 +52,11 @@ export const useWatchData = (collectionId?: string | null) => {
         watchesQuery.eq('collection_id', collectionId);
       }
       
-      const watchesResult = await watchesQuery.order("brand", { ascending: true }).order("model", { ascending: true });
+      // Sort by custom sort_order, then fall back to brand and model for new watches
+      const watchesResult = await watchesQuery
+        .order("sort_order", { ascending: true })
+        .order("brand", { ascending: true })
+        .order("model", { ascending: true });
 
       if (watchesResult.data) {
         setWatches(watchesResult.data);
