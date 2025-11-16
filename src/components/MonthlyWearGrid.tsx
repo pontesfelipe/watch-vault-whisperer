@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { usePasscode } from "@/contexts/PasscodeContext";
 import { format } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -62,7 +63,7 @@ export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyW
   const [editValue, setEditValue] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
   const { requestVerification } = usePasscode();
-  const gridEditable = false;
+  const [gridEditable, setGridEditable] = useState(false);
   const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
   
   // Get available years from wear entries
@@ -114,10 +115,9 @@ export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyW
   );
 
   const handleCellClick = (watchId: string, monthIndex: number, currentValue: number) => {
-    requestVerification(() => {
-      setEditingCell({ watchId, monthIndex });
-      setEditValue(currentValue > 0 ? currentValue.toFixed(1) : "");
-    });
+    if (!gridEditable) return;
+    setEditingCell({ watchId, monthIndex });
+    setEditValue(currentValue > 0 ? currentValue.toFixed(1) : "");
   };
 
   const handleCellUpdate = async (watchId: string, monthIndex: number) => {
@@ -232,20 +232,35 @@ export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyW
         <h3 className="text-xl font-semibold text-foreground">
           Monthly Wear Distribution - Last Update: {lastUpdateDate}
         </h3>
-        <div className="flex items-center gap-2">
-          <label className="text-sm text-muted-foreground">Year:</label>
-          <Select value={selectedYear} onValueChange={setSelectedYear}>
-            <SelectTrigger className="w-[120px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {availableYears.map(year => (
-                <SelectItem key={year} value={year.toString()}>
-                  {year}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-muted-foreground">Year:</label>
+            <Select value={selectedYear} onValueChange={setSelectedYear}>
+              <SelectTrigger className="w-[120px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {availableYears.map(year => (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Edit entries</span>
+            <Switch
+              checked={gridEditable}
+              onCheckedChange={(v) => {
+                if (v) {
+                  requestVerification(() => setGridEditable(true));
+                } else {
+                  setGridEditable(false);
+                }
+              }}
+            />
+          </div>
         </div>
       </div>
       
@@ -303,7 +318,7 @@ export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyW
                               onKeyDown={(e) => handleKeyDown(e, watch.id, monthIndex)}
                               className="w-16 h-7 text-center p-1"
                               autoFocus
-                              step="0.1"
+                              step="0.5"
                               min="0"
                             />
                             <div className="flex gap-1">
