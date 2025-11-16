@@ -13,7 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 const wearSchema = z.object({
   watchId: z.string().uuid(),
   wearDate: z.string().min(1, "Date is required"),
-  days: z.number().min(0.1, "Days must be at least 0.1").max(31, "Days cannot exceed 31"),
+  fullDay: z.boolean(),
   notes: z.string().max(500, "Notes must be less than 500 characters").optional(),
 });
 
@@ -33,11 +33,11 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
       const data = wearSchema.parse({
         watchId,
         wearDate: formData.get("wearDate"),
-        days: parseFloat(formData.get("days") as string),
+        fullDay: formData.get("fullDay") === "true",
         notes: formData.get("notes") || undefined,
       });
 
-      const roundedDays = Math.round(data.days * 10) / 10;
+      const days = data.fullDay ? 1 : 0.5;
       
       // Fix timezone issue: ensure the date is stored as-is without timezone conversion
       const dateObj = new Date(data.wearDate + 'T00:00:00');
@@ -49,7 +49,7 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
       const { error } = await supabase.from("wear_entries").insert({
         watch_id: data.watchId,
         wear_date: formattedDate,
-        days: roundedDays,
+        days: days,
         notes: data.notes,
         user_id: user?.id,
       });
@@ -58,7 +58,7 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
         if (error.code === "23505") {
           toast({
             title: "Duplicate Entry",
-            description: "A wear entry for this date already exists",
+            description: "This watch already has a wear entry for this date",
             variant: "destructive",
           });
           return;
@@ -118,19 +118,28 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="days">Days Worn</Label>
-            <Input
-              id="days"
-              name="days"
-              type="number"
-              step="0.1"
-              min="0.1"
-              max="31"
-              defaultValue="1"
-              required
-              className="bg-background border-border"
-            />
-            <p className="text-xs text-muted-foreground">Use one decimal (e.g., 1.0, 0.5)</p>
+            <Label>Wear Duration</Label>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="fullDay"
+                  value="true"
+                  defaultChecked
+                  className="w-4 h-4"
+                />
+                <span className="text-sm">Full Day</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="fullDay"
+                  value="false"
+                  className="w-4 h-4"
+                />
+                <span className="text-sm">Half Day</span>
+              </label>
+            </div>
           </div>
 
           <div className="space-y-2">
