@@ -5,7 +5,8 @@ import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Upload } from "lucide-react";
-
+import { Input } from "@/components/ui/input";
+import * as XLSX from "xlsx";
 export const ImportSpreadsheetDialog = () => {
   const [open, setOpen] = useState(false);
   const [importing, setImporting] = useState(false);
