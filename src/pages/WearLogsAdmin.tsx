@@ -40,6 +40,7 @@ export default function WearLogsAdmin() {
   const [selectedMonth, setSelectedMonth] = useState<string>(format(new Date(), "yyyy-MM"));
   const [editingEntry, setEditingEntry] = useState<EditingEntry | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) {
@@ -167,6 +168,17 @@ export default function WearLogsAdmin() {
     return options;
   };
 
+  // Filter wear logs based on search query
+  const filteredWearLogs = wearLogs.filter((log) => {
+    if (!searchQuery.trim()) return true;
+    
+    const watchName = log.watches 
+      ? `${log.watches.brand} ${log.watches.model}`.toLowerCase()
+      : "";
+    
+    return watchName.includes(searchQuery.toLowerCase());
+  });
+
   if (loading || !isAdmin) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -185,27 +197,46 @@ export default function WearLogsAdmin() {
 
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Wear Entry Records</CardTitle>
-                <CardDescription>
-                  View and edit all wear entries for the selected month
-                </CardDescription>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Wear Entry Records</CardTitle>
+                  <CardDescription>
+                    View and edit all wear entries for the selected month
+                  </CardDescription>
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="text-sm text-muted-foreground">Month:</label>
+                  <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getMonthOptions().map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div className="flex items-center gap-2">
-                <label className="text-sm text-muted-foreground">Month:</label>
-                <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                  <SelectTrigger className="w-[200px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {getMonthOptions().map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Input
+                  placeholder="Search by watch name..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="max-w-sm"
+                />
+                {searchQuery && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSearchQuery("")}
+                  >
+                    Clear
+                  </Button>
+                )}
               </div>
             </div>
           </CardHeader>
@@ -214,9 +245,11 @@ export default function WearLogsAdmin() {
               <div className="flex items-center justify-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
               </div>
-            ) : wearLogs.length === 0 ? (
+            ) : filteredWearLogs.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                No wear entries found for this month
+                {wearLogs.length === 0 
+                  ? "No wear entries found for this month"
+                  : "No wear entries match your search"}
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -232,7 +265,7 @@ export default function WearLogsAdmin() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {wearLogs.map((log) => {
+                    {filteredWearLogs.map((log) => {
                       const isEditing = editingEntry?.id === log.id;
                       return (
                         <TableRow key={log.id}>
