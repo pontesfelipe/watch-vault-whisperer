@@ -108,9 +108,18 @@ export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyW
   });
 
   // Calculate monthly totals by summing all watch-days
-  const monthlyTotals = monthlyBreakdown.map(breakdown => 
-    Object.values(breakdown).reduce((sum, days) => sum + days, 0)
-  );
+  // Calculate monthly totals based on unique dates with entries (not sum of days)
+  const monthlyTotals = Array(12).fill(0).map((_, monthIndex) => {
+    const datesInMonth = new Set<string>();
+    filteredWearEntries.forEach((entry) => {
+      const date = new Date(entry.wear_date);
+      if (date.getMonth() === monthIndex) {
+        // Count a calendar day once even if multiple watches were worn
+        datesInMonth.add(entry.wear_date);
+      }
+    });
+    return datesInMonth.size;
+  });
 
   const handleCellClick = (watchId: string, monthIndex: number, currentValue: number) => {
     requestVerification(() => {
@@ -131,69 +140,75 @@ export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyW
       return;
     }
 
-    const rounded = Math.round(newValue * 10) / 10;
+    const rounded = Math.round(newValue * 2) / 2;
 
     setIsSaving(true);
 
     try {
-      // Compute month range safely (handles December -> next year)
-      const now = new Date();
-      const startOfMonthDate = new Date(now.getFullYear(), monthIndex, 1);
-      const startOfNextMonthDate = new Date(now.getFullYear(), monthIndex + 1, 1);
-      const wearDate = format(startOfMonthDate, 'yyyy-MM-dd');
-      
-      // Check if an entry exists for this watch and month
+      // Use the selected year, not "now"
+      const year = parseInt(selectedYear, 10);
+      const startOfMonthDate = new Date(year, monthIndex, 1);
+      const startOfNextMonthDate = new Date(year, monthIndex + 1, 1);
+
+      // Fetch existing entries for this watch and month
       const { data: existingEntries, error: fetchErr } = await supabase
         .from('wear_entries')
-        .select('*')
+        .select('id')
         .eq('watch_id', watchId)
         .gte('wear_date', format(startOfMonthDate, 'yyyy-MM-dd'))
         .lt('wear_date', format(startOfNextMonthDate, 'yyyy-MM-dd'));
 
       if (fetchErr) throw fetchErr;
 
-      if (rounded === 0) {
-        // Delete all entries for this month if value is 0
-        if (existingEntries && existingEntries.length > 0) {
-          const { error } = await supabase
-            .from('wear_entries')
-            .delete()
-            .in('id', existingEntries.map(e => e.id));
-          
-          if (error) throw error;
-          toast.success("Wear entry removed");
-        }
-      } else if (existingEntries && existingEntries.length > 0) {
-        // Update the first existing entry and delete others
-        const { error } = await supabase
+      // Always clear existing entries for that watch/month first
+      if (existingEntries && existingEntries.length > 0) {
+        const { error: delOldErr } = await supabase
           .from('wear_entries')
-          .update({ days: rounded })
-          .eq('id', existingEntries[0].id);
-        
-        if (error) throw error;
+          .delete()
+          .in('id', existingEntries.map(e => e.id));
+        if (delOldErr) throw delOldErr;
+      }
 
-        // Delete other entries for this month
-        if (existingEntries.length > 1) {
-          const { error: delErr } = await supabase
-            .from('wear_entries')
-            .delete()
-            .in('id', existingEntries.slice(1).map(e => e.id));
-          if (delErr) throw delErr;
-        }
-        
-        toast.success("Wear entry updated");
-      } else {
-        // Create new entry
-        const { error } = await supabase
-          .from('wear_entries')
-          .insert({
+      if (rounded > 0) {
+        const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+        const fullDays = Math.floor(rounded);
+        const remainder = +(rounded - fullDays).toFixed(1); // 0 or 0.5
+
+        const inserts: { watch_id: string; wear_date: string; days: number }[] = [];
+
+        // Distribute full-day wears one per calendar day, cycling if needed
+        for (let i = 0; i < fullDays; i++) {
+          const day = (i % daysInMonth) + 1;
+          const date = new Date(year, monthIndex, day);
+          inserts.push({
             watch_id: watchId,
-            wear_date: wearDate,
-            days: rounded,
+            wear_date: format(date, 'yyyy-MM-dd'),
+            days: 1,
           });
-        
-        if (error) throw error;
-        toast.success("Wear entry added");
+        }
+
+        // Add the remaining half-day if present
+        if (remainder > 0) {
+          const day = ((fullDays) % daysInMonth) + 1;
+          const date = new Date(year, monthIndex, day);
+          inserts.push({
+            watch_id: watchId,
+            wear_date: format(date, 'yyyy-MM-dd'),
+            days: remainder,
+          });
+        }
+
+        if (inserts.length > 0) {
+          const { error: insertErr } = await supabase
+            .from('wear_entries')
+            .insert(inserts);
+          if (insertErr) throw insertErr;
+        }
+
+        toast.success('Wear entries saved');
+      } else {
+        // Nothing to insert, entries were cleared above
+        toast.success('Wear entries cleared');
       }
 
       // Trigger data refresh
