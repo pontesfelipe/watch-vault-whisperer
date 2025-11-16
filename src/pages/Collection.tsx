@@ -9,6 +9,7 @@ import { QuickAddWearDialog } from "@/components/QuickAddWearDialog";
 import { EditCollectionDialog } from "@/components/EditCollectionDialog";
 import { CreateFirstCollectionDialog } from "@/components/CreateFirstCollectionDialog";
 import { CollectionSwitcher } from "@/components/CollectionSwitcher";
+import { AnalyzeWatchMetadataDialog } from "@/components/AnalyzeWatchMetadataDialog";
 import { useWatchData } from "@/hooks/useWatchData";
 import { useStatsCalculations } from "@/hooks/useStatsCalculations";
 import { useTripData } from "@/hooks/useTripData";
@@ -216,6 +217,7 @@ const Collection = () => {
             <RefreshCw className={`w-4 h-4 ${isBulkUpdating ? 'animate-spin' : ''}`} />
             {isBulkUpdating ? 'Updating...' : 'Update All Prices'}
           </Button>
+          <AnalyzeWatchMetadataDialog watches={watches} onSuccess={refetch} />
           <QuickAddWearDialog watches={watches} onSuccess={refetch} />
           <AddWatchDialog onSuccess={refetch} />
         </div>
