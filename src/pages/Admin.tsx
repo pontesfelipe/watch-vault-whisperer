@@ -6,8 +6,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AllowedUsersTable } from "@/components/admin/AllowedUsersTable";
 import { RegisteredUsersTable } from "@/components/admin/RegisteredUsersTable";
 import { RegistrationRequestsTable } from "@/components/admin/RegistrationRequestsTable";
+import { TermsAcceptancesTable } from "@/components/admin/TermsAcceptancesTable";
 import { ManageCollectionsDialog } from "@/components/admin/ManageCollectionsDialog";
-import { Shield, Users, UserCog } from "lucide-react";
+import { Shield, Users, UserCog, FileCheck } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 
 export default function Admin() {
@@ -49,10 +50,10 @@ export default function Admin() {
         </div>
 
         <Tabs defaultValue="requests" className="w-full">
-          <TabsList className="grid w-full max-w-2xl grid-cols-3">
+          <TabsList className="grid w-full max-w-3xl grid-cols-4">
             <TabsTrigger value="requests" className="flex items-center gap-2">
               <UserCog className="h-4 w-4" />
-              Registration Requests
+              Requests
             </TabsTrigger>
             <TabsTrigger value="allowed" className="flex items-center gap-2">
               <UserCog className="h-4 w-4" />
@@ -61,6 +62,10 @@ export default function Admin() {
             <TabsTrigger value="registered" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               Registered Users
+            </TabsTrigger>
+            <TabsTrigger value="acceptances" className="flex items-center gap-2">
+              <FileCheck className="h-4 w-4" />
+              Terms Acceptances
             </TabsTrigger>
           </TabsList>
 
@@ -104,6 +109,10 @@ export default function Admin() {
                 <RegisteredUsersTable />
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="acceptances" className="space-y-4">
+            <TermsAcceptancesTable />
           </TabsContent>
         </Tabs>
 
