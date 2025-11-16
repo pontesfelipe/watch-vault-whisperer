@@ -190,35 +190,33 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
             <span className="font-medium text-foreground">{watch.dial_color}</span>
           </div>
 
-          {watch.rarity && watch.rarity !== 'common' && (
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Rarity</span>
-              <Badge variant={
-                watch.rarity === 'grail' ? 'default' :
-                watch.rarity === 'very_rare' ? 'destructive' :
-                watch.rarity === 'rare' ? 'secondary' : 'outline'
-              } className="text-xs capitalize">
-                {watch.rarity.replace('_', ' ')}
-              </Badge>
-            </div>
-          )}
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">Rarity</span>
+            <Badge variant={
+              watch.rarity === 'grail' ? 'default' :
+              watch.rarity === 'very_rare' ? 'destructive' :
+              watch.rarity === 'rare' ? 'secondary' : 'outline'
+            } className="text-xs capitalize">
+              {watch.rarity ? watch.rarity.replace('_', ' ') : 'common'}
+            </Badge>
+          </div>
 
-          {watch.historical_significance && watch.historical_significance !== 'regular' && (
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Historical</span>
-              <Badge variant="secondary" className="text-xs capitalize">
-                {watch.historical_significance.replace('_', ' ')}
-              </Badge>
-            </div>
-          )}
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">Historical</span>
+            <Badge variant={
+              watch.historical_significance === 'historically_significant' ? 'default' :
+              watch.historical_significance === 'notable' ? 'secondary' : 'outline'
+            } className="text-xs capitalize">
+              {watch.historical_significance ? watch.historical_significance.replace('_', ' ') : 'regular'}
+            </Badge>
+          </div>
 
-          {watch.available_for_trade && (
-            <div className="flex items-center justify-between text-sm">
-              <Badge variant="outline" className="text-xs border-primary text-primary">
-                Available for Trade/Sell
-              </Badge>
-            </div>
-          )}
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">Trade/Sell</span>
+            <Badge variant={watch.available_for_trade ? 'default' : 'outline'} className="text-xs">
+              {watch.available_for_trade ? 'Available' : 'Not Available'}
+            </Badge>
+          </div>
 
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Cost</span>
