@@ -175,13 +175,13 @@ export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyW
                         }}
                       >
                         <span>
-                          {days > 0 ? days.toFixed(1) : '-'}
+                          {days > 0 ? `${days.toFixed(1)}d` : '-'}
                         </span>
                       </TableCell>
                     );
                   })}
                   <TableCell className="text-center font-bold text-primary">
-                    {total.toFixed(1)}
+                    {`${total.toFixed(1)}d`}
                   </TableCell>
                 </TableRow>
               );

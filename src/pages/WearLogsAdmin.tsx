@@ -285,6 +285,10 @@ export default function WearLogsAdmin() {
     return watchName.includes(searchQuery.toLowerCase());
   });
 
+  // Monthly summary for current filters
+  const monthEntriesCount = filteredWearLogs.length;
+  const monthDaysTotal = filteredWearLogs.reduce((sum, l) => sum + (l.days || 0), 0);
+
   if (loading || !isAdmin) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -428,6 +432,9 @@ export default function WearLogsAdmin() {
                     Clear
                   </Button>
                 )}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Month summary: {monthEntriesCount} entries, {monthDaysTotal.toFixed(1)}d
               </div>
             </div>
           </CardHeader>
