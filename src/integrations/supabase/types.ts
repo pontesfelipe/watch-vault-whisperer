@@ -494,6 +494,7 @@ export type Database = {
           metadata_analyzed_at: string | null
           model: string
           movement: string | null
+          msrp: number | null
           rarity: Database["public"]["Enums"]["watch_rarity"] | null
           sort_order: number
           type: string
@@ -526,6 +527,7 @@ export type Database = {
           metadata_analyzed_at?: string | null
           model: string
           movement?: string | null
+          msrp?: number | null
           rarity?: Database["public"]["Enums"]["watch_rarity"] | null
           sort_order?: number
           type: string
@@ -558,6 +560,7 @@ export type Database = {
           metadata_analyzed_at?: string | null
           model?: string
           movement?: string | null
+          msrp?: number | null
           rarity?: Database["public"]["Enums"]["watch_rarity"] | null
           sort_order?: number
           type?: string

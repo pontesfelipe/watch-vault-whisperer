@@ -5,6 +5,7 @@ interface Watch {
   brand: string;
   model: string;
   cost: number;
+  msrp?: number;
   dial_color: string;
   type: string;
   average_resale_price?: number;
@@ -183,6 +184,7 @@ export const useStatsCalculations = (
 
     // Depreciation Analysis
     const totalCollectionValue = watches.reduce((sum, watch) => sum + (watch.cost || 0), 0);
+    const totalMSRP = watches.reduce((sum, watch) => sum + (watch.msrp || 0), 0);
     
     const watchesWithResaleData = watches.filter(w => w.average_resale_price != null && w.average_resale_price > 0);
     const currentMarketValue = watchesWithResaleData.reduce((sum, watch) => sum + (watch.average_resale_price || 0), 0);
@@ -229,6 +231,7 @@ export const useStatsCalculations = (
       trendingDownWatch: topTrendingDownWatch,
       trendingDownCount: trendingDownWatches.length,
       // Depreciation stats
+      totalMSRP,
       totalCollectionValue,
       currentMarketValue,
       totalDepreciation,
