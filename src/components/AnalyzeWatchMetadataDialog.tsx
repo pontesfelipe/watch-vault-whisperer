@@ -12,6 +12,7 @@ interface Watch {
   model: string;
   rarity?: string | null;
   historical_significance?: string | null;
+  metadata_analyzed_at?: string | null;
 }
 
 interface AnalyzeWatchMetadataDialogProps {
@@ -25,11 +26,21 @@ export const AnalyzeWatchMetadataDialog = ({ watches, onSuccess }: AnalyzeWatchM
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const { toast } = useToast();
 
-  // Filter watches that need analysis (missing rarity or historical significance)
-  const watchesNeedingAnalysis = watches.filter(
-    w => !w.rarity || !w.historical_significance || 
-         w.rarity === 'common' || w.historical_significance === 'regular'
-  );
+  // Filter watches that need analysis (missing data or older than 3 months)
+  const watchesNeedingAnalysis = watches.filter(w => {
+    if (!w.rarity || !w.historical_significance || 
+        w.rarity === 'common' || w.historical_significance === 'regular') {
+      return true;
+    }
+    // Check if analyzed more than 3 months ago
+    if (w.metadata_analyzed_at) {
+      const analyzedDate = new Date(w.metadata_analyzed_at);
+      const threeMonthsAgo = new Date();
+      threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+      return analyzedDate < threeMonthsAgo;
+    }
+    return !w.metadata_analyzed_at; // Never analyzed
+  });
 
   const analyzeWatch = async (watch: Watch) => {
     console.log(`Analyzing ${watch.brand} ${watch.model}...`);
@@ -47,12 +58,14 @@ export const AnalyzeWatchMetadataDialog = ({ watches, onSuccess }: AnalyzeWatchM
       throw new Error('Invalid response from AI');
     }
 
-    // Update the watch in the database
+    // Update the watch in the database with reasoning and timestamp
     const { error: updateError } = await supabase
       .from('watches')
       .update({
         rarity: data.rarity,
-        historical_significance: data.historical_significance
+        historical_significance: data.historical_significance,
+        metadata_analysis_reasoning: data.reasoning || null,
+        metadata_analyzed_at: new Date().toISOString()
       })
       .eq('id', watch.id);
 

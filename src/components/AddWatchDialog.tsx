@@ -231,7 +231,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
 
       const nextSortOrder = maxSortData?.sort_order ? maxSortData.sort_order + 1 : 1;
 
-      const { error } = await supabase.from("watches").insert({
+      const { data: insertData, error } = await supabase.from("watches").insert({
         brand: data.brand,
         model: data.model,
         dial_color: data.dialColor,
@@ -252,9 +252,33 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         rarity: data.rarity || 'common',
         historical_significance: data.historicalSignificance || 'regular',
         available_for_trade: formValues.availableForTrade,
-      });
+      }).select().single();
 
       if (error) throw error;
+
+      // Auto-analyze metadata after creating the watch
+      if (insertData?.id) {
+        try {
+          const { data: aiData } = await supabase.functions.invoke('analyze-watch-metadata', {
+            body: { brand: data.brand, model: data.model }
+          });
+
+          if (aiData?.rarity && aiData?.historical_significance) {
+            await supabase
+              .from('watches')
+              .update({
+                rarity: aiData.rarity,
+                historical_significance: aiData.historical_significance,
+                metadata_analysis_reasoning: aiData.reasoning || null,
+                metadata_analyzed_at: new Date().toISOString()
+              })
+              .eq('id', insertData.id);
+          }
+        } catch (aiError) {
+          console.error('Auto-analysis failed:', aiError);
+          // Don't block the main flow if AI analysis fails
+        }
+      }
 
       toast({
         title: "Success",

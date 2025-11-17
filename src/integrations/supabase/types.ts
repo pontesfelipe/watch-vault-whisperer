@@ -490,6 +490,8 @@ export type Database = {
             | null
           id: string
           lug_to_lug_size: string | null
+          metadata_analysis_reasoning: string | null
+          metadata_analyzed_at: string | null
           model: string
           movement: string | null
           rarity: Database["public"]["Enums"]["watch_rarity"] | null
@@ -520,6 +522,8 @@ export type Database = {
             | null
           id?: string
           lug_to_lug_size?: string | null
+          metadata_analysis_reasoning?: string | null
+          metadata_analyzed_at?: string | null
           model: string
           movement?: string | null
           rarity?: Database["public"]["Enums"]["watch_rarity"] | null
@@ -550,6 +554,8 @@ export type Database = {
             | null
           id?: string
           lug_to_lug_size?: string | null
+          metadata_analysis_reasoning?: string | null
+          metadata_analyzed_at?: string | null
           model?: string
           movement?: string | null
           rarity?: Database["public"]["Enums"]["watch_rarity"] | null

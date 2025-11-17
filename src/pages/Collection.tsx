@@ -17,6 +17,7 @@ import { useTripData } from "@/hooks/useTripData";
 import { useWaterUsageData } from "@/hooks/useWaterUsageData";
 import { useCollectionData } from "@/hooks/useCollectionData";
 import { useCollection } from "@/contexts/CollectionContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -41,6 +42,7 @@ const Collection = () => {
   const { trips } = useTripData();
   const { waterUsages } = useWaterUsageData();
   const { collections, loading: collectionsLoading, refetch: refetchCollections } = useCollectionData();
+  const { isAdmin } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBrand, setSelectedBrand] = useState<string>("all");
   const [isBulkUpdating, setIsBulkUpdating] = useState(false);
@@ -219,7 +221,7 @@ const Collection = () => {
             <RefreshCw className={`w-4 h-4 ${isBulkUpdating ? 'animate-spin' : ''}`} />
             {isBulkUpdating ? 'Updating...' : 'Update All Prices'}
           </Button>
-          <AnalyzeWatchMetadataDialog watches={watches} onSuccess={refetch} />
+          {isAdmin && <AnalyzeWatchMetadataDialog watches={watches} onSuccess={refetch} />}
           <QuickAddWearDialog watches={watches} onSuccess={refetch} />
           <AddWatchDialog onSuccess={refetch} />
         </div>
