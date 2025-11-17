@@ -10,6 +10,12 @@ import { usePasscode } from "@/contexts/PasscodeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { EditWatchDialog } from "@/components/EditWatchDialog";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -40,6 +46,7 @@ interface WatchCardProps {
     rarity?: string;
     historical_significance?: string;
     available_for_trade?: boolean;
+    metadata_analysis_reasoning?: string;
   };
   totalDays: number;
   onDelete: () => void;
@@ -192,23 +199,45 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
 
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Rarity</span>
-            <Badge variant={
-              watch.rarity === 'grail' ? 'default' :
-              watch.rarity === 'very_rare' ? 'destructive' :
-              watch.rarity === 'rare' ? 'secondary' : 'outline'
-            } className="text-xs capitalize">
-              {watch.rarity ? watch.rarity.replace('_', ' ') : 'common'}
-            </Badge>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge variant={
+                    watch.rarity === 'grail' ? 'default' :
+                    watch.rarity === 'very_rare' ? 'destructive' :
+                    watch.rarity === 'rare' ? 'secondary' : 'outline'
+                  } className="text-xs capitalize cursor-help">
+                    {watch.rarity ? watch.rarity.replace('_', ' ') : 'common'}
+                  </Badge>
+                </TooltipTrigger>
+                {watch.metadata_analysis_reasoning && (
+                  <TooltipContent className="max-w-xs">
+                    <p className="text-sm">{watch.metadata_analysis_reasoning}</p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
           </div>
 
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Historical</span>
-            <Badge variant={
-              watch.historical_significance === 'historically_significant' ? 'default' :
-              watch.historical_significance === 'notable' ? 'secondary' : 'outline'
-            } className="text-xs capitalize">
-              {watch.historical_significance ? watch.historical_significance.replace('_', ' ') : 'regular'}
-            </Badge>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge variant={
+                    watch.historical_significance === 'historically_significant' ? 'default' :
+                    watch.historical_significance === 'notable' ? 'secondary' : 'outline'
+                  } className="text-xs capitalize cursor-help">
+                    {watch.historical_significance ? watch.historical_significance.replace('_', ' ') : 'regular'}
+                  </Badge>
+                </TooltipTrigger>
+                {watch.metadata_analysis_reasoning && (
+                  <TooltipContent className="max-w-xs">
+                    <p className="text-sm">{watch.metadata_analysis_reasoning}</p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
           </div>
 
           <div className="flex items-center justify-between text-sm">
