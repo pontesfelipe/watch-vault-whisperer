@@ -68,6 +68,26 @@ export default function WearLogsAdmin() {
     if (isAdmin) {
       fetchWearLogs();
       fetchWatches();
+
+      // Set up realtime subscription for wear_entries
+      const channel = supabase
+        .channel('wear_entries_admin_changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'wear_entries'
+          },
+          () => {
+            fetchWearLogs();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [selectedMonth, isAdmin]);
 
