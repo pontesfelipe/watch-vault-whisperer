@@ -89,6 +89,26 @@ export const useWatchData = (collectionId?: string | null) => {
 
   useEffect(() => {
     fetchData();
+
+    // Set up realtime subscription for wear_entries
+    const channel = supabase
+      .channel('wear_entries_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'wear_entries'
+        },
+        () => {
+          fetchData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user, isAdmin, collectionId]);
 
   return { watches, wearEntries, loading, refetch: fetchData };
