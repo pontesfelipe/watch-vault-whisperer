@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Watch as WatchIcon, Calendar, Eye, EyeOff, Trash2, RefreshCw } from "lucide-react";
+import { Watch as WatchIcon, Calendar, Eye, EyeOff, Trash2, RefreshCw, Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -10,11 +10,12 @@ import { usePasscode } from "@/contexts/PasscodeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { EditWatchDialog } from "@/components/EditWatchDialog";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -60,6 +61,7 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
   const [showCost, setShowCost] = useState(isAdmin);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isFetchingPrice, setIsFetchingPrice] = useState(false);
+  const [showReasoningDialog, setShowReasoningDialog] = useState(false);
 
   const handleToggleCost = () => {
     if (!showCost) {
@@ -199,45 +201,47 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
 
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Rarity</span>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Badge variant={
-                    watch.rarity === 'grail' ? 'default' :
-                    watch.rarity === 'very_rare' ? 'destructive' :
-                    watch.rarity === 'rare' ? 'secondary' : 'outline'
-                  } className="text-xs capitalize cursor-help">
-                    {watch.rarity ? watch.rarity.replace('_', ' ') : 'common'}
-                  </Badge>
-                </TooltipTrigger>
-                {watch.metadata_analysis_reasoning && (
-                  <TooltipContent className="max-w-xs">
-                    <p className="text-sm">{watch.metadata_analysis_reasoning}</p>
-                  </TooltipContent>
-                )}
-              </Tooltip>
-            </TooltipProvider>
+            <div className="flex items-center gap-1">
+              <Badge variant={
+                watch.rarity === 'grail' ? 'default' :
+                watch.rarity === 'very_rare' ? 'destructive' :
+                watch.rarity === 'rare' ? 'secondary' : 'outline'
+              } className="text-xs capitalize">
+                {watch.rarity ? watch.rarity.replace('_', ' ') : 'common'}
+              </Badge>
+              {watch.metadata_analysis_reasoning && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-5 w-5 p-0"
+                  onClick={() => setShowReasoningDialog(true)}
+                >
+                  <Info className="w-3 h-3 text-muted-foreground" />
+                </Button>
+              )}
+            </div>
           </div>
 
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Historical</span>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Badge variant={
-                    watch.historical_significance === 'historically_significant' ? 'default' :
-                    watch.historical_significance === 'notable' ? 'secondary' : 'outline'
-                  } className="text-xs capitalize cursor-help">
-                    {watch.historical_significance ? watch.historical_significance.replace('_', ' ') : 'regular'}
-                  </Badge>
-                </TooltipTrigger>
-                {watch.metadata_analysis_reasoning && (
-                  <TooltipContent className="max-w-xs">
-                    <p className="text-sm">{watch.metadata_analysis_reasoning}</p>
-                  </TooltipContent>
-                )}
-              </Tooltip>
-            </TooltipProvider>
+            <div className="flex items-center gap-1">
+              <Badge variant={
+                watch.historical_significance === 'historically_significant' ? 'default' :
+                watch.historical_significance === 'notable' ? 'secondary' : 'outline'
+              } className="text-xs capitalize">
+                {watch.historical_significance ? watch.historical_significance.replace('_', ' ') : 'regular'}
+              </Badge>
+              {watch.metadata_analysis_reasoning && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-5 w-5 p-0"
+                  onClick={() => setShowReasoningDialog(true)}
+                >
+                  <Info className="w-3 h-3 text-muted-foreground" />
+                </Button>
+              )}
+            </div>
           </div>
 
           <div className="flex items-center justify-between text-sm">
