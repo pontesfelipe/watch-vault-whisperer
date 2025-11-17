@@ -16,6 +16,7 @@ const watchSchema = z.object({
   dialColor: z.string().trim().min(1, "Dial color is required").max(50),
   type: z.string().trim().min(1, "Type is required").max(100),
   cost: z.number().min(0, "Cost must be positive"),
+  msrp: z.number().min(0, "MSRP must be positive").optional(),
   averageResalePrice: z.number().min(0, "Resale price must be positive").optional(),
   warrantyDate: z.string().optional(),
   rarity: z.enum(['common', 'uncommon', 'rare', 'very_rare', 'grail']).optional(),
@@ -29,6 +30,7 @@ interface Watch {
   dial_color: string;
   type: string;
   cost: number;
+  msrp?: number;
   case_size?: string;
   lug_to_lug_size?: string;
   caseback_material?: string;
@@ -51,6 +53,7 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
     dialColor: watch.dial_color,
     type: watch.type,
     cost: watch.cost.toString(),
+    msrp: watch.msrp?.toString() || "",
     caseSize: watch.case_size || "",
     lugToLugSize: watch.lug_to_lug_size || "",
     casebackMaterial: watch.caseback_material || "",
@@ -73,6 +76,7 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
         dialColor: watch.dial_color,
         type: watch.type,
         cost: watch.cost.toString(),
+        msrp: watch.msrp?.toString() || "",
         caseSize: watch.case_size || "",
         lugToLugSize: watch.lug_to_lug_size || "",
         casebackMaterial: watch.caseback_material || "",
@@ -99,6 +103,7 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
         dialColor: formValues.dialColor,
         type: formValues.type,
         cost: parseFloat(formValues.cost),
+        msrp: formValues.msrp ? parseFloat(formValues.msrp) : undefined,
         averageResalePrice: formValues.averageResalePrice ? parseFloat(formValues.averageResalePrice) : undefined,
         warrantyDate: formValues.warrantyDate || undefined,
         rarity: formValues.rarity,
@@ -139,6 +144,7 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
           dial_color: data.dialColor,
           type: data.type,
           cost: data.cost,
+          msrp: data.msrp || null,
           case_size: formValues.caseSize || null,
           lug_to_lug_size: formValues.lugToLugSize || null,
           caseback_material: formValues.casebackMaterial || null,
@@ -244,7 +250,7 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="cost">Cost ($)</Label>
+            <Label htmlFor="cost">Price Paid ($)</Label>
             <Input
               id="cost"
               value={formValues.cost}
@@ -254,6 +260,21 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
               min="0"
               required
               className="bg-background border-border"
+              placeholder="Amount you paid"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="msrp">MSRP (Optional)</Label>
+            <Input
+              id="msrp"
+              value={formValues.msrp}
+              onChange={(e) => setFormValues({ ...formValues, msrp: e.target.value })}
+              type="number"
+              step="0.01"
+              min="0"
+              className="bg-background border-border"
+              placeholder="Manufacturer's suggested retail price"
             />
           </div>
 

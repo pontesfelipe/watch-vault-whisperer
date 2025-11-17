@@ -2,15 +2,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingDown, TrendingUp, DollarSign } from "lucide-react";
 
 interface DepreciationCardProps {
-  totalInvested: number;
-  currentValue: number;
+  totalMSRP: number;
+  pricePaid: number;
+  marketValue: number;
   depreciation: number;
   depreciationPercent: number;
 }
 
 export const DepreciationCard = ({
-  totalInvested,
-  currentValue,
+  totalMSRP,
+  pricePaid,
+  marketValue,
   depreciation,
   depreciationPercent,
 }: DepreciationCardProps) => {
@@ -29,21 +31,27 @@ export const DepreciationCard = ({
       <CardHeader>
         <CardTitle className="text-xl flex items-center gap-2">
           <DollarSign className="w-5 h-5 text-primary" />
-          Collection Value Analysis
+          Pricing Comparison
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           <div>
-            <p className="text-sm text-muted-foreground mb-1">Total Invested</p>
-            <p className="text-2xl font-bold text-foreground">
-              {formatCurrency(totalInvested)}
+            <p className="text-sm text-muted-foreground mb-1">MSRP</p>
+            <p className="text-xl font-bold text-foreground">
+              {totalMSRP > 0 ? formatCurrency(totalMSRP) : "N/A"}
             </p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground mb-1">Current Market Value</p>
-            <p className="text-2xl font-bold text-foreground">
-              {formatCurrency(currentValue)}
+            <p className="text-sm text-muted-foreground mb-1">Price Paid</p>
+            <p className="text-xl font-bold text-foreground">
+              {formatCurrency(pricePaid)}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground mb-1">Market Value</p>
+            <p className="text-xl font-bold text-foreground">
+              {formatCurrency(marketValue)}
             </p>
           </div>
         </div>
@@ -66,14 +74,7 @@ export const DepreciationCard = ({
                   isAppreciation ? "text-green-500" : "text-red-500"
                 }`}
               >
-                {isAppreciation ? "+" : ""}{formatCurrency(Math.abs(depreciation))}
-              </p>
-              <p
-                className={`text-sm ${
-                  isAppreciation ? "text-green-500" : "text-red-500"
-                }`}
-              >
-                {isAppreciation ? "+" : ""}{Math.abs(depreciationPercent).toFixed(1)}%
+                {isAppreciation ? "+" : ""}{depreciationPercent.toFixed(1)}%
               </p>
             </div>
           </div>
