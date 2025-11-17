@@ -6,11 +6,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { AppLayout } from "@/components/AppLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, startOfMonth, endOfMonth } from "date-fns";
-import { Calendar, Pencil, Trash2, Save, X } from "lucide-react";
+import { Calendar, Pencil, Trash2, Save, X, Plus } from "lucide-react";
 
 interface WearLog {
   id: string;
@@ -32,15 +34,29 @@ interface EditingEntry {
   notes: string;
 }
 
+interface Watch {
+  id: string;
+  brand: string;
+  model: string;
+}
+
 export default function WearLogsAdmin() {
   const { user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
   const [wearLogs, setWearLogs] = useState<WearLog[]>([]);
+  const [watches, setWatches] = useState<Watch[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState<string>(format(new Date(), "yyyy-MM"));
   const [editingEntry, setEditingEntry] = useState<EditingEntry | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [newEntry, setNewEntry] = useState({
+    watch_id: "",
+    wear_date: format(new Date(), "yyyy-MM-dd"),
+    days: "1",
+    notes: "",
+  });
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) {
@@ -51,8 +67,25 @@ export default function WearLogsAdmin() {
   useEffect(() => {
     if (isAdmin) {
       fetchWearLogs();
+      fetchWatches();
     }
   }, [selectedMonth, isAdmin]);
+
+  const fetchWatches = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("watches")
+        .select("id, brand, model")
+        .order("brand", { ascending: true })
+        .order("model", { ascending: true });
+
+      if (error) throw error;
+      setWatches(data || []);
+    } catch (error) {
+      console.error("Error fetching watches:", error);
+      toast.error("Failed to fetch watches");
+    }
+  };
 
   const fetchWearLogs = async () => {
     setIsLoading(true);
@@ -154,6 +187,49 @@ export default function WearLogsAdmin() {
     }
   };
 
+  const handleAddEntry = async () => {
+    if (!newEntry.watch_id) {
+      toast.error("Please select a watch");
+      return;
+    }
+
+    const days = parseFloat(newEntry.days);
+    if (isNaN(days) || days < 0) {
+      toast.error("Please enter a valid number for days");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from("wear_entries")
+        .insert({
+          watch_id: newEntry.watch_id,
+          wear_date: newEntry.wear_date,
+          days: Math.round(days * 2) / 2, // Round to nearest 0.5
+          notes: newEntry.notes || null,
+          user_id: user?.id,
+        });
+
+      if (error) throw error;
+
+      toast.success("Wear entry added");
+      setIsAddDialogOpen(false);
+      setNewEntry({
+        watch_id: "",
+        wear_date: format(new Date(), "yyyy-MM-dd"),
+        days: "1",
+        notes: "",
+      });
+      fetchWearLogs();
+    } catch (error) {
+      console.error("Error adding wear entry:", error);
+      toast.error("Failed to add wear entry");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   // Generate month options for the past 2 years
   const getMonthOptions = () => {
     const options = [];
@@ -206,6 +282,91 @@ export default function WearLogsAdmin() {
                   </CardDescription>
                 </div>
                 <div className="flex items-center gap-2">
+                  <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Entry
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Add Wear Entry</DialogTitle>
+                        <DialogDescription>
+                          Create a new wear log entry for a watch
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="watch">Watch</Label>
+                          <Select
+                            value={newEntry.watch_id}
+                            onValueChange={(value) =>
+                              setNewEntry({ ...newEntry, watch_id: value })
+                            }
+                          >
+                            <SelectTrigger id="watch">
+                              <SelectValue placeholder="Select a watch" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {watches.map((watch) => (
+                                <SelectItem key={watch.id} value={watch.id}>
+                                  {watch.brand} {watch.model}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="date">Date</Label>
+                          <Input
+                            id="date"
+                            type="date"
+                            value={newEntry.wear_date}
+                            onChange={(e) =>
+                              setNewEntry({ ...newEntry, wear_date: e.target.value })
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="days">Days</Label>
+                          <Input
+                            id="days"
+                            type="number"
+                            step="0.5"
+                            min="0"
+                            value={newEntry.days}
+                            onChange={(e) =>
+                              setNewEntry({ ...newEntry, days: e.target.value })
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="notes">Notes (optional)</Label>
+                          <Input
+                            id="notes"
+                            value={newEntry.notes}
+                            onChange={(e) =>
+                              setNewEntry({ ...newEntry, notes: e.target.value })
+                            }
+                            placeholder="Add notes..."
+                          />
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button
+                          variant="outline"
+                          onClick={() => setIsAddDialogOpen(false)}
+                          disabled={isSaving}
+                        >
+                          Cancel
+                        </Button>
+                        <Button onClick={handleAddEntry} disabled={isSaving}>
+                          {isSaving ? "Adding..." : "Add Entry"}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                   <label className="text-sm text-muted-foreground">Month:</label>
                   <Select value={selectedMonth} onValueChange={setSelectedMonth}>
                     <SelectTrigger className="w-[200px]">
