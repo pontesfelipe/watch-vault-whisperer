@@ -9,9 +9,10 @@ import { useToast } from "@/hooks/use-toast";
 interface TastePreferencesProps {
   onSuggest: (description: string) => void;
   isGenerating: boolean;
+  remainingUsage?: number | null;
 }
 
-export const TastePreferences = ({ onSuggest, isGenerating }: TastePreferencesProps) => {
+export const TastePreferences = ({ onSuggest, isGenerating, remainingUsage }: TastePreferencesProps) => {
   const [tasteDescription, setTasteDescription] = useState("");
   const [saved, setSaved] = useState(false);
   const { toast } = useToast();
@@ -108,7 +109,7 @@ export const TastePreferences = ({ onSuggest, isGenerating }: TastePreferencesPr
           </Button>
           <Button
             onClick={() => onSuggest(tasteDescription)}
-            disabled={isGenerating || !tasteDescription.trim()}
+            disabled={isGenerating || !tasteDescription.trim() || remainingUsage === 0}
             className="gap-2"
           >
             <Sparkles className="w-4 h-4" />

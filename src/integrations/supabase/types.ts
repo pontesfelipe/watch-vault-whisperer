@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_feature_usage: {
+        Row: {
+          created_at: string
+          feature_name: string
+          id: string
+          used_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          feature_name: string
+          id?: string
+          used_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          feature_name?: string
+          id?: string
+          used_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       allowed_users: {
         Row: {
           added_at: string | null
@@ -682,7 +706,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_use_ai_feature: {
+        Args: { _feature_name: string; _user_id: string }
+        Returns: boolean
+      }
       create_collection: { Args: { _name: string }; Returns: string }
+      get_ai_feature_usage: {
+        Args: { _feature_name: string; _user_id: string }
+        Returns: {
+          remaining_count: number
+          used_count: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
