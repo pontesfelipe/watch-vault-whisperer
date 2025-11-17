@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCollection } from "@/contexts/CollectionContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -42,6 +43,7 @@ interface Watch {
 
 export default function WearLogsAdmin() {
   const { user, isAdmin, loading } = useAuth();
+  const { selectedCollectionId } = useCollection();
   const navigate = useNavigate();
   const [wearLogs, setWearLogs] = useState<WearLog[]>([]);
   const [watches, setWatches] = useState<Watch[]>([]);
@@ -89,7 +91,7 @@ export default function WearLogsAdmin() {
         supabase.removeChannel(channel);
       };
     }
-  }, [selectedMonth, isAdmin]);
+  }, [selectedMonth, isAdmin, selectedCollectionId]);
 
   const fetchWatches = async () => {
     try {
@@ -114,7 +116,7 @@ export default function WearLogsAdmin() {
       const startDate = startOfMonth(new Date(year, month - 1));
       const endDate = endOfMonth(new Date(year, month - 1));
 
-      const { data, error } = await supabase
+      let query = supabase
         .from("wear_entries")
         .select(`
           id,
@@ -124,13 +126,21 @@ export default function WearLogsAdmin() {
           notes,
           created_at,
           updated_at,
-          watches (
+          watches!inner (
             brand,
-            model
+            model,
+            collection_id
           )
         `)
         .gte("wear_date", format(startDate, "yyyy-MM-dd"))
-        .lte("wear_date", format(endDate, "yyyy-MM-dd"))
+        .lte("wear_date", format(endDate, "yyyy-MM-dd"));
+      
+      // Filter by collection if one is selected
+      if (selectedCollectionId) {
+        query = query.eq("watches.collection_id", selectedCollectionId);
+      }
+      
+      const { data, error } = await query
         .order("wear_date", { ascending: false })
         .order("created_at", { ascending: false });
 
