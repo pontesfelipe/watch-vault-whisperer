@@ -17,12 +17,17 @@ const Wishlist = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [gapSuggestions, setGapSuggestions] = useState<any[]>([]);
   const [watchCount, setWatchCount] = useState(0);
+  const [remainingWishlistUsage, setRemainingWishlistUsage] = useState<number | null>(null);
+  const [remainingGapUsage, setRemainingGapUsage] = useState<number | null>(null);
   const { toast } = useToast();
   const { isAllowed, loading: checkingAccess } = useAllowedUserCheck();
 
   useEffect(() => {
     fetchWatchCount();
-  }, []);
+    if (isAllowed) {
+      checkUsageLimits();
+    }
+  }, [isAllowed]);
 
   useEffect(() => {
     if (isAllowed && !loading && watchCount >= 3) {
@@ -64,11 +69,60 @@ const Wishlist = () => {
     }
   };
 
+  const checkUsageLimits = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Check wishlist usage
+      const { data: wishlistData, error: wishlistError } = await supabase.rpc('get_ai_feature_usage', {
+        _user_id: user.id,
+        _feature_name: 'wishlist'
+      });
+
+      if (!wishlistError && wishlistData && wishlistData.length > 0) {
+        setRemainingWishlistUsage(Number(wishlistData[0].remaining_count));
+      }
+
+      // Check gap analysis usage
+      const { data: gapData, error: gapError } = await supabase.rpc('get_ai_feature_usage', {
+        _user_id: user.id,
+        _feature_name: 'gap_analysis'
+      });
+
+      if (!gapError && gapData && gapData.length > 0) {
+        setRemainingGapUsage(Number(gapData[0].remaining_count));
+      }
+    } catch (error) {
+      console.error("Error checking usage limits:", error);
+    }
+  };
+
   const handleGenerateGapSuggestions = async () => {
     if (watchCount < 3) return;
 
     setIsGenerating(true);
     try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
+
+      // Check if user can use this feature
+      const { data: canUse, error: canUseError } = await supabase.rpc('can_use_ai_feature', {
+        _user_id: user.id,
+        _feature_name: 'gap_analysis'
+      });
+
+      if (canUseError) throw canUseError;
+      if (!canUse) {
+        toast({
+          title: "Monthly Limit Reached",
+          description: "You've used all 4 gap analyses this month. Resets next month.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       // Fetch current watch collection to inform suggestions
       const { data: watches } = await supabase
         .from("watches")
@@ -86,10 +140,6 @@ const Wishlist = () => {
 
       const suggestions = (data.suggestions || []).slice(0, 3);
       setGapSuggestions(suggestions);
-
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("User not authenticated");
 
       // Clear old gap suggestions and save new ones
       await supabase
@@ -118,6 +168,17 @@ const Wishlist = () => {
         
         console.log("Gap suggestions saved to database");
       }
+
+      // Record usage
+      await supabase
+        .from("ai_feature_usage")
+        .insert([{
+          user_id: user.id,
+          feature_name: 'gap_analysis'
+        }]);
+
+      // Update remaining usage
+      await checkUsageLimits();
     } catch (error: any) {
       console.error("Error generating gap suggestions:", error);
       toast({
@@ -142,6 +203,26 @@ const Wishlist = () => {
 
     setIsGenerating(true);
     try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
+
+      // Check if user can use this feature
+      const { data: canUse, error: canUseError } = await supabase.rpc('can_use_ai_feature', {
+        _user_id: user.id,
+        _feature_name: 'wishlist'
+      });
+
+      if (canUseError) throw canUseError;
+      if (!canUse) {
+        toast({
+          title: "Monthly Limit Reached",
+          description: "You've used all 4 wishlist generations this month. Resets next month.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       // Fetch current watch collection to inform suggestions
       const { data: watches } = await supabase
         .from("watches")
@@ -173,6 +254,17 @@ const Wishlist = () => {
         .insert(suggestions);
 
       if (insertError) throw insertError;
+
+      // Record usage
+      await supabase
+        .from("ai_feature_usage")
+        .insert([{
+          user_id: user.id,
+          feature_name: 'wishlist'
+        }]);
+
+      // Update remaining usage
+      await checkUsageLimits();
 
       toast({
         title: "AI Suggestions Generated",
@@ -256,10 +348,18 @@ const Wishlist = () => {
       )}
 
       {isAllowed && (
-        <TastePreferences
-          onSuggest={handleGenerateSuggestions}
-          isGenerating={isGenerating}
-        />
+        <>
+          <TastePreferences
+            onSuggest={handleGenerateSuggestions}
+            isGenerating={isGenerating}
+            remainingUsage={remainingWishlistUsage}
+          />
+          {remainingWishlistUsage !== null && (
+            <p className="text-xs text-muted-foreground text-center -mt-4">
+              {remainingWishlistUsage} wishlist generations remaining this month
+            </p>
+          )}
+        </>
       )}
 
       {isAllowed && watchCount >= 3 && (
@@ -270,12 +370,17 @@ const Wishlist = () => {
               <p className="text-sm text-muted-foreground mt-1">
                 AI-powered suggestions to complement and complete your collection
               </p>
+              {remainingGapUsage !== null && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  {remainingGapUsage} analyses remaining this month
+                </p>
+              )}
             </div>
             <Button
               variant="outline"
               size="sm"
               onClick={handleGenerateGapSuggestions}
-              disabled={isGenerating}
+              disabled={isGenerating || remainingGapUsage === 0}
               className="gap-2"
             >
               <RefreshCw className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />

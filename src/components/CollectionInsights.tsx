@@ -15,14 +15,35 @@ export const CollectionInsights = ({ watchCount, watches }: CollectionInsightsPr
   const [insights, setInsights] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [remainingUsage, setRemainingUsage] = useState<number | null>(null);
   const { toast } = useToast();
   const { isAllowed } = useAllowedUserCheck();
 
   useEffect(() => {
     if (isAllowed) {
       loadInsights();
+      checkUsageLimit();
     }
   }, [isAllowed]);
+
+  const checkUsageLimit = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase.rpc('get_ai_feature_usage', {
+        _user_id: user.id,
+        _feature_name: 'about_me'
+      });
+
+      if (error) throw error;
+      if (data && data.length > 0) {
+        setRemainingUsage(Number(data[0].remaining_count));
+      }
+    } catch (error) {
+      console.error("Error checking usage limit:", error);
+    }
+  };
 
   const loadInsights = async () => {
     try {
@@ -58,6 +79,26 @@ export const CollectionInsights = ({ watchCount, watches }: CollectionInsightsPr
   const handleGenerateInsights = async () => {
     setIsGenerating(true);
     try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
+
+      // Check if user can use this feature
+      const { data: canUse, error: canUseError } = await supabase.rpc('can_use_ai_feature', {
+        _user_id: user.id,
+        _feature_name: 'about_me'
+      });
+
+      if (canUseError) throw canUseError;
+      if (!canUse) {
+        toast({
+          title: "Monthly Limit Reached",
+          description: "You've used all 4 'About Me' analyses this month. Resets next month.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke("analyze-collection", {
         body: { watches },
       });
@@ -66,10 +107,6 @@ export const CollectionInsights = ({ watchCount, watches }: CollectionInsightsPr
 
       const newInsights = data.insights;
       setInsights(newInsights);
-
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("User not authenticated");
 
       // Save to database with explicit user_id
       const { data: existing } = await supabase
@@ -101,6 +138,17 @@ export const CollectionInsights = ({ watchCount, watches }: CollectionInsightsPr
           throw insertError;
         }
       }
+
+      // Record usage
+      await supabase
+        .from("ai_feature_usage")
+        .insert([{
+          user_id: user.id,
+          feature_name: 'about_me'
+        }]);
+
+      // Update remaining usage
+      await checkUsageLimit();
 
       toast({
         title: "Insights Updated",
@@ -147,25 +195,32 @@ export const CollectionInsights = ({ watchCount, watches }: CollectionInsightsPr
         <div className="flex-1">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-lg font-semibold text-foreground">About Me</h3>
-            <Button
-              onClick={handleGenerateInsights}
-              disabled={isGenerating}
-              size="sm"
-              variant="outline"
-              className="gap-2"
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Analyzing...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4" />
-                  {insights ? "Refresh" : "Analyze"}
-                </>
+            <div className="flex flex-col items-end gap-1">
+              {remainingUsage !== null && (
+                <span className="text-xs text-muted-foreground">
+                  {remainingUsage} left this month
+                </span>
               )}
-            </Button>
+              <Button
+                onClick={handleGenerateInsights}
+                disabled={isGenerating || remainingUsage === 0}
+                size="sm"
+                variant="outline"
+                className="gap-2"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Analyzing...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4" />
+                    {insights ? "Refresh" : "Analyze"}
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
           
           {insights ? (
