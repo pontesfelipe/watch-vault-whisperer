@@ -37,20 +37,23 @@ export default function Auth() {
 
     setSigningIn(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: `${window.location.origin}/auth`,
+      const { error } = await supabase.auth.signInWithOtp({
+        email: resetEmail,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+        },
       });
 
       if (error) {
         toast.error(error.message);
       } else {
-        toast.success("Password reset email sent! Check your inbox.");
+        toast.success("Magic sign-in link sent! Check your inbox.");
         setShowPasswordReset(false);
         setResetEmail("");
       }
     } catch (error) {
-      console.error("Password reset error:", error);
-      toast.error("Failed to send reset email");
+      console.error("Magic link error:", error);
+      toast.error("Failed to send sign-in link");
     } finally {
       setSigningIn(false);
     }
@@ -159,11 +162,11 @@ export default function Auth() {
             <Card>
               <CardHeader className="space-y-1 text-center">
                 <CardTitle className="text-2xl font-bold">
-                  {showPasswordReset ? "Reset Password" : isSignUp ? "Create Account" : "Sign In"}
+                  {showPasswordReset ? "Email Sign-In Link" : isSignUp ? "Create Account" : "Sign In"}
                 </CardTitle>
                 <CardDescription>
                   {showPasswordReset 
-                    ? "Enter your email to receive a password reset link"
+                    ? "We'll email you a magic link that logs you in instantly"
                     : isSignUp 
                     ? "Create an account to start tracking your watches" 
                     : "Sign in to access your watch collection"}
@@ -195,7 +198,7 @@ export default function Auth() {
                           Sending...
                         </>
                       ) : (
-                        "Send Reset Link"
+                        "Send Sign-In Link"
                       )}
                     </Button>
                     <div className="text-center">
@@ -232,7 +235,7 @@ export default function Auth() {
                             className="text-xs h-auto p-0"
                             type="button"
                           >
-                            Forgot password?
+                            Email me a sign-in link
                           </Button>
                         )}
                       </div>
