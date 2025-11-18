@@ -165,6 +165,31 @@ export const MonthlyUsageTable = ({}: MonthlyUsageTableProps) => {
     return Object.values(watchTotals).reduce((sum, val) => sum + val, 0);
   }, [watchTotals]);
 
+  // Calculate max value for heatmap intensity
+  const maxValue = useMemo(() => {
+    let max = 0;
+    watches.forEach(watch => {
+      visibleMonths.forEach(month => {
+        const value = monthlyData[watch.id]?.[month] || 0;
+        if (value > max) max = value;
+      });
+    });
+    return max;
+  }, [monthlyData, watches, visibleMonths]);
+
+  // Get heatmap color based on intensity (0-1)
+  const getHeatmapColor = (value: number) => {
+    if (value === 0) return "";
+    const intensity = maxValue > 0 ? value / maxValue : 0;
+    
+    // Use primary color with varying opacity for heatmap effect
+    if (intensity < 0.2) return "bg-primary/10";
+    if (intensity < 0.4) return "bg-primary/20";
+    if (intensity < 0.6) return "bg-primary/30";
+    if (intensity < 0.8) return "bg-primary/40";
+    return "bg-primary/50";
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -208,6 +233,22 @@ export const MonthlyUsageTable = ({}: MonthlyUsageTableProps) => {
           </div>
         ) : (
           <>
+            <div className="flex items-center gap-2 mb-4 text-sm text-muted-foreground">
+              <span>Usage intensity:</span>
+              <div className="flex items-center gap-1">
+                <div className="w-6 h-4 bg-primary/10 border border-border"></div>
+                <span className="text-xs">Low</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-6 h-4 bg-primary/30 border border-border"></div>
+                <span className="text-xs">Med</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-6 h-4 bg-primary/50 border border-border"></div>
+                <span className="text-xs">High</span>
+              </div>
+            </div>
+
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -238,7 +279,10 @@ export const MonthlyUsageTable = ({}: MonthlyUsageTableProps) => {
                           {visibleMonths.map(month => {
                             const days = monthlyData[watch.id]?.[month] || 0;
                             return (
-                              <TableCell key={month} className="text-center">
+                              <TableCell 
+                                key={month} 
+                                className={`text-center transition-colors ${getHeatmapColor(days)}`}
+                              >
                                 {days > 0 ? days.toFixed(1) : "-"}
                               </TableCell>
                             );
