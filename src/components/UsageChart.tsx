@@ -8,7 +8,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { MonthlyWearGrid } from "./MonthlyWearGrid";
 import { usePasscode } from "@/contexts/PasscodeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -157,9 +156,6 @@ export const UsageChart = ({ watches, wearEntries, onDataChange }: UsageChartPro
 
   return (
     <div className="space-y-6">
-      {/* Monthly Wear Grid */}
-      <MonthlyWearGrid watches={watches} wearEntries={wearEntries} onDataChange={onDataChange} />
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Seasonal Trends */}
         <Card className="border-border bg-card p-6">
