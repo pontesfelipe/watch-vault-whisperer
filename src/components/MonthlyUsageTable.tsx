@@ -56,6 +56,12 @@ export const MonthlyUsageTable = ({ watches, wearEntries }: MonthlyUsageTablePro
   const monthlyData = useMemo(() => {
     const data: Record<string, Record<number, number>> = {};
     
+    console.log('Processing wear entries for monthly table:', {
+      totalEntries: wearEntries.length,
+      selectedYear,
+      sampleEntries: wearEntries.slice(0, 3)
+    });
+    
     wearEntries.forEach(entry => {
       const date = new Date(entry.wear_date);
       const year = date.getFullYear();
@@ -71,6 +77,14 @@ export const MonthlyUsageTable = ({ watches, wearEntries }: MonthlyUsageTablePro
         data[watchKey][month] = 0;
       }
       data[watchKey][month] += entry.days;
+    });
+    
+    console.log('Monthly data calculated:', {
+      watchCount: Object.keys(data).length,
+      sampleData: Object.entries(data).slice(0, 2).map(([id, months]) => ({
+        watchId: id,
+        months: months
+      }))
     });
     
     return data;
