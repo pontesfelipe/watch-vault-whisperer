@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { usePasscode } from "@/contexts/PasscodeContext";
+import { useCollection } from "@/contexts/CollectionContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,16 +26,24 @@ interface Watch {
 
 export default function PersonalNotes() {
   const { isVerified, requestVerification } = usePasscode();
+  const { selectedCollectionId } = useCollection();
   const [watches, setWatches] = useState<Watch[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingWatch, setEditingWatch] = useState<Watch | null>(null);
 
   const fetchWatches = async () => {
+    if (!selectedCollectionId) {
+      setWatches([]);
+      setLoading(false);
+      return;
+    }
+    
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from("watches")
         .select("id, brand, model, cost, why_bought, when_bought, what_i_like, what_i_dont_like, created_at")
+        .eq("collection_id", selectedCollectionId)
         .order("created_at", { ascending: true });
 
       if (error) throw error;
@@ -48,10 +57,10 @@ export default function PersonalNotes() {
   };
 
   useEffect(() => {
-    if (isVerified) {
+    if (isVerified && selectedCollectionId) {
       fetchWatches();
     }
-  }, [isVerified]);
+  }, [isVerified, selectedCollectionId]);
 
   const handleUnlock = () => {
     requestVerification(() => {
