@@ -202,63 +202,100 @@ export const MonthlyUsageTable = ({}: MonthlyUsageTableProps) => {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="font-semibold sticky left-0 bg-background z-10">Brand</TableHead>
-                <TableHead className="font-semibold sticky left-[100px] bg-background z-10">Model</TableHead>
-                {visibleMonths.map(month => (
-                  <TableHead key={month} className="text-center font-semibold min-w-[80px]">
-                    {MONTHS[month]}
-                  </TableHead>
-                ))}
-                <TableHead className="text-center font-semibold min-w-[80px]">Total</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {watches.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={visibleMonths.length + 3} className="text-center text-muted-foreground">
-                    No watches found
-                  </TableCell>
-                </TableRow>
-              ) : (
-                <>
-                  {watches.map(watch => (
-                    <TableRow key={watch.id}>
-                      <TableCell className="font-medium sticky left-0 bg-background">{watch.brand}</TableCell>
-                      <TableCell className="sticky left-[100px] bg-background">{watch.model}</TableCell>
-                      {visibleMonths.map(month => {
-                        const days = monthlyData[watch.id]?.[month] || 0;
-                        return (
-                          <TableCell key={month} className="text-center">
-                            {days > 0 ? days.toFixed(1) : "-"}
-                          </TableCell>
-                        );
-                      })}
-                      <TableCell className="text-center font-medium">
-                        {watchTotals[watch.id]?.toFixed(1) || "-"}
+          <>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="font-semibold sticky left-0 bg-background z-10">Brand</TableHead>
+                    <TableHead className="font-semibold sticky left-[100px] bg-background z-10">Model</TableHead>
+                    {visibleMonths.map(month => (
+                      <TableHead key={month} className="text-center font-semibold min-w-[80px]">
+                        {MONTHS[month]}
+                      </TableHead>
+                    ))}
+                    <TableHead className="text-center font-semibold min-w-[80px]">Total</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {watches.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={visibleMonths.length + 3} className="text-center text-muted-foreground">
+                        No watches found
                       </TableCell>
                     </TableRow>
-                  ))}
-                  <TableRow className="bg-muted/50 font-semibold">
-                    <TableCell className="sticky left-0 bg-muted/50">Total</TableCell>
-                    <TableCell className="sticky left-[100px] bg-muted/50"></TableCell>
-                    {visibleMonths.map(month => (
-                      <TableCell key={month} className="text-center">
-                        {monthlyTotals[month]?.toFixed(1) || "-"}
-                      </TableCell>
-                    ))}
-                    <TableCell className="text-center">
-                      {grandTotal.toFixed(1)}
-                    </TableCell>
-                  </TableRow>
-                </>
-              )}
-            </TableBody>
-          </Table>
-          </div>
+                  ) : (
+                    <>
+                      {watches.map(watch => (
+                        <TableRow key={watch.id}>
+                          <TableCell className="font-medium sticky left-0 bg-background">{watch.brand}</TableCell>
+                          <TableCell className="sticky left-[100px] bg-background">{watch.model}</TableCell>
+                          {visibleMonths.map(month => {
+                            const days = monthlyData[watch.id]?.[month] || 0;
+                            return (
+                              <TableCell key={month} className="text-center">
+                                {days > 0 ? days.toFixed(1) : "-"}
+                              </TableCell>
+                            );
+                          })}
+                          <TableCell className="text-center font-medium">
+                            {watchTotals[watch.id]?.toFixed(1) || "-"}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      <TableRow className="bg-muted/50 font-semibold">
+                        <TableCell className="sticky left-0 bg-muted/50">Total</TableCell>
+                        <TableCell className="sticky left-[100px] bg-muted/50"></TableCell>
+                        {visibleMonths.map(month => (
+                          <TableCell key={month} className="text-center">
+                            {monthlyTotals[month]?.toFixed(1) || "-"}
+                          </TableCell>
+                        ))}
+                        <TableCell className="text-center">
+                          {grandTotal.toFixed(1)}
+                        </TableCell>
+                      </TableRow>
+                    </>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Debug section: list raw wear entries for February of selected year */}
+            <div className="mt-6 border-t pt-4 text-sm text-muted-foreground">
+              <p className="font-medium mb-2">Debug: Raw wear entries for February {selectedYear}</p>
+              <ul className="space-y-1 max-h-60 overflow-y-auto">
+                {wearEntries
+                  .filter(entry => {
+                    const date = new Date(entry.wear_date);
+                    return (
+                      date.getFullYear().toString() === selectedYear &&
+                      date.getMonth() === 1 // February (0-based index)
+                    );
+                  })
+                  .map(entry => {
+                    const watch = watches.find(w => w.id === entry.watch_id);
+                    return (
+                      <li key={entry.watch_id + entry.wear_date + entry.days}>
+                        <span className="font-medium">
+                          {watch ? `${watch.brand} ${watch.model}` : `Watch ${entry.watch_id}`}
+                        </span>{" "}
+                        - {entry.wear_date} - {entry.days} days
+                      </li>
+                    );
+                  })}
+                {wearEntries.filter(entry => {
+                  const date = new Date(entry.wear_date);
+                  return (
+                    date.getFullYear().toString() === selectedYear &&
+                    date.getMonth() === 1
+                  );
+                }).length === 0 && (
+                  <li>No wear entries for February {selectedYear}</li>
+                )}
+              </ul>
+            </div>
+          </>
         )}
       </CardContent>
     </Card>
