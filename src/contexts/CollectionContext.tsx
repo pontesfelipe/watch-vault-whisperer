@@ -19,11 +19,14 @@ export const CollectionProvider = ({ children }: { children: ReactNode }) => {
       const savedId = localStorage.getItem('selectedCollectionId');
       const collectionIds = collections.map(c => c.id);
       
-      // Use saved ID if it exists in current collections, otherwise use first
+      // Use saved ID if it exists in current collections
       if (savedId && collectionIds.includes(savedId)) {
         setSelectedCollectionId(savedId);
       } else {
-        setSelectedCollectionId(collections[0].id);
+        // Prioritize user's own collections (owner role) over shared ones
+        const ownedCollection = collections.find(c => c.role === 'owner');
+        const defaultCollection = ownedCollection || collections[0];
+        setSelectedCollectionId(defaultCollection.id);
       }
     }
   }, [collections, loading, selectedCollectionId]);
