@@ -386,52 +386,7 @@ export default function Auth() {
           </TabsContent>
           
           <TabsContent value="request">
-            <Card>
-              <CardHeader className="space-y-1 text-center">
-                <CardTitle className="text-2xl font-bold">Request Access</CardTitle>
-                <CardDescription>
-                  Choose how you'd like to get started
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-sm text-muted-foreground">Option 1: Create Your Own Account</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Create an account with your email and password right now
-                  </p>
-                  <Button
-                    onClick={() => {
-                      setIsSignUp(true);
-                      const tabsList = document.querySelector('[role="tablist"]');
-                      const signinTab = tabsList?.querySelector('[value="signin"]') as HTMLElement;
-                      signinTab?.click();
-                    }}
-                    variant="outline"
-                    className="w-full"
-                    size="lg"
-                  >
-                    Create Account with Email
-                  </Button>
-                </div>
-
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">Or</span>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-sm text-muted-foreground">Option 2: Request Access</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Submit a request and we'll review your application
-                  </p>
-                  <RegistrationRequestForm />
-                </div>
-              </CardContent>
-            </Card>
+            <RegistrationRequestForm />
           </TabsContent>
         </Tabs>
 
