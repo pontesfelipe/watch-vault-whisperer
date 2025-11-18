@@ -5,6 +5,7 @@ import { QuickAddWearDialog } from "@/components/QuickAddWearDialog";
 import { DepreciationCard } from "@/components/DepreciationCard";
 import { DepreciationChart } from "@/components/DepreciationChart";
 import { CollectionInsights } from "@/components/CollectionInsights";
+import { MonthlyUsageTable } from "@/components/MonthlyUsageTable";
 import { useWatchData } from "@/hooks/useWatchData";
 import { useTripData } from "@/hooks/useTripData";
 import { useWaterUsageData } from "@/hooks/useWaterUsageData";
@@ -115,6 +116,8 @@ const Dashboard = () => {
       </div>
 
       <UsageChart watches={watches} wearEntries={wearEntries} />
+
+      <MonthlyUsageTable watches={watches} wearEntries={wearEntries} />
 
       {stats.watchesWithResaleDataCount > 0 && (
         <div className="space-y-6">
