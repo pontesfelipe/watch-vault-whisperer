@@ -21,25 +21,25 @@ interface MonthlyUsageTableProps {
   wearEntries: WearEntry[];
 }
 
-type Season = "all" | "spring" | "summer" | "fall" | "winter";
+type Quarter = "all" | "q1" | "q2" | "q3" | "q4";
 
 const MONTHS = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 ];
 
-const SEASON_MONTHS: Record<Season, number[]> = {
+const QUARTER_MONTHS: Record<Quarter, number[]> = {
   all: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-  spring: [2, 3, 4], // Mar, Apr, May
-  summer: [5, 6, 7], // Jun, Jul, Aug
-  fall: [8, 9, 10],  // Sep, Oct, Nov
-  winter: [11, 0, 1] // Dec, Jan, Feb
+  q1: [0, 1, 2],  // Jan, Feb, Mar
+  q2: [3, 4, 5],  // Apr, May, Jun
+  q3: [6, 7, 8],  // Jul, Aug, Sep
+  q4: [9, 10, 11] // Oct, Nov, Dec
 };
 
 export const MonthlyUsageTable = ({ watches, wearEntries }: MonthlyUsageTableProps) => {
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState<string>(currentYear.toString());
-  const [selectedSeason, setSelectedSeason] = useState<Season>("all");
+  const [selectedQuarter, setSelectedQuarter] = useState<Quarter>("all");
 
   // Get available years from wear entries
   const availableYears = useMemo(() => {
@@ -76,10 +76,10 @@ export const MonthlyUsageTable = ({ watches, wearEntries }: MonthlyUsageTablePro
     return data;
   }, [wearEntries, selectedYear]);
 
-  // Filter months based on season
+  // Filter months based on quarter
   const visibleMonths = useMemo(() => {
-    return SEASON_MONTHS[selectedSeason];
-  }, [selectedSeason]);
+    return QUARTER_MONTHS[selectedQuarter];
+  }, [selectedQuarter]);
 
   // Calculate totals for each month
   const monthlyTotals = useMemo(() => {
@@ -119,16 +119,16 @@ export const MonthlyUsageTable = ({ watches, wearEntries }: MonthlyUsageTablePro
             <CardDescription>Total days worn per watch by month</CardDescription>
           </div>
           <div className="flex flex-col sm:flex-row gap-2">
-            <Select value={selectedSeason} onValueChange={(value) => setSelectedSeason(value as Season)}>
+            <Select value={selectedQuarter} onValueChange={(value) => setSelectedQuarter(value as Quarter)}>
               <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Season" />
+                <SelectValue placeholder="Quarter" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Months</SelectItem>
-                <SelectItem value="spring">Spring</SelectItem>
-                <SelectItem value="summer">Summer</SelectItem>
-                <SelectItem value="fall">Fall</SelectItem>
-                <SelectItem value="winter">Winter</SelectItem>
+                <SelectItem value="q1">Q1 (Jan-Mar)</SelectItem>
+                <SelectItem value="q2">Q2 (Apr-Jun)</SelectItem>
+                <SelectItem value="q3">Q3 (Jul-Sep)</SelectItem>
+                <SelectItem value="q4">Q4 (Oct-Dec)</SelectItem>
               </SelectContent>
             </Select>
             <Select value={selectedYear} onValueChange={setSelectedYear}>
