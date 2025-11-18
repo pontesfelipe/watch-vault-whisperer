@@ -6,11 +6,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Watch } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { RegistrationRequestForm } from "@/components/RegistrationRequestForm";
 import { BetaBadge } from "@/components/BetaBadge";
+import { PrivacyDialog } from "@/components/PrivacyDialog";
+import { TermsDialog } from "@/components/TermsDialog";
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -21,6 +24,10 @@ export default function Auth() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
+  const [termsOpen, setTermsOpen] = useState(false);
+  const [privacyOpen, setPrivacyOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && user) {
@@ -66,6 +73,11 @@ export default function Auth() {
       return;
     }
 
+    if (isSignUp && (!acceptedTerms || !acceptedPrivacy)) {
+      toast.error("Please accept Terms & Conditions and Privacy Policy");
+      return;
+    }
+
     setSigningIn(true);
     try {
       if (isSignUp) {
@@ -82,6 +94,8 @@ export default function Auth() {
         } else {
           toast.success("Account created! You can now sign in.");
           setIsSignUp(false);
+          setAcceptedTerms(false);
+          setAcceptedPrivacy(false);
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -248,6 +262,54 @@ export default function Auth() {
                         disabled={signingIn}
                       />
                     </div>
+                    {isSignUp && (
+                      <div className="space-y-3">
+                        <div className="flex items-start space-x-2">
+                          <Checkbox
+                            id="terms"
+                            checked={acceptedTerms}
+                            onCheckedChange={(checked) => setAcceptedTerms(checked as boolean)}
+                            disabled={signingIn}
+                          />
+                          <label
+                            htmlFor="terms"
+                            className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                          >
+                            I accept the{" "}
+                            <button
+                              type="button"
+                              onClick={() => setTermsOpen(true)}
+                              className="text-primary underline hover:text-primary/80"
+                            >
+                              Terms & Conditions
+                            </button>{" "}
+                            (required)
+                          </label>
+                        </div>
+                        <div className="flex items-start space-x-2">
+                          <Checkbox
+                            id="privacy"
+                            checked={acceptedPrivacy}
+                            onCheckedChange={(checked) => setAcceptedPrivacy(checked as boolean)}
+                            disabled={signingIn}
+                          />
+                          <label
+                            htmlFor="privacy"
+                            className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                          >
+                            I accept the{" "}
+                            <button
+                              type="button"
+                              onClick={() => setPrivacyOpen(true)}
+                              className="text-primary underline hover:text-primary/80"
+                            >
+                              Privacy Policy
+                            </button>{" "}
+                            (required)
+                          </label>
+                        </div>
+                      </div>
+                    )}
                     <Button
                       type="submit"
                       disabled={signingIn}
@@ -340,8 +402,9 @@ export default function Auth() {
                   <Button
                     onClick={() => {
                       setIsSignUp(true);
-                      const tabs = document.querySelector('[value="signin"]') as HTMLElement;
-                      tabs?.click();
+                      const tabsList = document.querySelector('[role="tablist"]');
+                      const signinTab = tabsList?.querySelector('[value="signin"]') as HTMLElement;
+                      signinTab?.click();
                     }}
                     variant="outline"
                     className="w-full"
@@ -371,6 +434,9 @@ export default function Auth() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        <TermsDialog open={termsOpen} onOpenChange={setTermsOpen} />
+        <PrivacyDialog open={privacyOpen} onOpenChange={setPrivacyOpen} />
       </div>
     </div>
   );
