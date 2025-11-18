@@ -265,41 +265,6 @@ export const MonthlyUsageTable = ({}: MonthlyUsageTableProps) => {
                 </TableBody>
               </Table>
             </div>
-
-            {/* Debug section: list raw wear entries for February of selected year */}
-            <div className="mt-6 border-t pt-4 text-sm text-muted-foreground">
-              <p className="font-medium mb-2">Debug: Raw wear entries for February {selectedYear}</p>
-              <ul className="space-y-1 max-h-60 overflow-y-auto">
-                {wearEntries
-                  .filter(entry => {
-                     const date = parseWearDate(entry.wear_date);
-                    return (
-                      date.getFullYear().toString() === selectedYear &&
-                      date.getMonth() === 1 // February (0-based index)
-                    );
-                  })
-                  .map(entry => {
-                    const watch = watches.find(w => w.id === entry.watch_id);
-                    return (
-                      <li key={entry.watch_id + entry.wear_date + entry.days}>
-                        <span className="font-medium">
-                          {watch ? `${watch.brand} ${watch.model}` : `Watch ${entry.watch_id}`}
-                        </span>{" "}
-                        - {entry.wear_date} - {entry.days} days
-                      </li>
-                    );
-                  })}
-                {wearEntries.filter(entry => {
-                  const date = parseWearDate(entry.wear_date);
-                  return (
-                    date.getFullYear().toString() === selectedYear &&
-                    date.getMonth() === 1
-                  );
-                }).length === 0 && (
-                  <li>No wear entries for February {selectedYear}</li>
-                )}
-              </ul>
-            </div>
           </>
         )}
       </CardContent>
