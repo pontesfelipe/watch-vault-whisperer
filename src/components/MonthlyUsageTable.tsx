@@ -88,6 +88,11 @@ export const MonthlyUsageTable = ({}: MonthlyUsageTableProps) => {
     return sortedYears.length > 0 ? sortedYears : [currentYear];
   }, [wearEntries, currentYear]);
 
+  const parseWearDate = (dateString: string) => {
+    const [year, month, day] = dateString.split("-").map(Number);
+    return new Date(year, month - 1, day);
+  };
+
   // Calculate monthly usage data
   const monthlyData = useMemo(() => {
     const data: Record<string, Record<number, number>> = {};
@@ -99,7 +104,7 @@ export const MonthlyUsageTable = ({}: MonthlyUsageTableProps) => {
     });
     
     wearEntries.forEach(entry => {
-      const date = new Date(entry.wear_date);
+      const date = parseWearDate(entry.wear_date);
       const year = date.getFullYear();
       const month = date.getMonth();
       
@@ -267,7 +272,7 @@ export const MonthlyUsageTable = ({}: MonthlyUsageTableProps) => {
               <ul className="space-y-1 max-h-60 overflow-y-auto">
                 {wearEntries
                   .filter(entry => {
-                    const date = new Date(entry.wear_date);
+                     const date = parseWearDate(entry.wear_date);
                     return (
                       date.getFullYear().toString() === selectedYear &&
                       date.getMonth() === 1 // February (0-based index)
@@ -285,7 +290,7 @@ export const MonthlyUsageTable = ({}: MonthlyUsageTableProps) => {
                     );
                   })}
                 {wearEntries.filter(entry => {
-                  const date = new Date(entry.wear_date);
+                  const date = parseWearDate(entry.wear_date);
                   return (
                     date.getFullYear().toString() === selectedYear &&
                     date.getMonth() === 1
