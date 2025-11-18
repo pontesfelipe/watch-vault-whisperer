@@ -74,6 +74,11 @@ export const RegistrationRequestForm = () => {
   };
 
   const handleGoogleSignIn = async () => {
+    if (!acceptedTerms || !acceptedPrivacy) {
+      toast.error("You must accept both the Terms & Conditions and Privacy Policy");
+      return;
+    }
+
     setLoading(true);
     try {
       const redirectUrl = `${window.location.origin}/`;
@@ -238,7 +243,7 @@ export const RegistrationRequestForm = () => {
               variant="outline"
               className="w-full"
               onClick={handleGoogleSignIn}
-              disabled={loading}
+              disabled={loading || !acceptedTerms || !acceptedPrivacy}
             >
               <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                 <path
