@@ -2,6 +2,7 @@ import { Watch, Calendar, TrendingUp, Target, Palette, Shirt, Flame, Plane, Drop
 import { StatsCard } from "@/components/StatsCard";
 import { UsageChart } from "@/components/UsageChart";
 import { QuickAddWearDialog } from "@/components/QuickAddWearDialog";
+import { ImportWearEntriesDialog } from "@/components/ImportWearEntriesDialog";
 import { DepreciationCard } from "@/components/DepreciationCard";
 import { DepreciationChart } from "@/components/DepreciationChart";
 import { CollectionInsights } from "@/components/CollectionInsights";
@@ -41,7 +42,10 @@ const Dashboard = () => {
             Overview of your watch collection statistics
           </p>
         </div>
-        <QuickAddWearDialog watches={watches} onSuccess={refetch} />
+        <div className="flex gap-2">
+          <ImportWearEntriesDialog onSuccess={refetch} />
+          <QuickAddWearDialog watches={watches} onSuccess={refetch} />
+        </div>
       </div>
 
       <CollectionInsights watchCount={stats.totalWatches} watches={watches} />
