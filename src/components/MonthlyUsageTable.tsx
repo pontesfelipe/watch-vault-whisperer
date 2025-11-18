@@ -1,7 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
 interface Watch {
@@ -17,8 +18,7 @@ interface WearEntry {
 }
 
 interface MonthlyUsageTableProps {
-  watches: Watch[];
-  wearEntries: WearEntry[];
+  // No props needed - fetches its own data
 }
 
 type Quarter = "all" | "q1" | "q2" | "q3" | "q4";
@@ -36,10 +36,46 @@ const QUARTER_MONTHS: Record<Quarter, number[]> = {
   q4: [9, 10, 11] // Oct, Nov, Dec
 };
 
-export const MonthlyUsageTable = ({ watches, wearEntries }: MonthlyUsageTableProps) => {
+export const MonthlyUsageTable = ({}: MonthlyUsageTableProps) => {
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState<string>(currentYear.toString());
   const [selectedQuarter, setSelectedQuarter] = useState<Quarter>("all");
+  const [watches, setWatches] = useState<Watch[]>([]);
+  const [wearEntries, setWearEntries] = useState<WearEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch all watches and wear entries (no collection filtering)
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Fetch all watches
+        const { data: watchesData, error: watchesError } = await supabase
+          .from("watches")
+          .select("id, brand, model")
+          .order("brand", { ascending: true })
+          .order("model", { ascending: true });
+
+        if (watchesError) throw watchesError;
+
+        // Fetch all wear entries
+        const { data: wearData, error: wearError } = await supabase
+          .from("wear_entries")
+          .select("id, watch_id, wear_date, days");
+
+        if (wearError) throw wearError;
+
+        setWatches(watchesData || []);
+        setWearEntries(wearData || []);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   // Get available years from wear entries
   const availableYears = useMemo(() => {
@@ -161,7 +197,12 @@ export const MonthlyUsageTable = ({ watches, wearEntries }: MonthlyUsageTablePro
         </div>
       </CardHeader>
       <CardContent>
-        <div className="overflow-x-auto">
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -217,7 +258,8 @@ export const MonthlyUsageTable = ({ watches, wearEntries }: MonthlyUsageTablePro
               )}
             </TableBody>
           </Table>
-        </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
