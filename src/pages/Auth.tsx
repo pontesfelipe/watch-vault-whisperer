@@ -19,12 +19,42 @@ export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
 
   useEffect(() => {
     if (!loading && user) {
       navigate("/");
     }
   }, [user, loading, navigate]);
+
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetEmail) {
+      toast.error("Please enter your email");
+      return;
+    }
+
+    setSigningIn(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/auth`,
+      });
+
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success("Password reset email sent! Check your inbox.");
+        setShowPasswordReset(false);
+        setResetEmail("");
+      }
+    } catch (error) {
+      console.error("Password reset error:", error);
+      toast.error("Failed to send reset email");
+    } finally {
+      setSigningIn(false);
+    }
+  };
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -128,62 +158,123 @@ export default function Auth() {
           <TabsContent value="signin">
             <Card>
               <CardHeader className="space-y-1 text-center">
-                <CardTitle className="text-2xl font-bold">{isSignUp ? "Create Account" : "Sign In"}</CardTitle>
+                <CardTitle className="text-2xl font-bold">
+                  {showPasswordReset ? "Reset Password" : isSignUp ? "Create Account" : "Sign In"}
+                </CardTitle>
                 <CardDescription>
-                  {isSignUp ? "Create an account to start tracking your watches" : "Sign in to access your watch collection"}
+                  {showPasswordReset 
+                    ? "Enter your email to receive a password reset link"
+                    : isSignUp 
+                    ? "Create an account to start tracking your watches" 
+                    : "Sign in to access your watch collection"}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <form onSubmit={handleEmailAuth} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="you@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                {showPasswordReset ? (
+                  <form onSubmit={handlePasswordReset} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="reset-email">Email</Label>
+                      <Input
+                        id="reset-email"
+                        type="email"
+                        placeholder="you@example.com"
+                        value={resetEmail}
+                        onChange={(e) => setResetEmail(e.target.value)}
+                        disabled={signingIn}
+                      />
+                    </div>
+                    <Button
+                      type="submit"
                       disabled={signingIn}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full"
+                      size="lg"
+                    >
+                      {signingIn ? (
+                        <>
+                          <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
+                          Sending...
+                        </>
+                      ) : (
+                        "Send Reset Link"
+                      )}
+                    </Button>
+                    <div className="text-center">
+                      <Button
+                        variant="link"
+                        onClick={() => setShowPasswordReset(false)}
+                        disabled={signingIn}
+                        className="text-sm"
+                      >
+                        Back to sign in
+                      </Button>
+                    </div>
+                  </form>
+                ) : (
+                  <form onSubmit={handleEmailAuth} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="you@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        disabled={signingIn}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="password">Password</Label>
+                        {!isSignUp && (
+                          <Button
+                            variant="link"
+                            onClick={() => setShowPasswordReset(true)}
+                            className="text-xs h-auto p-0"
+                            type="button"
+                          >
+                            Forgot password?
+                          </Button>
+                        )}
+                      </div>
+                      <Input
+                        id="password"
+                        type="password"
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        disabled={signingIn}
+                      />
+                    </div>
+                    <Button
+                      type="submit"
                       disabled={signingIn}
-                    />
-                  </div>
-                  <Button
-                    type="submit"
-                    disabled={signingIn}
-                    className="w-full"
-                    size="lg"
-                  >
-                    {signingIn ? (
-                      <>
-                        <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
-                        {isSignUp ? "Creating account..." : "Signing in..."}
-                      </>
-                    ) : (
-                      isSignUp ? "Create Account" : "Sign In"
-                    )}
-                  </Button>
-                </form>
+                      className="w-full"
+                      size="lg"
+                    >
+                      {signingIn ? (
+                        <>
+                          <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
+                          {isSignUp ? "Creating account..." : "Signing in..."}
+                        </>
+                      ) : (
+                        isSignUp ? "Create Account" : "Sign In"
+                      )}
+                    </Button>
+                  </form>
+                )}
 
-                <div className="text-center">
-                  <Button
-                    variant="link"
-                    onClick={() => setIsSignUp(!isSignUp)}
-                    disabled={signingIn}
-                    className="text-sm"
-                  >
-                    {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
-                  </Button>
-                </div>
+                {!showPasswordReset && (
+                  <div className="text-center">
+                    <Button
+                      variant="link"
+                      onClick={() => setIsSignUp(!isSignUp)}
+                      disabled={signingIn}
+                      className="text-sm"
+                    >
+                      {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
+                    </Button>
+                  </div>
+                )}
 
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
@@ -230,7 +321,51 @@ export default function Auth() {
           </TabsContent>
           
           <TabsContent value="request">
-            <RegistrationRequestForm />
+            <Card>
+              <CardHeader className="space-y-1 text-center">
+                <CardTitle className="text-2xl font-bold">Request Access</CardTitle>
+                <CardDescription>
+                  Choose how you'd like to get started
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-sm text-muted-foreground">Option 1: Create Your Own Account</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Create an account with your email and password right now
+                  </p>
+                  <Button
+                    onClick={() => {
+                      setIsSignUp(true);
+                      const tabs = document.querySelector('[value="signin"]') as HTMLElement;
+                      tabs?.click();
+                    }}
+                    variant="outline"
+                    className="w-full"
+                    size="lg"
+                  >
+                    Create Account with Email
+                  </Button>
+                </div>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">Or</span>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-sm text-muted-foreground">Option 2: Request Access</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Submit a request and we'll review your application
+                  </p>
+                  <RegistrationRequestForm />
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
