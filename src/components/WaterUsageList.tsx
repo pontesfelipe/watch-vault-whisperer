@@ -87,7 +87,7 @@ export const WaterUsageList = ({ usages, watches, onUpdate }: WaterUsageListProp
       
       toast.success(`${selectedItems.size} water usage entr${selectedItems.size > 1 ? "ies" : "y"} deleted successfully`);
       setSelectedItems(new Set());
-      onUpdate();
+      await onUpdate(); // Wait for refresh
     } catch (error) {
       console.error("Error deleting water usage:", error);
       toast.error("Failed to delete water usage");
