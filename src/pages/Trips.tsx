@@ -17,6 +17,12 @@ const Trips = () => {
 
   const stats = useStatsCalculations(watches, wearEntries, trips, waterUsages);
 
+  // Create a map of watches for easy lookup with full details
+  const watchMap = watches.reduce((acc, watch) => {
+    acc[`${watch.brand} ${watch.model}`] = watch;
+    return acc;
+  }, {} as Record<string, any>);
+
   if (tripLoading || watchLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -61,12 +67,13 @@ const Trips = () => {
           id: trip.id,
           startDate: trip.start_date,
           location: trip.location,
-          watch: {},
+          watch: trip.watch_model || {},
           days: trip.days,
           purpose: trip.purpose,
         }))}
         type="trip"
         watches={watches}
+        watchMap={watchMap}
         onUpdate={refetch}
       />
 
