@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import { Pencil } from "lucide-react";
 import { formatPurchaseDateForDisplay, parsePurchaseDate } from "@/lib/date";
 
@@ -13,12 +14,23 @@ interface Watch {
   what_i_like?: string;
   what_i_dont_like?: string;
   created_at: string;
+  sentiment?: string;
+  sentiment_analyzed_at?: string;
 }
 
 interface PersonalNotesTableProps {
   watches: Watch[];
   onEdit: (watch: Watch) => void;
 }
+
+const getSentimentVariant = (sentiment?: string): "default" | "secondary" | "destructive" | "outline" => {
+  if (!sentiment) return "outline";
+  const s = sentiment.toLowerCase();
+  if (s.includes("highly positive")) return "default";
+  if (s.includes("positive")) return "secondary";
+  if (s.includes("negative")) return "destructive";
+  return "outline";
+};
 
 export function PersonalNotesTable({ watches, onEdit }: PersonalNotesTableProps) {
   return (
@@ -28,6 +40,7 @@ export function PersonalNotesTable({ watches, onEdit }: PersonalNotesTableProps)
           <TableRow>
             <TableHead>Brand</TableHead>
             <TableHead>Model</TableHead>
+            <TableHead>Sentiment</TableHead>
             <TableHead>Why I bought</TableHead>
             <TableHead>When I bought</TableHead>
             <TableHead>What I like</TableHead>
@@ -40,6 +53,15 @@ export function PersonalNotesTable({ watches, onEdit }: PersonalNotesTableProps)
             <TableRow key={watch.id}>
               <TableCell className="font-medium">{watch.brand}</TableCell>
               <TableCell>{watch.model}</TableCell>
+              <TableCell>
+                {watch.sentiment ? (
+                  <Badge variant={getSentimentVariant(watch.sentiment)}>
+                    {watch.sentiment}
+                  </Badge>
+                ) : (
+                  <span className="text-muted-foreground text-sm">Not analyzed</span>
+                )}
+              </TableCell>
               <TableCell className="max-w-[200px]">
                 <div className="truncate">{watch.why_bought || "-"}</div>
               </TableCell>

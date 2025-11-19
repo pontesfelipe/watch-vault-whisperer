@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.import-spreadsheet-data]
 verify_jwt = false
+
+[functions.analyze-sentiment]
+verify_jwt = false
