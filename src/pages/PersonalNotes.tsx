@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Lock } from "lucide-react";
+import { Lock, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { EditPersonalNotesDialog } from "@/components/EditPersonalNotesDialog";
 import { PersonalNotesTable } from "@/components/PersonalNotesTable";
@@ -22,6 +22,8 @@ interface Watch {
   what_i_like?: string;
   what_i_dont_like?: string;
   created_at: string;
+  sentiment?: string;
+  sentiment_analyzed_at?: string;
 }
 
 export default function PersonalNotes() {
@@ -30,6 +32,7 @@ export default function PersonalNotes() {
   const [watches, setWatches] = useState<Watch[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingWatch, setEditingWatch] = useState<Watch | null>(null);
+  const [analyzingSentiment, setAnalyzingSentiment] = useState(false);
 
   const fetchWatches = async () => {
     if (!selectedCollectionId) {
@@ -42,7 +45,7 @@ export default function PersonalNotes() {
     try {
       const { data, error } = await supabase
         .from("watches")
-        .select("id, brand, model, cost, why_bought, when_bought, what_i_like, what_i_dont_like, created_at")
+        .select("id, brand, model, cost, why_bought, when_bought, what_i_like, what_i_dont_like, created_at, sentiment, sentiment_analyzed_at")
         .eq("collection_id", selectedCollectionId)
         .order("created_at", { ascending: true });
 
@@ -53,6 +56,53 @@ export default function PersonalNotes() {
       toast.error("Failed to load watches");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAnalyzeSentiment = async () => {
+    setAnalyzingSentiment(true);
+    let successCount = 0;
+    let errorCount = 0;
+
+    try {
+      for (const watch of watches) {
+        const notes = [
+          watch.why_bought,
+          watch.what_i_like,
+          watch.what_i_dont_like
+        ].filter(Boolean).join('\n\n');
+
+        if (!notes.trim()) {
+          console.log(`Skipping ${watch.brand} ${watch.model} - no notes`);
+          continue;
+        }
+
+        try {
+          const { error } = await supabase.functions.invoke('analyze-sentiment', {
+            body: { watchId: watch.id, notes }
+          });
+
+          if (error) throw error;
+          successCount++;
+        } catch (err) {
+          console.error(`Error analyzing ${watch.brand} ${watch.model}:`, err);
+          errorCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        toast.success(`Analyzed sentiment for ${successCount} watch${successCount > 1 ? 'es' : ''}`);
+        await fetchWatches();
+      }
+      
+      if (errorCount > 0) {
+        toast.error(`Failed to analyze ${errorCount} watch${errorCount > 1 ? 'es' : ''}`);
+      }
+    } catch (error) {
+      console.error("Error analyzing sentiment:", error);
+      toast.error("Failed to analyze sentiment");
+    } finally {
+      setAnalyzingSentiment(false);
     }
   };
 
@@ -96,10 +146,24 @@ export default function PersonalNotes() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Collection Insights</CardTitle>
-          <CardDescription>
-            Your private thoughts, memories, and spending analytics
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Collection Insights</CardTitle>
+              <CardDescription>
+                Your private thoughts, memories, and spending analytics
+              </CardDescription>
+            </div>
+            {!loading && watches.length > 0 && (
+              <Button
+                onClick={handleAnalyzeSentiment}
+                disabled={analyzingSentiment}
+                variant="outline"
+              >
+                <RefreshCw className={`mr-2 h-4 w-4 ${analyzingSentiment ? 'animate-spin' : ''}`} />
+                {analyzingSentiment ? 'Analyzing...' : 'Analyze Sentiment'}
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           {loading ? (

@@ -496,6 +496,8 @@ export type Database = {
           movement: string | null
           msrp: number | null
           rarity: Database["public"]["Enums"]["watch_rarity"] | null
+          sentiment: string | null
+          sentiment_analyzed_at: string | null
           sort_order: number
           type: string
           updated_at: string
@@ -529,6 +531,8 @@ export type Database = {
           movement?: string | null
           msrp?: number | null
           rarity?: Database["public"]["Enums"]["watch_rarity"] | null
+          sentiment?: string | null
+          sentiment_analyzed_at?: string | null
           sort_order?: number
           type: string
           updated_at?: string
@@ -562,6 +566,8 @@ export type Database = {
           movement?: string | null
           msrp?: number | null
           rarity?: Database["public"]["Enums"]["watch_rarity"] | null
+          sentiment?: string | null
+          sentiment_analyzed_at?: string | null
           sort_order?: number
           type?: string
           updated_at?: string
