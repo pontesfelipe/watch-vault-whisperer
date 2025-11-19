@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Calendar, DollarSign, Eye, EyeOff, Trash2 } from "lucide-react";
+import { ArrowLeft, Calendar, DollarSign, Eye, EyeOff, Trash2, Info } from "lucide-react";
 import { AddWearDialog } from "@/components/AddWearDialog";
 import { EditWatchDialog } from "@/components/EditWatchDialog";
 import { useToast } from "@/hooks/use-toast";
@@ -337,7 +337,7 @@ const WatchDetail = () => {
               {(watch.rarity || watch.historical_significance || watch.available_for_trade !== undefined) && (
                 <div className="mt-6 pt-6 border-t border-border">
                   <h3 className="text-lg font-semibold text-foreground mb-4">Classification</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {watch.rarity && (
                       <div>
                         <p className="text-sm text-muted-foreground mb-1">Rarity</p>
@@ -366,12 +366,28 @@ const WatchDetail = () => {
                       </div>
                     )}
                   </div>
-                  {watch.metadata_analysis_reasoning && (
-                    <div className="mt-4">
-                      <p className="text-sm text-muted-foreground mb-2">Classification Reasoning</p>
-                      <div className="bg-muted/50 rounded-lg p-4">
-                        <p className="text-sm text-foreground leading-relaxed">
+                  
+                  {watch.metadata_analysis_reasoning ? (
+                    <div className="mt-6">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Info className="w-4 h-4 text-primary" />
+                        <p className="text-sm font-medium text-foreground">Why This Classification?</p>
+                      </div>
+                      <div className="bg-muted/30 border border-border rounded-lg p-4">
+                        <p className="text-sm text-foreground leading-relaxed whitespace-pre-line">
                           {watch.metadata_analysis_reasoning}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mt-6">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Info className="w-4 h-4 text-muted-foreground" />
+                        <p className="text-sm font-medium text-muted-foreground">Classification Reasoning</p>
+                      </div>
+                      <div className="bg-muted/20 border border-border rounded-lg p-4">
+                        <p className="text-sm text-muted-foreground italic">
+                          No classification analysis available yet. Use the AI metadata analysis feature to generate insights about this watch's rarity and historical significance.
                         </p>
                       </div>
                     </div>
