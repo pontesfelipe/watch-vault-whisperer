@@ -580,7 +580,7 @@ const Index = () => {
                 </div>
               </div>
             )}
-            <WaterUsageList usages={waterUsages} watches={watches} />
+            <WaterUsageList usages={waterUsages} watches={watches} onUpdate={fetchData} />
             <AddWaterUsageDialog 
               watches={watches} 
               onSuccess={fetchData}

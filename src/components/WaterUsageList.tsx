@@ -1,10 +1,13 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Droplets, Eye, EyeOff } from "lucide-react";
+import { Droplets, Eye, EyeOff, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { usePasscode } from "@/contexts/PasscodeContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { Checkbox } from "@/components/ui/checkbox";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 
 interface WaterUsage {
@@ -20,6 +23,7 @@ interface WaterUsage {
 interface WaterUsageListProps {
   usages: WaterUsage[];
   watches: { id: string; brand: string; model: string }[];
+  onUpdate: () => void;
 }
 
 const getActivityColor = (activityType: string) => {
@@ -41,10 +45,12 @@ const getActivityColor = (activityType: string) => {
   return colors[key] || "bg-primary/10 text-primary border-primary/20";
 };
 
-export const WaterUsageList = ({ usages, watches }: WaterUsageListProps) => {
+export const WaterUsageList = ({ usages, watches, onUpdate }: WaterUsageListProps) => {
   const { isAdmin } = useAuth();
   const { isVerified, requestVerification } = usePasscode();
   const [showLocation, setShowLocation] = useState(isAdmin);
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(false);
 
   const handleToggleLocation = () => {
     if (!showLocation) {
@@ -67,6 +73,47 @@ export const WaterUsageList = ({ usages, watches }: WaterUsageListProps) => {
     }
   }, [isVerified, isAdmin]);
 
+  const handleBatchDelete = async () => {
+    if (selectedItems.size === 0) return;
+    
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from("water_usage")
+        .delete()
+        .in("id", Array.from(selectedItems));
+      
+      if (error) throw error;
+      
+      toast.success(`${selectedItems.size} water usage entr${selectedItems.size > 1 ? "ies" : "y"} deleted successfully`);
+      setSelectedItems(new Set());
+      onUpdate();
+    } catch (error) {
+      console.error("Error deleting water usage:", error);
+      toast.error("Failed to delete water usage");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleItemSelection = (id: string) => {
+    const newSelected = new Set(selectedItems);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedItems(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedItems.size === usages.length) {
+      setSelectedItems(new Set());
+    } else {
+      setSelectedItems(new Set(usages.map(u => u.id)));
+    }
+  };
+
   if (usages.length === 0) {
     return (
       <Card className="border-border bg-card p-8 text-center">
@@ -80,25 +127,51 @@ export const WaterUsageList = ({ usages, watches }: WaterUsageListProps) => {
   return (
     <>
       {usages.length > 0 && (
-        <div className="flex justify-end mb-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleToggleLocation}
-            className="gap-2 text-xs"
-          >
-            {showLocation ? (
-              <>
-                <EyeOff className="w-4 h-4" />
-                Hide Locations
-              </>
-            ) : (
-              <>
-                <Eye className="w-4 h-4" />
-                Show Locations
-              </>
+        <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
+          {isVerified && usages.length > 0 && (
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="select-all-water"
+                checked={selectedItems.size === usages.length && usages.length > 0}
+                onCheckedChange={toggleSelectAll}
+              />
+              <label htmlFor="select-all-water" className="text-sm text-muted-foreground cursor-pointer">
+                Select All
+              </label>
+            </div>
+          )}
+          <div className="flex items-center gap-2 ml-auto">
+            {selectedItems.size > 0 && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleBatchDelete}
+                disabled={loading}
+                className="gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete {selectedItems.size} Entr{selectedItems.size > 1 ? "ies" : "y"}
+              </Button>
             )}
-          </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleToggleLocation}
+              className="gap-2 text-xs"
+            >
+              {showLocation ? (
+                <>
+                  <EyeOff className="w-4 h-4" />
+                  Hide Locations
+                </>
+              ) : (
+                <>
+                  <Eye className="w-4 h-4" />
+                  Show Locations
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       )}
       <div className="space-y-3">
@@ -109,6 +182,13 @@ export const WaterUsageList = ({ usages, watches }: WaterUsageListProps) => {
         return (
         <Card key={entry.id} className="border-border bg-card p-4 hover:shadow-md transition-all duration-300">
           <div className="flex items-start gap-4">
+            {isVerified && (
+              <Checkbox
+                checked={selectedItems.has(entry.id)}
+                onCheckedChange={() => toggleItemSelection(entry.id)}
+                className="mt-3"
+              />
+            )}
             <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
               <Droplets className="w-5 h-5 text-primary" />
             </div>

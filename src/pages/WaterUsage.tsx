@@ -56,7 +56,7 @@ const WaterUsage = () => {
         </Card>
       )}
 
-      <WaterUsageList usages={waterUsages} watches={watches} />
+      <WaterUsageList usages={waterUsages} watches={watches} onUpdate={refetch} />
 
       <AddWaterUsageDialog 
         watches={watches} 
