@@ -33,11 +33,10 @@ interface TripTimelineProps {
   limit?: number;
   type: "trip" | "event";
   watches: { id: string; brand: string; model: string }[];
-  watchMap?: Record<string, any>;
   onUpdate: () => void;
 }
 
-export const TripTimeline = ({ trips, limit, type, watches, watchMap = {}, onUpdate }: TripTimelineProps) => {
+export const TripTimeline = ({ trips, limit, type, watches, onUpdate }: TripTimelineProps) => {
   const [selectedYear, setSelectedYear] = useState<string>("all");
   
   // Get available years from trips
@@ -258,45 +257,15 @@ export const TripTimeline = ({ trips, limit, type, watches, watchMap = {}, onUpd
                 </div>
                 
                 <div className="mt-3 pt-3 border-t border-border">
-                  <div className="space-y-3">
-                    {Object.entries(trip.watch || {}).map(([watchName, days]) => {
-                      const watchDetails = watchMap[watchName];
-                      return (
-                        <div key={watchName} className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="font-medium text-foreground">{watchName}</span>
-                            <span className="text-sm text-muted-foreground">{days} {days === 1 ? 'day' : 'days'}</span>
-                          </div>
-                          {watchDetails && (watchDetails.rarity || watchDetails.historical_significance || watchDetails.available_for_trade !== undefined) && (
-                            <div className="flex flex-wrap gap-2">
-                              {watchDetails.rarity && (
-                                <Badge variant="outline" className="text-xs">
-                                  {watchDetails.rarity}
-                                </Badge>
-                              )}
-                              {watchDetails.historical_significance && watchDetails.historical_significance !== 'regular' && (
-                                <Badge variant="secondary" className="text-xs">
-                                  {watchDetails.historical_significance.replace('_', ' ')}
-                                </Badge>
-                              )}
-                              {watchDetails.available_for_trade && (
-                                <Badge variant="default" className="text-xs">
-                                  Available for Trade
-                                </Badge>
-                              )}
-                            </div>
-                          )}
-                          {watchDetails?.metadata_analysis_reasoning && (
-                            <div className="bg-muted/30 rounded p-2 mt-1">
-                              <p className="text-xs text-muted-foreground leading-relaxed">
-                                {watchDetails.metadata_analysis_reasoning}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                    <p className="text-xs text-muted-foreground pt-1 border-t border-border/50">
+                  <div className="space-y-1">
+                    {Object.entries(trip.watch || {}).map(([watchName, days]) => (
+                      <p key={watchName} className="text-sm">
+                        <span className="font-medium text-foreground">{watchName}</span>
+                        <span className="mx-2 text-muted-foreground">•</span>
+                        <span className="text-muted-foreground">{days} {days === 1 ? 'day' : 'days'}</span>
+                      </p>
+                    ))}
+                    <p className="text-xs text-muted-foreground pt-1">
                       Total: {trip.days} {trip.days === 1 ? 'day' : 'days'}
                     </p>
                   </div>

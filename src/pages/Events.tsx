@@ -11,12 +11,6 @@ const Events = () => {
   const { watches, loading: watchLoading } = useWatchData();
   const [showAddEvent, setShowAddEvent] = useState(false);
 
-  // Create a map of watches for easy lookup with full details
-  const watchMap = watches.reduce((acc, watch) => {
-    acc[`${watch.brand} ${watch.model}`] = watch;
-    return acc;
-  }, {} as Record<string, any>);
-
   if (eventLoading || watchLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -50,13 +44,12 @@ const Events = () => {
           id: event.id,
           startDate: event.start_date,
           location: event.location,
-          watch: event.watch_model || {},
+          watch: {},
           days: event.days,
           purpose: event.purpose,
         }))}
         type="event"
         watches={watches}
-        watchMap={watchMap}
         onUpdate={refetch}
       />
 
