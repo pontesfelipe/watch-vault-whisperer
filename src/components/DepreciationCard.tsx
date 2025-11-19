@@ -56,7 +56,32 @@ export const DepreciationCard = ({
           </div>
         </div>
         
-        <div className="pt-4 border-t border-border">
+        <div className="pt-4 border-t border-border space-y-3">
+          {totalMSRP > 0 && (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {marketValue >= totalMSRP ? (
+                  <TrendingUp className="w-5 h-5 text-green-500" />
+                ) : (
+                  <TrendingDown className="w-5 h-5 text-red-500" />
+                )}
+                <span className="text-sm text-muted-foreground">
+                  From MSRP
+                </span>
+              </div>
+              <div className="text-right">
+                <p
+                  className={`text-xl font-bold ${
+                    marketValue >= totalMSRP ? "text-green-500" : "text-red-500"
+                  }`}
+                >
+                  {marketValue >= totalMSRP ? "+" : ""}
+                  {(((marketValue - totalMSRP) / totalMSRP) * 100).toFixed(1)}%
+                </p>
+              </div>
+            </div>
+          )}
+          
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               {isAppreciation ? (
@@ -65,7 +90,7 @@ export const DepreciationCard = ({
                 <TrendingDown className="w-5 h-5 text-red-500" />
               )}
               <span className="text-sm text-muted-foreground">
-                {isAppreciation ? "Net Appreciation" : "Net Depreciation"}
+                From Price Paid
               </span>
             </div>
             <div className="text-right">
