@@ -129,7 +129,7 @@ export const TripTimeline = ({ trips, limit, type, watches, onUpdate }: TripTime
       
       toast.success(`${selectedItems.size} ${type === "trip" ? "trip" : "event"}${selectedItems.size > 1 ? "s" : ""} deleted successfully`);
       setSelectedItems(new Set());
-      onUpdate();
+      await onUpdate(); // Wait for refresh
     } catch (error) {
       console.error(`Error deleting ${type}s:`, error);
       toast.error(`Failed to delete ${type}s`);
