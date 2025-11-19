@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar, MapPin, Flag, Droplets } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
@@ -20,6 +22,9 @@ const wearSchema = z.object({
 export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSuccess: () => void }) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isTrip, setIsTrip] = useState(false);
+  const [isEvent, setIsEvent] = useState(false);
+  const [isWaterActivity, setIsWaterActivity] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -46,6 +51,79 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
       const day = String(dateObj.getDate()).padStart(2, '0');
       const formattedDate = `${year}-${month}-${day}`;
       
+      let tripId = null;
+      let eventId = null;
+      let waterUsageId = null;
+
+      // Create trip if marked
+      if (isTrip) {
+        const tripLocation = formData.get("tripLocation") as string;
+        const tripPurpose = formData.get("tripPurpose") as string;
+        
+        const { data: tripData, error: tripError } = await supabase
+          .from("trips")
+          .insert({
+            location: tripLocation,
+            start_date: formattedDate,
+            days: days,
+            purpose: tripPurpose,
+            watch_model: { [`${watchId}`]: days },
+            user_id: user?.id,
+          })
+          .select()
+          .single();
+        
+        if (tripError) throw tripError;
+        tripId = tripData.id;
+      }
+
+      // Create event if marked
+      if (isEvent) {
+        const eventLocation = formData.get("eventLocation") as string;
+        const eventPurpose = formData.get("eventPurpose") as string;
+        
+        const { data: eventData, error: eventError } = await supabase
+          .from("events")
+          .insert({
+            location: eventLocation,
+            start_date: formattedDate,
+            days: days,
+            purpose: eventPurpose,
+            watch_model: { [`${watchId}`]: days },
+            user_id: user?.id,
+          })
+          .select()
+          .single();
+        
+        if (eventError) throw eventError;
+        eventId = eventData.id;
+      }
+
+      // Create water usage if marked
+      if (isWaterActivity) {
+        const activityType = formData.get("waterActivityType") as string;
+        const depthMeters = formData.get("depthMeters") ? parseFloat(formData.get("depthMeters") as string) : null;
+        const durationMinutes = formData.get("durationMinutes") ? parseFloat(formData.get("durationMinutes") as string) : null;
+        const waterNotes = formData.get("waterNotes") as string || null;
+        
+        const { data: waterData, error: waterError } = await supabase
+          .from("water_usage")
+          .insert({
+            watch_id: watchId,
+            activity_date: formattedDate,
+            activity_type: activityType,
+            depth_meters: depthMeters,
+            duration_minutes: durationMinutes,
+            notes: waterNotes,
+            user_id: user?.id,
+          })
+          .select()
+          .single();
+        
+        if (waterError) throw waterError;
+        waterUsageId = waterData.id;
+      }
+      
       // Check if entry already exists
       const { data: existing } = await supabase
         .from("wear_entries")
@@ -63,6 +141,9 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
           .update({
             days: days,
             notes: data.notes,
+            trip_id: tripId,
+            event_id: eventId,
+            water_usage_id: waterUsageId,
           })
           .eq("id", existing.id);
         error = result.error;
@@ -73,6 +154,9 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
           wear_date: formattedDate,
           days: days,
           notes: data.notes,
+          trip_id: tripId,
+          event_id: eventId,
+          water_usage_id: waterUsageId,
           user_id: user?.id,
         });
         error = result.error;
@@ -86,6 +170,9 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
       });
 
       setOpen(false);
+      setIsTrip(false);
+      setIsEvent(false);
+      setIsWaterActivity(false);
       onSuccess();
       (e.target as HTMLFormElement).reset();
     } catch (error) {
@@ -166,6 +253,164 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
               className="bg-background border-border resize-none"
               rows={3}
             />
+          </div>
+
+          <div className="space-y-4 pt-2 border-t border-border">
+            <Label className="text-sm font-semibold">Link to Activity (Optional)</Label>
+            
+            {/* Trip Checkbox and Fields */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="isTrip"
+                  checked={isTrip}
+                  onCheckedChange={(checked) => setIsTrip(checked as boolean)}
+                />
+                <Label htmlFor="isTrip" className="flex items-center gap-2 cursor-pointer font-normal">
+                  <MapPin className="w-4 h-4 text-primary" />
+                  This wear was during a trip
+                </Label>
+              </div>
+              {isTrip && (
+                <div className="ml-6 space-y-3 p-3 bg-muted/50 rounded-md">
+                  <div>
+                    <Label htmlFor="tripLocation" className="text-sm">Location</Label>
+                    <Input
+                      id="tripLocation"
+                      name="tripLocation"
+                      placeholder="e.g., Paris, France"
+                      required={isTrip}
+                      className="bg-background"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="tripPurpose" className="text-sm">Purpose</Label>
+                    <Select name="tripPurpose" defaultValue="Business">
+                      <SelectTrigger className="bg-background">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Business">Business</SelectItem>
+                        <SelectItem value="Leisure">Leisure</SelectItem>
+                        <SelectItem value="Family">Family</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Event Checkbox and Fields */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="isEvent"
+                  checked={isEvent}
+                  onCheckedChange={(checked) => setIsEvent(checked as boolean)}
+                />
+                <Label htmlFor="isEvent" className="flex items-center gap-2 cursor-pointer font-normal">
+                  <Flag className="w-4 h-4 text-primary" />
+                  This wear was during an event
+                </Label>
+              </div>
+              {isEvent && (
+                <div className="ml-6 space-y-3 p-3 bg-muted/50 rounded-md">
+                  <div>
+                    <Label htmlFor="eventLocation" className="text-sm">Location</Label>
+                    <Input
+                      id="eventLocation"
+                      name="eventLocation"
+                      placeholder="e.g., Convention Center"
+                      required={isEvent}
+                      className="bg-background"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="eventPurpose" className="text-sm">Event Name/Purpose</Label>
+                    <Input
+                      id="eventPurpose"
+                      name="eventPurpose"
+                      placeholder="e.g., Wedding, Conference"
+                      required={isEvent}
+                      className="bg-background"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Water Activity Checkbox and Fields */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="isWaterActivity"
+                  checked={isWaterActivity}
+                  onCheckedChange={(checked) => setIsWaterActivity(checked as boolean)}
+                />
+                <Label htmlFor="isWaterActivity" className="flex items-center gap-2 cursor-pointer font-normal">
+                  <Droplets className="w-4 h-4 text-primary" />
+                  This wear involved water activity
+                </Label>
+              </div>
+              {isWaterActivity && (
+                <div className="ml-6 space-y-3 p-3 bg-muted/50 rounded-md">
+                  <div>
+                    <Label htmlFor="waterActivityType" className="text-sm">Activity Type</Label>
+                    <Select name="waterActivityType" defaultValue="Swimming">
+                      <SelectTrigger className="bg-background">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Swimming">Swimming</SelectItem>
+                        <SelectItem value="Diving">Diving</SelectItem>
+                        <SelectItem value="Snorkeling">Snorkeling</SelectItem>
+                        <SelectItem value="Shower">Shower</SelectItem>
+                        <SelectItem value="Rain">Rain</SelectItem>
+                        <SelectItem value="Beach">Beach</SelectItem>
+                        <SelectItem value="Pool">Pool</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="depthMeters" className="text-sm">Depth (meters)</Label>
+                      <Input
+                        id="depthMeters"
+                        name="depthMeters"
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        placeholder="0.0"
+                        className="bg-background"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="durationMinutes" className="text-sm">Duration (min)</Label>
+                      <Input
+                        id="durationMinutes"
+                        name="durationMinutes"
+                        type="number"
+                        min="1"
+                        placeholder="30"
+                        className="bg-background"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="waterNotes" className="text-sm">Water Activity Notes</Label>
+                    <Textarea
+                      id="waterNotes"
+                      name="waterNotes"
+                      placeholder="Additional details..."
+                      className="bg-background resize-none"
+                      rows={2}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex gap-2">
