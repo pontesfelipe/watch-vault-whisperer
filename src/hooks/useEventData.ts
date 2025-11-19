@@ -25,15 +25,16 @@ export const useEventData = () => {
 
     setLoading(true);
     try {
-      const query: any = (supabase.from('events' as any) as any).select('*');
+      let query = supabase.from('events').select('*');
       
       if (!isAdmin) {
-        query.eq('user_id', user.id);
+        query = query.eq('user_id', user.id);
       }
       
-      const result = await query.order('start_date', { ascending: false });
+      const { data, error } = await query.order('start_date', { ascending: false });
 
-      if (result.data) setEvents(result.data);
+      if (error) throw error;
+      if (data) setEvents(data);
     } catch (error) {
       console.error("Error fetching event data:", error);
     } finally {
