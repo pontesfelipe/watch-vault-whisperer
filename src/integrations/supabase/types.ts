@@ -640,39 +640,69 @@ export type Database = {
         Row: {
           created_at: string
           days: number
+          event_id: string | null
           id: string
           notes: string | null
+          trip_id: string | null
           updated_at: string
           user_id: string | null
           watch_id: string
+          water_usage_id: string | null
           wear_date: string
         }
         Insert: {
           created_at?: string
           days?: number
+          event_id?: string | null
           id?: string
           notes?: string | null
+          trip_id?: string | null
           updated_at?: string
           user_id?: string | null
           watch_id: string
+          water_usage_id?: string | null
           wear_date: string
         }
         Update: {
           created_at?: string
           days?: number
+          event_id?: string | null
           id?: string
           notes?: string | null
+          trip_id?: string | null
           updated_at?: string
           user_id?: string | null
           watch_id?: string
+          water_usage_id?: string | null
           wear_date?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "wear_entries_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wear_entries_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "wear_entries_watch_id_fkey"
             columns: ["watch_id"]
             isOneToOne: false
             referencedRelation: "watches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wear_entries_water_usage_id_fkey"
+            columns: ["water_usage_id"]
+            isOneToOne: false
+            referencedRelation: "water_usage"
             referencedColumns: ["id"]
           },
         ]
