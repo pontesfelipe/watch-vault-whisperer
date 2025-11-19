@@ -75,8 +75,8 @@ export const DepreciationCard = ({
                     marketValue >= totalMSRP ? "text-green-500" : "text-red-500"
                   }`}
                 >
-                  {marketValue >= totalMSRP ? "+" : ""}
-                  {(((marketValue - totalMSRP) / totalMSRP) * 100).toFixed(1)}%
+                  {marketValue >= totalMSRP ? "+" : "-"}
+                  {Math.abs(((marketValue - totalMSRP) / totalMSRP) * 100).toFixed(1)}%
                 </p>
               </div>
             </div>
@@ -99,7 +99,7 @@ export const DepreciationCard = ({
                   isAppreciation ? "text-green-500" : "text-red-500"
                 }`}
               >
-                {isAppreciation ? "+" : ""}{depreciationPercent.toFixed(1)}%
+                {isAppreciation ? "+" : "-"}{Math.abs(depreciationPercent).toFixed(1)}%
               </p>
             </div>
           </div>
