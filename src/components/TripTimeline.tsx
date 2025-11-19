@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, Briefcase, Palmtree, Eye, EyeOff, Pencil, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { usePasscode } from "@/contexts/PasscodeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -62,6 +63,7 @@ export const TripTimeline = ({ trips, limit, type, watches, onUpdate }: TripTime
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editItem, setEditItem] = useState<Trip | null>(null);
   const [loading, setLoading] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [formData, setFormData] = useState({
     location: "",
     startDate: "",
@@ -109,6 +111,48 @@ export const TripTimeline = ({ trips, limit, type, watches, onUpdate }: TripTime
       toast.error(`Failed to delete ${type}`);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleBatchDelete = async () => {
+    if (selectedItems.size === 0) return;
+    
+    setLoading(true);
+    try {
+      const table = type === "trip" ? "trips" : "events";
+      const { error } = await supabase
+        .from(table)
+        .delete()
+        .in("id", Array.from(selectedItems));
+      
+      if (error) throw error;
+      
+      toast.success(`${selectedItems.size} ${type === "trip" ? "trip" : "event"}${selectedItems.size > 1 ? "s" : ""} deleted successfully`);
+      setSelectedItems(new Set());
+      onUpdate();
+    } catch (error) {
+      console.error(`Error deleting ${type}s:`, error);
+      toast.error(`Failed to delete ${type}s`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleItemSelection = (id: string) => {
+    const newSelected = new Set(selectedItems);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedItems(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedItems.size === displayTrips.length) {
+      setSelectedItems(new Set());
+    } else {
+      setSelectedItems(new Set(displayTrips.map(t => t.id)));
     }
   };
 
@@ -170,46 +214,81 @@ export const TripTimeline = ({ trips, limit, type, watches, onUpdate }: TripTime
     <>
       <div className="space-y-4">
         {trips.length > 0 && (
-          <div className="flex justify-between items-center mb-4">
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-muted-foreground">Year:</label>
-              <Select value={selectedYear} onValueChange={setSelectedYear}>
-                <SelectTrigger className="w-[120px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Years</SelectItem>
-                  {availableYears.map(year => (
-                    <SelectItem key={year} value={year.toString()}>
-                      {year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleToggleLocation}
-              className="gap-2 text-xs"
-            >
-              {showLocation ? (
-                <>
-                  <EyeOff className="w-4 h-4" />
-                  Hide Locations
-                </>
-              ) : (
-                <>
-                  <Eye className="w-4 h-4" />
-                  Show Locations
-                </>
+          <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-muted-foreground">Year:</label>
+                <Select value={selectedYear} onValueChange={setSelectedYear}>
+                  <SelectTrigger className="w-[120px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Years</SelectItem>
+                    {availableYears.map(year => (
+                      <SelectItem key={year} value={year.toString()}>
+                        {year}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {isVerified && displayTrips.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="select-all"
+                    checked={selectedItems.size === displayTrips.length && displayTrips.length > 0}
+                    onCheckedChange={toggleSelectAll}
+                  />
+                  <label htmlFor="select-all" className="text-sm text-muted-foreground cursor-pointer">
+                    Select All
+                  </label>
+                </div>
               )}
-            </Button>
+            </div>
+            <div className="flex items-center gap-2">
+              {selectedItems.size > 0 && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleBatchDelete}
+                  disabled={loading}
+                  className="gap-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete {selectedItems.size} {type === "trip" ? "Trip" : "Event"}{selectedItems.size > 1 ? "s" : ""}
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleToggleLocation}
+                className="gap-2 text-xs"
+              >
+                {showLocation ? (
+                  <>
+                    <EyeOff className="w-4 h-4" />
+                    Hide Locations
+                  </>
+                ) : (
+                  <>
+                    <Eye className="w-4 h-4" />
+                    Show Locations
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         )}
         {displayTrips.map((trip, index) => (
           <Card key={index} className="border-border bg-card p-6 hover:shadow-[var(--shadow-luxury)] transition-all duration-300">
             <div className="flex items-start gap-4">
+              {isVerified && (
+                <Checkbox
+                  checked={selectedItems.has(trip.id)}
+                  onCheckedChange={() => toggleItemSelection(trip.id)}
+                  className="mt-3"
+                />
+              )}
               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                 {trip.purpose === "Vacation" ? (
                   <Palmtree className="w-5 h-5 text-primary" />
