@@ -38,6 +38,10 @@ interface Watch {
   average_resale_price?: number;
   warranty_date?: string;
   warranty_card_url?: string;
+  rarity?: string;
+  historical_significance?: string;
+  metadata_analysis_reasoning?: string;
+  available_for_trade?: boolean;
 }
 
 interface WearEntry {
@@ -328,6 +332,52 @@ const WatchDetail = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Classification Information */}
+              {(watch.rarity || watch.historical_significance || watch.available_for_trade !== undefined) && (
+                <div className="mt-6 pt-6 border-t border-border">
+                  <h3 className="text-lg font-semibold text-foreground mb-4">Classification</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    {watch.rarity && (
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">Rarity</p>
+                        <Badge variant="secondary" className="text-base capitalize">
+                          {watch.rarity}
+                        </Badge>
+                      </div>
+                    )}
+                    {watch.historical_significance && (
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">Historical</p>
+                        <Badge variant="secondary" className="text-base capitalize">
+                          {watch.historical_significance}
+                        </Badge>
+                      </div>
+                    )}
+                    {watch.available_for_trade !== undefined && (
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">Trade/Sell</p>
+                        <Badge 
+                          variant={watch.available_for_trade ? "default" : "secondary"} 
+                          className="text-base"
+                        >
+                          {watch.available_for_trade ? "Available" : "Not Available"}
+                        </Badge>
+                      </div>
+                    )}
+                  </div>
+                  {watch.metadata_analysis_reasoning && (
+                    <div className="mt-4">
+                      <p className="text-sm text-muted-foreground mb-2">Classification Reasoning</p>
+                      <div className="bg-muted/50 rounded-lg p-4">
+                        <p className="text-sm text-foreground leading-relaxed">
+                          {watch.metadata_analysis_reasoning}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </Card>
           </TabsContent>
 
