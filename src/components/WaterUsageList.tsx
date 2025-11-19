@@ -128,7 +128,7 @@ export const WaterUsageList = ({ usages, watches, onUpdate }: WaterUsageListProp
     <>
       {usages.length > 0 && (
         <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
-          {isVerified && usages.length > 0 && (
+          {(isVerified || isAdmin) && usages.length > 0 && (
             <div className="flex items-center gap-2">
               <Checkbox
                 id="select-all-water"
@@ -182,7 +182,7 @@ export const WaterUsageList = ({ usages, watches, onUpdate }: WaterUsageListProp
         return (
         <Card key={entry.id} className="border-border bg-card p-4 hover:shadow-md transition-all duration-300">
           <div className="flex items-start gap-4">
-            {isVerified && (
+            {(isVerified || isAdmin) && (
               <Checkbox
                 checked={selectedItems.has(entry.id)}
                 onCheckedChange={() => toggleItemSelection(entry.id)}

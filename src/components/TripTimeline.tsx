@@ -232,7 +232,7 @@ export const TripTimeline = ({ trips, limit, type, watches, onUpdate }: TripTime
                   </SelectContent>
                 </Select>
               </div>
-              {isVerified && displayTrips.length > 0 && (
+              {(isVerified || isAdmin) && displayTrips.length > 0 && (
                 <div className="flex items-center gap-2">
                   <Checkbox
                     id="select-all"
@@ -282,7 +282,7 @@ export const TripTimeline = ({ trips, limit, type, watches, onUpdate }: TripTime
         {displayTrips.map((trip, index) => (
           <Card key={index} className="border-border bg-card p-6 hover:shadow-[var(--shadow-luxury)] transition-all duration-300">
             <div className="flex items-start gap-4">
-              {isVerified && (
+              {(isVerified || isAdmin) && (
                 <Checkbox
                   checked={selectedItems.has(trip.id)}
                   onCheckedChange={() => toggleItemSelection(trip.id)}
@@ -312,7 +312,7 @@ export const TripTimeline = ({ trips, limit, type, watches, onUpdate }: TripTime
                     <Badge variant={trip.purpose === "Vacation" ? "default" : "secondary"}>
                       {trip.purpose}
                     </Badge>
-                    {isVerified && (
+                    {(isVerified || isAdmin) && (
                       <>
                         <Button
                           variant="ghost"
