@@ -7,6 +7,7 @@ interface Watch {
   brand: string;
   model: string;
   cost: number;
+  msrp?: number;
   average_resale_price?: number;
 }
 
@@ -17,6 +18,7 @@ interface DepreciationChartProps {
 export const DepreciationChart = ({ watches }: DepreciationChartProps) => {
   const [filterType, setFilterType] = useState<string>("all");
   const [selectedWatch, setSelectedWatch] = useState<string>("");
+  const [comparisonMode, setComparisonMode] = useState<"price_paid" | "msrp">("price_paid");
 
   const watchesWithResale = watches.filter(
     (w) => w.average_resale_price != null && w.average_resale_price > 0
@@ -39,6 +41,13 @@ export const DepreciationChart = ({ watches }: DepreciationChartProps) => {
 
   // Calculate chart data based on filter
   const chartData = useMemo(() => {
+    const getInvestedValue = (watch: Watch) => {
+      if (comparisonMode === "msrp") {
+        return watch.msrp && watch.msrp > 0 ? watch.msrp : watch.cost;
+      }
+      return watch.cost;
+    };
+
     if (filterType === "brand") {
       // Group by brand and sum values
       const brandGroups = watchesWithResale.reduce((acc, watch) => {
@@ -49,7 +58,7 @@ export const DepreciationChart = ({ watches }: DepreciationChartProps) => {
             count: 0
           };
         }
-        acc[watch.brand].invested += watch.cost;
+        acc[watch.brand].invested += getInvestedValue(watch);
         acc[watch.brand].current += watch.average_resale_price || 0;
         acc[watch.brand].count += 1;
         return acc;
@@ -70,13 +79,14 @@ export const DepreciationChart = ({ watches }: DepreciationChartProps) => {
       const watch = watchesWithResale.find(w => `${w.brand}-${w.model}` === selectedWatch);
       if (!watch) return [];
       
+      const invested = getInvestedValue(watch);
       return [{
         name: `${watch.brand}\n${watch.model}`,
         brand: watch.brand,
         model: watch.model,
-        invested: watch.cost,
+        invested,
         current: watch.average_resale_price || 0,
-        change: (watch.average_resale_price || 0) - watch.cost,
+        change: (watch.average_resale_price || 0) - invested,
       }];
     } else {
       // Show all watches with abbreviated names
@@ -85,18 +95,19 @@ export const DepreciationChart = ({ watches }: DepreciationChartProps) => {
           // Create abbreviated name (first 3 letters of brand + first 3 of model)
           const abbrevBrand = watch.brand.substring(0, 3).toUpperCase();
           const abbrevModel = watch.model.split(' ')[0].substring(0, 4);
+          const invested = getInvestedValue(watch);
           return {
             name: `${abbrevBrand}-${abbrevModel}`,
             brand: watch.brand,
             model: watch.model,
-            invested: watch.cost,
+            invested,
             current: watch.average_resale_price || 0,
-            change: (watch.average_resale_price || 0) - watch.cost,
+            change: (watch.average_resale_price || 0) - invested,
           };
         })
         .sort((a, b) => b.change - a.change);
     }
-  }, [watchesWithResale, filterType, selectedWatch]);
+  }, [watchesWithResale, filterType, selectedWatch, comparisonMode]);
 
   if (chartData.length === 0) {
     return (
@@ -126,7 +137,17 @@ export const DepreciationChart = ({ watches }: DepreciationChartProps) => {
     <Card className="border-border bg-card">
       <CardHeader>
         <CardTitle className="text-xl">Investment vs Market Value</CardTitle>
-        <div className="flex gap-2 mt-4">
+        <div className="flex gap-2 mt-4 flex-wrap">
+          <Select value={comparisonMode} onValueChange={(v) => setComparisonMode(v as "price_paid" | "msrp")}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="price_paid">Price Paid</SelectItem>
+              <SelectItem value="msrp">MSRP</SelectItem>
+            </SelectContent>
+          </Select>
+          
           <Select value={filterType} onValueChange={(value) => {
             setFilterType(value);
             setSelectedWatch("");
@@ -186,8 +207,25 @@ export const DepreciationChart = ({ watches }: DepreciationChartProps) => {
                 color: "hsl(var(--foreground))",
               }}
             />
-            <Legend
-              wrapperStyle={{ color: "hsl(var(--foreground))" }}
+            <Legend 
+              content={({ payload }) => (
+                <div className="flex justify-center gap-4 mt-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-primary"></div>
+                    <span className="text-sm text-muted-foreground">
+                      {comparisonMode === "msrp" ? "MSRP" : "Price Paid"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-[#ef4444]"></div>
+                    <span className="text-sm text-muted-foreground">Current Value (Loss)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-[#22c55e]"></div>
+                    <span className="text-sm text-muted-foreground">Current Value (Gain)</span>
+                  </div>
+                </div>
+              )}
             />
             <Bar dataKey="invested" fill="hsl(var(--primary))" name="Invested" radius={[8, 8, 0, 0]} />
             <Bar dataKey="current" name="Current Value" radius={[8, 8, 0, 0]}>
