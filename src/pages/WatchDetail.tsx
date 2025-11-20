@@ -5,9 +5,10 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Calendar, DollarSign, Eye, EyeOff, Trash2, Info } from "lucide-react";
+import { ArrowLeft, Calendar, DollarSign, Eye, EyeOff, Trash2, Info, Pencil } from "lucide-react";
 import { AddWearDialog } from "@/components/AddWearDialog";
 import { EditWatchDialog } from "@/components/EditWatchDialog";
+import { EditWearEntryDialog } from "@/components/EditWearEntryDialog";
 import { useToast } from "@/hooks/use-toast";
 import { usePasscode } from "@/contexts/PasscodeContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -46,6 +47,7 @@ interface Watch {
 
 interface WearEntry {
   id: string;
+  watch_id: string;
   wear_date: string;
   days: number;
   notes: string | null;
@@ -76,6 +78,8 @@ const WatchDetail = () => {
   const [wearEntries, setWearEntries] = useState<WearEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCost, setShowCost] = useState(isAdmin);
+  const [editingEntry, setEditingEntry] = useState<WearEntry | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const handleToggleCost = () => {
     if (!showCost) {
@@ -116,6 +120,11 @@ const WatchDetail = () => {
   useEffect(() => {
     fetchData();
   }, [id]);
+
+  const handleEditEntry = (entry: WearEntry) => {
+    setEditingEntry(entry);
+    setEditDialogOpen(true);
+  };
 
   const handleDeleteEntry = async (entryId: string) => {
     requestVerification(async () => {
@@ -497,7 +506,7 @@ const WatchDetail = () => {
                 <AddWearDialog watchId={watch.id} onSuccess={fetchData} />
               </div>
 
-              {wearEntries.length === 0 ? (
+               {wearEntries.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">No wear entries yet. Add your first one above!</p>
               ) : (
                 <div className="space-y-3">
@@ -506,7 +515,7 @@ const WatchDetail = () => {
                       key={entry.id}
                       className="flex items-center justify-between p-4 bg-muted rounded-lg hover:bg-muted/70 transition-colors"
                     >
-                      <div className="flex-1">
+                      <div className="flex-1 cursor-pointer" onClick={() => handleEditEntry(entry)}>
                         <p className="font-medium text-foreground">
                           {new Date(entry.wear_date).toLocaleDateString('en-US', {
                             month: 'short',
@@ -522,7 +531,16 @@ const WatchDetail = () => {
                         )}
                       </div>
 
-                      <AlertDialog>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => handleEditEntry(entry)}
+                          className="hover:bg-primary hover:text-primary-foreground"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button variant="ghost" size="sm" className="hover:bg-destructive hover:text-destructive-foreground">
                             <Trash2 className="w-4 h-4" />
@@ -546,6 +564,7 @@ const WatchDetail = () => {
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -554,6 +573,16 @@ const WatchDetail = () => {
           </TabsContent>
         </Tabs>
       </main>
+
+      {editingEntry && (
+        <EditWearEntryDialog
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          entries={[editingEntry]}
+          watchName={`${watch.brand} ${watch.model}`}
+          onUpdate={fetchData}
+        />
+      )}
     </div>
   );
 };
