@@ -15,6 +15,7 @@ export interface Trip {
   watch: Record<string, number>; // { "Rolex Submariner": 6, "Omega Speedmaster": 4 }
   days: number;
   purpose: string;
+  notes?: string;
 }
 
 export interface Event {
