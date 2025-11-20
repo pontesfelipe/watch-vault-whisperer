@@ -30,8 +30,6 @@ export const AddWaterUsageDialog = ({ watches, onSuccess, open, onOpenChange }: 
       watchId: formData.get("watchId") as string,
       activityDate: formData.get("activityDate") as string,
       activityType: formData.get("activityType") as string,
-      durationMinutes: formData.get("durationMinutes") ? parseFloat(formData.get("durationMinutes") as string) : null,
-      depthMeters: formData.get("depthMeters") ? parseFloat(formData.get("depthMeters") as string) : null,
       notes: formData.get("notes") as string || null,
     };
 
@@ -40,8 +38,6 @@ export const AddWaterUsageDialog = ({ watches, onSuccess, open, onOpenChange }: 
         watch_id: data.watchId,
         activity_date: data.activityDate,
         activity_type: data.activityType,
-        duration_minutes: data.durationMinutes,
-        depth_meters: data.depthMeters,
         notes: data.notes,
         user_id: user?.id,
       });

@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { Trash2, MapPin, Flag, Droplets } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { LocationAutocomplete } from "./LocationAutocomplete";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -74,8 +74,6 @@ export const EditWearEntryDialog = ({
   
   // Water activity fields
   const [waterActivityType, setWaterActivityType] = useState("Lake");
-  const [depthMeters, setDepthMeters] = useState("");
-  const [durationMinutes, setDurationMinutes] = useState("");
   const [waterNotes, setWaterNotes] = useState("");
 
   // Load entry data when dialog opens
@@ -137,15 +135,11 @@ export const EditWearEntryDialog = ({
         if (waterData) {
           setIsWaterActivity(true);
           setWaterActivityType(waterData.activity_type);
-          setDepthMeters(waterData.depth_meters?.toString() || "");
-          setDurationMinutes(waterData.duration_minutes?.toString() || "");
           setWaterNotes(waterData.notes || "");
         }
       } else {
         setIsWaterActivity(false);
         setWaterActivityType("Lake");
-        setDepthMeters("");
-        setDurationMinutes("");
         setWaterNotes("");
       }
     };
@@ -251,28 +245,24 @@ export const EditWearEntryDialog = ({
         if (waterUsageId) {
           // Update existing water usage
           await supabase
-            .from("water_usage")
-            .update({
-              activity_type: waterActivityType,
-              activity_date: formattedDate,
-              depth_meters: depthMeters ? parseFloat(depthMeters) : null,
-              duration_minutes: durationMinutes ? parseFloat(durationMinutes) : null,
-              notes: waterNotes || null,
-            })
-            .eq("id", waterUsageId);
+          .from("water_usage")
+          .update({
+            activity_type: waterActivityType,
+            activity_date: formattedDate,
+            notes: waterNotes || null,
+          })
+          .eq("id", waterUsageId);
         } else {
           // Create new water usage
           const { data: waterData, error: waterError } = await supabase
-            .from("water_usage")
-            .insert({
-              activity_type: waterActivityType,
-              activity_date: formattedDate,
-              watch_id: entry.watch_id,
-              depth_meters: depthMeters ? parseFloat(depthMeters) : null,
-              duration_minutes: durationMinutes ? parseFloat(durationMinutes) : null,
-              notes: waterNotes || null,
-              user_id: user?.id,
-            })
+          .from("water_usage")
+          .insert({
+            activity_type: waterActivityType,
+            activity_date: formattedDate,
+            watch_id: entry.watch_id,
+            notes: waterNotes || null,
+            user_id: user?.id,
+          })
             .select()
             .single();
           
@@ -439,19 +429,24 @@ export const EditWearEntryDialog = ({
               <div className="ml-6 space-y-3 bg-muted/30 p-4 rounded-lg">
                 <div>
                   <Label>Trip Location</Label>
-                  <LocationAutocomplete
+                  <Input
                     value={tripLocation}
-                    onChange={setTripLocation}
+                    onChange={(e) => setTripLocation(e.target.value)}
                     placeholder="Enter trip location..."
+                    className="bg-background"
                   />
                 </div>
                 <div>
                   <Label>Trip Purpose</Label>
-                  <Input
-                    value={tripPurpose}
-                    onChange={(e) => setTripPurpose(e.target.value)}
-                    placeholder="e.g., Business, Vacation"
-                  />
+                  <Select value={tripPurpose} onValueChange={setTripPurpose}>
+                    <SelectTrigger className="bg-background">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Business">Business</SelectItem>
+                      <SelectItem value="Vacation">Vacation</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             )}
@@ -475,10 +470,11 @@ export const EditWearEntryDialog = ({
               <div className="ml-6 space-y-3 bg-muted/30 p-4 rounded-lg">
                 <div>
                   <Label>Event Location</Label>
-                  <LocationAutocomplete
+                  <Input
                     value={eventLocation}
-                    onChange={setEventLocation}
+                    onChange={(e) => setEventLocation(e.target.value)}
                     placeholder="Enter event location..."
+                    className="bg-background"
                   />
                 </div>
                 <div>
@@ -487,6 +483,7 @@ export const EditWearEntryDialog = ({
                     value={eventPurpose}
                     onChange={(e) => setEventPurpose(e.target.value)}
                     placeholder="e.g., Wedding, Conference"
+                    className="bg-background"
                   />
                 </div>
               </div>
@@ -525,25 +522,6 @@ export const EditWearEntryDialog = ({
                       <SelectItem value="Other">Other</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-                <div>
-                  <Label>Depth (meters)</Label>
-                  <Input
-                    type="number"
-                    step="0.1"
-                    value={depthMeters}
-                    onChange={(e) => setDepthMeters(e.target.value)}
-                    placeholder="e.g., 10"
-                  />
-                </div>
-                <div>
-                  <Label>Duration (minutes)</Label>
-                  <Input
-                    type="number"
-                    value={durationMinutes}
-                    onChange={(e) => setDurationMinutes(e.target.value)}
-                    placeholder="e.g., 30"
-                  />
                 </div>
                 <div>
                   <Label>Water Activity Notes</Label>
