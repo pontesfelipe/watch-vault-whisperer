@@ -3,7 +3,7 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { WaterUsageList } from "@/components/WaterUsageList";
-import { AddWaterUsageDialog } from "@/components/AddWaterUsageDialog";
+import { QuickAddWearDialog } from "@/components/QuickAddWearDialog";
 import { useWaterUsageData } from "@/hooks/useWaterUsageData";
 import { useWatchData } from "@/hooks/useWatchData";
 import { useTripData } from "@/hooks/useTripData";
@@ -13,7 +13,6 @@ const WaterUsage = () => {
   const { waterUsages, loading: waterLoading, refetch } = useWaterUsageData();
   const { watches, wearEntries, loading: watchLoading } = useWatchData();
   const { trips } = useTripData();
-  const [showAddWaterUsage, setShowAddWaterUsage] = useState(false);
 
   const stats = useStatsCalculations(watches, wearEntries, trips, waterUsages);
 
@@ -39,10 +38,10 @@ const WaterUsage = () => {
             Track water resistance testing and usage
           </p>
         </div>
-        <Button onClick={() => setShowAddWaterUsage(true)} className="gap-2">
-          <Plus className="w-4 h-4" />
-          Add Water Usage
-        </Button>
+        <QuickAddWearDialog 
+          watches={watches} 
+          onSuccess={refetch}
+        />
       </div>
 
       {stats.topWaterWatch && (
@@ -57,13 +56,6 @@ const WaterUsage = () => {
       )}
 
       <WaterUsageList usages={waterUsages} watches={watches} onUpdate={refetch} />
-
-      <AddWaterUsageDialog 
-        watches={watches} 
-        onSuccess={refetch}
-        open={showAddWaterUsage}
-        onOpenChange={setShowAddWaterUsage}
-      />
     </div>
   );
 };

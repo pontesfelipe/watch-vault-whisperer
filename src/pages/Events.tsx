@@ -2,14 +2,13 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TripTimeline } from "@/components/TripTimeline";
-import { AddEventDialog } from "@/components/AddEventDialog";
+import { QuickAddWearDialog } from "@/components/QuickAddWearDialog";
 import { useEventData } from "@/hooks/useEventData";
 import { useWatchData } from "@/hooks/useWatchData";
 
 const Events = () => {
   const { events, loading: eventLoading, refetch } = useEventData();
   const { watches, loading: watchLoading } = useWatchData();
-  const [showAddEvent, setShowAddEvent] = useState(false);
 
   if (eventLoading || watchLoading) {
     return (
@@ -33,10 +32,10 @@ const Events = () => {
             Remember significant moments with your watches
           </p>
         </div>
-        <Button onClick={() => setShowAddEvent(true)} className="gap-2">
-          <Plus className="w-4 h-4" />
-          Add Event
-        </Button>
+        <QuickAddWearDialog 
+          watches={watches} 
+          onSuccess={refetch}
+        />
       </div>
 
       <TripTimeline
@@ -51,13 +50,6 @@ const Events = () => {
         type="event"
         watches={watches}
         onUpdate={refetch}
-      />
-
-      <AddEventDialog 
-        watches={watches} 
-        onSuccess={refetch} 
-        open={showAddEvent}
-        onOpenChange={setShowAddEvent}
       />
     </div>
   );

@@ -3,7 +3,7 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { TripTimeline } from "@/components/TripTimeline";
-import { AddTripDialog } from "@/components/AddTripDialog";
+import { QuickAddWearDialog } from "@/components/QuickAddWearDialog";
 import { useTripData } from "@/hooks/useTripData";
 import { useWatchData } from "@/hooks/useWatchData";
 import { useStatsCalculations } from "@/hooks/useStatsCalculations";
@@ -13,7 +13,6 @@ const Trips = () => {
   const { trips, loading: tripLoading, refetch } = useTripData();
   const { watches, wearEntries, loading: watchLoading } = useWatchData();
   const { waterUsages } = useWaterUsageData();
-  const [showAddTrip, setShowAddTrip] = useState(false);
 
   const stats = useStatsCalculations(watches, wearEntries, trips, waterUsages);
 
@@ -39,10 +38,10 @@ const Trips = () => {
             Track where your watches have traveled
           </p>
         </div>
-        <Button onClick={() => setShowAddTrip(true)} className="gap-2">
-          <Plus className="w-4 h-4" />
-          Add Trip
-        </Button>
+        <QuickAddWearDialog 
+          watches={watches} 
+          onSuccess={refetch}
+        />
       </div>
 
       {stats.topTripWatch && (
@@ -68,13 +67,6 @@ const Trips = () => {
         type="trip"
         watches={watches}
         onUpdate={refetch}
-      />
-
-      <AddTripDialog 
-        watches={watches} 
-        onSuccess={refetch}
-        open={showAddTrip}
-        onOpenChange={setShowAddTrip}
       />
     </div>
   );
