@@ -67,6 +67,7 @@ export const EditWearEntryDialog = ({
   // Trip fields
   const [tripLocation, setTripLocation] = useState("");
   const [tripPurpose, setTripPurpose] = useState("");
+  const [tripNotes, setTripNotes] = useState("");
   
   // Event fields
   const [eventLocation, setEventLocation] = useState("");
@@ -98,11 +99,13 @@ export const EditWearEntryDialog = ({
           setIsTrip(true);
           setTripLocation(tripData.location);
           setTripPurpose(tripData.purpose);
+          setTripNotes(tripData.notes || "");
         }
       } else {
         setIsTrip(false);
         setTripLocation("");
         setTripPurpose("");
+        setTripNotes("");
       }
       
       // Load event data if exists
@@ -177,6 +180,7 @@ export const EditWearEntryDialog = ({
               purpose: tripPurpose,
               start_date: formattedDate,
               days: days,
+              notes: tripNotes || null,
             })
             .eq("id", tripId);
         } else {
@@ -188,6 +192,7 @@ export const EditWearEntryDialog = ({
               purpose: tripPurpose,
               start_date: formattedDate,
               days: days,
+              notes: tripNotes || null,
               watch_model: { [entry.watch_id]: days },
               user_id: user?.id,
             })
@@ -447,6 +452,16 @@ export const EditWearEntryDialog = ({
                       <SelectItem value="Vacation">Vacation</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+                <div>
+                  <Label>Trip Notes (Optional)</Label>
+                  <Textarea
+                    value={tripNotes}
+                    onChange={(e) => setTripNotes(e.target.value)}
+                    placeholder="Add any notes about this trip..."
+                    className="bg-background resize-none"
+                    rows={3}
+                  />
                 </div>
               </div>
             )}
