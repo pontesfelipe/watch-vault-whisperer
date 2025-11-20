@@ -551,7 +551,7 @@ export default function WearLogsAdmin() {
                                 <Label htmlFor="waterActivityType">Activity Type</Label>
                                 <Input
                                   id="waterActivityType"
-                                  placeholder="e.g., Swimming, Diving"
+                                  placeholder="e.g., Lake, Beach, Hot Tub"
                                 />
                               </div>
                               <div className="grid grid-cols-2 gap-2">
