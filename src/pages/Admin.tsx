@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,14 +8,33 @@ import { RegisteredUsersTable } from "@/components/admin/RegisteredUsersTable";
 import { RegistrationRequestsTable } from "@/components/admin/RegistrationRequestsTable";
 import { TermsAcceptancesTable } from "@/components/admin/TermsAcceptancesTable";
 import { ManageCollectionsDialog } from "@/components/admin/ManageCollectionsDialog";
-import { Shield, Users, UserCog, FileCheck, Calendar } from "lucide-react";
+import { Shield, Users, UserCog, FileCheck, Calendar, RefreshCw } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export default function Admin() {
   const { user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
+  const [isUpdatingPrices, setIsUpdatingPrices] = useState(false);
   const goToWearLogs = () => navigate("/admin/wear-logs");
+
+  const handleUpdateMarketPrices = async () => {
+    setIsUpdatingPrices(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('update-all-watch-prices');
+      
+      if (error) throw error;
+      
+      toast.success(data.message || 'Market prices updated successfully');
+    } catch (error) {
+      console.error('Error updating market prices:', error);
+      toast.error('Failed to update market prices');
+    } finally {
+      setIsUpdatingPrices(false);
+    }
+  };
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) {
@@ -49,6 +68,10 @@ export default function Admin() {
             </p>
           </div>
           <div className="flex gap-2">
+            <Button onClick={handleUpdateMarketPrices} variant="outline" disabled={isUpdatingPrices}>
+              <RefreshCw className={`w-4 h-4 mr-2 ${isUpdatingPrices ? 'animate-spin' : ''}`} />
+              {isUpdatingPrices ? 'Updating...' : 'Update Market Prices'}
+            </Button>
             <Button onClick={goToWearLogs} variant="outline">
               <Calendar className="w-4 h-4 mr-2" />
               Wear Logs
