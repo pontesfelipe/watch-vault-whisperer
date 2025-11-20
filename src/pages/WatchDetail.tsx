@@ -503,7 +503,12 @@ const WatchDetail = () => {
           <TabsContent value="history">
             <Card className="border-border bg-card p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold text-foreground">Wear History</h2>
+                <div>
+                  <h2 className="text-xl font-semibold text-foreground">Wear History</h2>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Worn <span className="font-semibold text-foreground">{wearEntries.length}</span> {wearEntries.length === 1 ? 'time' : 'times'}
+                  </p>
+                </div>
                 <AddWearDialog watchId={watch.id} onSuccess={fetchData} />
               </div>
 
