@@ -9,6 +9,7 @@ interface Trip {
   watch_model?: any;
   days: number;
   purpose: string;
+  notes?: string | null;
 }
 
 export const useTripData = () => {
