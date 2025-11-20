@@ -27,6 +27,9 @@ interface WearEntry {
   days: number;
   notes?: string | null;
   updated_at?: string;
+  trip_id?: string | null;
+  event_id?: string | null;
+  water_usage_id?: string | null;
 }
 
 interface MonthlyWearGridProps {
