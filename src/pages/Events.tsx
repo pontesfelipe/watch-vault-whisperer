@@ -44,7 +44,7 @@ const Events = () => {
           id: event.id,
           startDate: event.start_date,
           location: event.location,
-          watch: {},
+          watch: (event.watch_model as Record<string, number>) || {},
           days: event.days,
           purpose: event.purpose,
         }))}
