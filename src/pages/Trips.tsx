@@ -63,6 +63,7 @@ const Trips = () => {
           watch: {},
           days: trip.days,
           purpose: trip.purpose,
+          notes: trip.notes,
         }))}
         type="trip"
         watches={watches}

@@ -27,6 +27,7 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
   const [isEvent, setIsEvent] = useState(false);
   const [isWaterActivity, setIsWaterActivity] = useState(false);
   const [tripLocation, setTripLocation] = useState("");
+  const [tripNotes, setTripNotes] = useState("");
   const [eventLocation, setEventLocation] = useState("");
   const { toast } = useToast();
   const { user } = useAuth();
@@ -69,6 +70,7 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
             start_date: formattedDate,
             days: days,
             purpose: tripPurpose,
+            notes: tripNotes || null,
             watch_model: { [`${watchId}`]: days },
             user_id: user?.id,
           })
@@ -295,6 +297,17 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
                         <SelectItem value="Vacation">Vacation</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="tripNotes" className="text-sm">Notes (Optional)</Label>
+                    <Textarea
+                      id="tripNotes"
+                      value={tripNotes}
+                      onChange={(e) => setTripNotes(e.target.value)}
+                      placeholder="Add any notes about this trip..."
+                      className="bg-background resize-none"
+                      rows={3}
+                    />
                   </div>
                 </div>
               )}

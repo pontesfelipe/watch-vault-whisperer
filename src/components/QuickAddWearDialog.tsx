@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,6 +29,7 @@ export const QuickAddWearDialog = ({ watches, onSuccess }: QuickAddWearDialogPro
   const [isTrip, setIsTrip] = useState(false);
   const [isEvent, setIsEvent] = useState(false);
   const [isWaterActivity, setIsWaterActivity] = useState(false);
+  const [tripNotes, setTripNotes] = useState("");
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -70,6 +72,7 @@ export const QuickAddWearDialog = ({ watches, onSuccess }: QuickAddWearDialogPro
               purpose: tripPurpose,
               start_date: formattedDate,
               days: days,
+              notes: tripNotes || null,
               user_id: user?.id,
             })
             .select()
@@ -311,6 +314,17 @@ export const QuickAddWearDialog = ({ watches, onSuccess }: QuickAddWearDialogPro
                     name="tripPurpose"
                     placeholder="e.g., Business, Vacation"
                     className="bg-background border-border"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="tripNotes">Notes (Optional)</Label>
+                  <Textarea
+                    id="tripNotes"
+                    value={tripNotes}
+                    onChange={(e) => setTripNotes(e.target.value)}
+                    placeholder="Add any notes about this trip..."
+                    className="bg-background border-border resize-none"
+                    rows={3}
                   />
                 </div>
               </div>
