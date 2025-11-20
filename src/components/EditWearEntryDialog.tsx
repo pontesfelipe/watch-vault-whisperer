@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { Trash2, MapPin, Flag, Droplets } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { LocationAutocomplete } from "./LocationAutocomplete";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -438,10 +439,10 @@ export const EditWearEntryDialog = ({
               <div className="ml-6 space-y-3 bg-muted/30 p-4 rounded-lg">
                 <div>
                   <Label>Trip Location</Label>
-                  <Input
+                  <LocationAutocomplete
                     value={tripLocation}
-                    onChange={(e) => setTripLocation(e.target.value)}
-                    placeholder="e.g., Paris, France"
+                    onChange={setTripLocation}
+                    placeholder="Enter trip location..."
                   />
                 </div>
                 <div>
@@ -474,10 +475,10 @@ export const EditWearEntryDialog = ({
               <div className="ml-6 space-y-3 bg-muted/30 p-4 rounded-lg">
                 <div>
                   <Label>Event Location</Label>
-                  <Input
+                  <LocationAutocomplete
                     value={eventLocation}
-                    onChange={(e) => setEventLocation(e.target.value)}
-                    placeholder="e.g., Grand Hotel Ballroom"
+                    onChange={setEventLocation}
+                    placeholder="Enter event location..."
                   />
                 </div>
                 <div>
