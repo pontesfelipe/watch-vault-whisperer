@@ -133,7 +133,10 @@ const Collection = () => {
             model: watch.model,
             watchId: watch.id,
             dialColor: watch.dial_color,
-            year
+            year,
+            caseSize: watch.case_size,
+            movement: watch.movement,
+            hasSapphire: watch.has_sapphire
           }
         });
 
