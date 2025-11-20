@@ -513,6 +513,7 @@ export const EditWearEntryDialog = ({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="Pool">Pool</SelectItem>
                       <SelectItem value="Lake">Lake</SelectItem>
                       <SelectItem value="Beach">Beach</SelectItem>
                       <SelectItem value="Hot Tub">Hot Tub</SelectItem>
