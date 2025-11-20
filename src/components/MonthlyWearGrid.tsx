@@ -10,6 +10,7 @@ import {
 import { useState } from "react";
 import { format } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { EditWearEntryDialog } from "./EditWearEntryDialog";
 
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -20,9 +21,11 @@ interface Watch {
 }
 
 interface WearEntry {
+  id: string;
   watch_id: string;
   wear_date: string;
   days: number;
+  notes?: string | null;
   updated_at?: string;
 }
 
@@ -57,6 +60,9 @@ const WATCH_COLORS = [
 export const MonthlyWearGrid = ({ watches, wearEntries, onDataChange }: MonthlyWearGridProps) => {
 const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
 const [metric, setMetric] = useState<Metric>('entries');
+const [selectedEntries, setSelectedEntries] = useState<WearEntry[]>([]);
+const [selectedWatchName, setSelectedWatchName] = useState<string>("");
+const [dialogOpen, setDialogOpen] = useState(false);
 
 // Get available years from wear entries
 const availableYears = Array.from(
@@ -118,7 +124,36 @@ filteredWearEntries.forEach((entry) => {
   const activeBreakdown = metric === 'days' ? monthlyDaysBreakdown : monthlyEntriesBreakdown;
   const watchTotalsMap = metric === 'days' ? watchTotalsDays : watchTotalsEntries;
   const monthlyTotals = metric === 'days' ? monthlyTotalsDays : monthlyTotalsEntries;
+
+  const handleCellClick = (watch: Watch, monthIndex: number) => {
+    const watchKey = `${watch.brand} ${watch.model}`;
+    const entriesForCell = filteredWearEntries.filter(entry => {
+      const entryDate = new Date(entry.wear_date);
+      return entry.watch_id === watch.id && entryDate.getMonth() === monthIndex;
+    });
+
+    if (entriesForCell.length > 0) {
+      setSelectedEntries(entriesForCell);
+      setSelectedWatchName(watchKey);
+      setDialogOpen(true);
+    }
+  };
+
+  const handleDialogUpdate = () => {
+    if (onDataChange) {
+      onDataChange();
+    }
+  };
+
   return (
+    <>
+      <EditWearEntryDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        entries={selectedEntries}
+        watchName={selectedWatchName}
+        onUpdate={handleDialogUpdate}
+      />
     <Card className="border-border bg-card p-6">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-semibold text-foreground">
@@ -192,11 +227,12 @@ filteredWearEntries.forEach((entry) => {
                     return (
                       <TableCell 
                         key={monthIndex} 
-                        className="text-center text-sm"
+                        className="text-center text-sm cursor-pointer hover:opacity-70 transition-opacity"
                         style={{
                           backgroundColor: val > 0 ? `${watchColorMap.get(watchKey)}20` : 'transparent',
                           fontWeight: val > 0 ? '600' : 'normal',
                         }}
+                        onClick={() => val > 0 && handleCellClick(watch, monthIndex)}
                       >
                         <span>
                           {val > 0 ? (metric === 'days' ? `${val.toFixed(1)}d` : Math.round(val)) : '-'}
@@ -229,5 +265,6 @@ filteredWearEntries.forEach((entry) => {
         </Table>
       </div>
     </Card>
+    </>
   );
 };
