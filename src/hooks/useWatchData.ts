@@ -17,6 +17,8 @@ interface Watch {
   rarity?: string;
   historical_significance?: string;
   available_for_trade?: boolean;
+  movement?: string;
+  has_sapphire?: boolean;
 }
 
 interface WearEntry {

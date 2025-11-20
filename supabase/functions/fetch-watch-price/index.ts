@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { brand, model, watchId, dialColor, year } = await req.json();
+    const { brand, model, watchId, dialColor, year, caseSize, movement, hasSapphire } = await req.json();
 
     if (!brand || !model) {
       return new Response(
@@ -21,12 +21,29 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Fetching price for ${year || ''} ${brand} ${model}${dialColor ? ` with ${dialColor} dial` : ''}`);
+    // Build detailed watch description
+    const specs = [];
+    if (year) specs.push(`${year}`);
+    if (dialColor) specs.push(`${dialColor} dial`);
+    if (caseSize) specs.push(`${caseSize} case`);
+    if (movement) specs.push(`${movement} movement`);
+    if (hasSapphire) specs.push(`sapphire crystal`);
+    
+    const specsString = specs.length > 0 ? ` (${specs.join(', ')})` : '';
+    console.log(`Fetching price for ${brand} ${model}${specsString}`);
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY not configured");
     }
+
+    // Build detailed search query with all specifications
+    let searchQuery = `${brand} ${model}`;
+    if (dialColor) searchQuery += ` ${dialColor} dial`;
+    if (caseSize) searchQuery += ` ${caseSize}`;
+    if (movement) searchQuery += ` ${movement}`;
+    if (hasSapphire) searchQuery += ` sapphire`;
+    if (year) searchQuery += ` ${year}`;
 
     // Use Lovable AI to search for current market prices
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -40,11 +57,17 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: "You are a watch market analyst. Search for current resale prices from multiple sources (Chrono24, WatchCharts, eBay, etc.) and provide an average market price in USD. Consider the specific dial color variant and year of manufacture when searching, as these significantly impact value. Be precise and only return numerical data."
+            content: "You are a watch market analyst specialized in precise model identification. Search for current resale prices from multiple sources (Chrono24, WatchCharts, eBay, etc.) and provide an average market price in USD. CRITICAL: Pay extremely close attention to the EXACT model variant, dial color, case size, movement type, and crystal material - these specifications dramatically impact pricing. Limited editions and special variants command different prices than standard models. Be precise and only return numerical data."
           },
           {
             role: "user",
-            content: `What is the current average resale price for a ${year ? `${year} ` : ''}${brand} ${model}${dialColor ? ` with ${dialColor} dial` : ''} watch in USD? ${dialColor ? 'Pay special attention to this specific dial color variant as it affects pricing. ' : ''}${year ? 'Consider the year for age-related depreciation. ' : ''}Search multiple marketplaces (Chrono24, WatchCharts, eBay) and provide a single average price. Only respond with the number, no currency symbols or text.`
+            content: `What is the current average resale price in USD for this EXACT watch: ${searchQuery}
+
+CRITICAL SPECIFICATIONS TO MATCH:
+- Brand: ${brand}
+- Model: ${model}${dialColor ? `\n- Dial Color: ${dialColor} (MUST match this exact color)` : ''}${caseSize ? `\n- Case Size: ${caseSize}` : ''}${movement ? `\n- Movement: ${movement}` : ''}${hasSapphire ? `\n- Crystal: Sapphire` : ''}${year ? `\n- Year: ${year}` : ''}
+
+Search multiple marketplaces (Chrono24, WatchCharts, eBay) for this EXACT specification combination. If this is a limited edition or special variant (e.g., "Coulson", "Limited", special dial color), make sure to search for that specific version, NOT the standard model. Provide a single average price. Only respond with the number, no currency symbols or text.`
           }
         ],
         tools: [
