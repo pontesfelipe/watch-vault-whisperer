@@ -368,7 +368,7 @@ export const QuickAddWearDialog = ({ watches, onSuccess }: QuickAddWearDialogPro
                   <Input
                     id="waterActivityType"
                     name="waterActivityType"
-                    placeholder="e.g., Swimming, Diving"
+                    placeholder="e.g., Lake, Beach, Hot Tub"
                     className="bg-background border-border"
                   />
                 </div>

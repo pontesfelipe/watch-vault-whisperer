@@ -73,7 +73,7 @@ export const EditWearEntryDialog = ({
   const [eventPurpose, setEventPurpose] = useState("");
   
   // Water activity fields
-  const [waterActivityType, setWaterActivityType] = useState("Swimming");
+  const [waterActivityType, setWaterActivityType] = useState("Lake");
   const [depthMeters, setDepthMeters] = useState("");
   const [durationMinutes, setDurationMinutes] = useState("");
   const [waterNotes, setWaterNotes] = useState("");
@@ -143,7 +143,7 @@ export const EditWearEntryDialog = ({
         }
       } else {
         setIsWaterActivity(false);
-        setWaterActivityType("Swimming");
+        setWaterActivityType("Lake");
         setDepthMeters("");
         setDurationMinutes("");
         setWaterNotes("");
@@ -516,12 +516,12 @@ export const EditWearEntryDialog = ({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Swimming">Swimming</SelectItem>
+                      <SelectItem value="Lake">Lake</SelectItem>
+                      <SelectItem value="Beach">Beach</SelectItem>
+                      <SelectItem value="Hot Tub">Hot Tub</SelectItem>
                       <SelectItem value="Diving">Diving</SelectItem>
-                      <SelectItem value="Snorkeling">Snorkeling</SelectItem>
-                      <SelectItem value="Shower">Shower</SelectItem>
-                      <SelectItem value="Rain">Rain</SelectItem>
                       <SelectItem value="Water Sports">Water Sports</SelectItem>
+                      <SelectItem value="Snorkeling">Snorkeling</SelectItem>
                       <SelectItem value="Other">Other</SelectItem>
                     </SelectContent>
                   </Select>
