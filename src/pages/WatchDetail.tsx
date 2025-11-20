@@ -12,6 +12,7 @@ import { EditWearEntryDialog } from "@/components/EditWearEntryDialog";
 import { useToast } from "@/hooks/use-toast";
 import { usePasscode } from "@/contexts/PasscodeContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { parseLocalDate } from "@/lib/date";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -517,7 +518,7 @@ const WatchDetail = () => {
                     >
                       <div className="flex-1 cursor-pointer" onClick={() => handleEditEntry(entry)}>
                         <p className="font-medium text-foreground">
-                          {new Date(entry.wear_date).toLocaleDateString('en-US', {
+                          {parseLocalDate(entry.wear_date).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
                             year: 'numeric',
