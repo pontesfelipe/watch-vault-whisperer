@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
@@ -26,6 +27,7 @@ export const AddTripDialog = ({ watches, onSuccess, open, onOpenChange }: AddTri
     watchDays: {} as Record<string, number>,
     totalDays: "1",
     purpose: "Business",
+    notes: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,6 +49,7 @@ export const AddTripDialog = ({ watches, onSuccess, open, onOpenChange }: AddTri
         watch_model: formData.watchDays,
         days: totalDays,
         purpose: formData.purpose,
+        notes: formData.notes || null,
         user_id: user?.id,
       });
 
@@ -60,6 +63,7 @@ export const AddTripDialog = ({ watches, onSuccess, open, onOpenChange }: AddTri
         watchDays: {},
         totalDays: "1",
         purpose: "Business",
+        notes: "",
       });
       onSuccess();
     } catch (error) {
@@ -165,6 +169,17 @@ export const AddTripDialog = ({ watches, onSuccess, open, onOpenChange }: AddTri
                 <SelectItem value="Vacation">Vacation</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          <div>
+            <Label htmlFor="notes">Notes (Optional)</Label>
+            <Textarea
+              id="notes"
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              placeholder="Additional trip details, memories, etc..."
+              className="bg-background border-border resize-none"
+              rows={3}
+            />
           </div>
           <div className="flex gap-2">
             <Button type="submit" disabled={loading}>
