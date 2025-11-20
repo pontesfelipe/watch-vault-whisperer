@@ -304,6 +304,7 @@ export type Database = {
           days: number
           id: string
           location: string
+          notes: string | null
           purpose: string
           start_date: string
           updated_at: string
@@ -315,6 +316,7 @@ export type Database = {
           days?: number
           id?: string
           location: string
+          notes?: string | null
           purpose: string
           start_date: string
           updated_at?: string
@@ -326,6 +328,7 @@ export type Database = {
           days?: number
           id?: string
           location?: string
+          notes?: string | null
           purpose?: string
           start_date?: string
           updated_at?: string
