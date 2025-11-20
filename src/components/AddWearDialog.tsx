@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { useAuth } from "@/contexts/AuthContext";
-import { LocationAutocomplete } from "./LocationAutocomplete";
+
 
 const wearSchema = z.object({
   watchId: z.string().uuid(),
@@ -276,23 +276,23 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
                 <div className="ml-6 space-y-3 p-3 bg-muted/50 rounded-md">
                   <div>
                     <Label htmlFor="tripLocation" className="text-sm">Location</Label>
-                    <LocationAutocomplete
+                    <Input
+                      id="tripLocation"
                       value={tripLocation}
-                      onChange={setTripLocation}
+                      onChange={(e) => setTripLocation(e.target.value)}
                       placeholder="Enter trip location..."
+                      className="bg-background"
                     />
                   </div>
                   <div>
                     <Label htmlFor="tripPurpose" className="text-sm">Purpose</Label>
-                    <Select name="tripPurpose" defaultValue="Business">
+                    <Select name="tripPurpose" defaultValue="Vacation">
                       <SelectTrigger className="bg-background">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="Business">Business</SelectItem>
-                        <SelectItem value="Leisure">Leisure</SelectItem>
-                        <SelectItem value="Family">Family</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
+                        <SelectItem value="Vacation">Vacation</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -317,10 +317,12 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
                 <div className="ml-6 space-y-3 p-3 bg-muted/50 rounded-md">
                   <div>
                     <Label htmlFor="eventLocation" className="text-sm">Location</Label>
-                    <LocationAutocomplete
+                    <Input
+                      id="eventLocation"
                       value={eventLocation}
-                      onChange={setEventLocation}
+                      onChange={(e) => setEventLocation(e.target.value)}
                       placeholder="Enter event location..."
+                      className="bg-background"
                     />
                   </div>
                   <div>
