@@ -337,13 +337,17 @@ export const TripTimeline = ({ trips, limit, type, watches, onUpdate }: TripTime
                 
                 <div className="mt-3 pt-3 border-t border-border">
                   <div className="space-y-1">
-                    {Object.entries(trip.watch || {}).map(([watchName, days]) => (
-                      <p key={watchName} className="text-sm">
-                        <span className="font-medium text-foreground">{watchName}</span>
-                        <span className="mx-2 text-muted-foreground">•</span>
-                        <span className="text-muted-foreground">{days} {days === 1 ? 'day' : 'days'}</span>
-                      </p>
-                    ))}
+                    {Object.entries(trip.watch || {}).map(([watchId, days]) => {
+                      const watch = watches.find(w => w.id === watchId);
+                      const watchName = watch ? `${watch.brand} ${watch.model}` : watchId;
+                      return (
+                        <p key={watchId} className="text-sm">
+                          <span className="font-medium text-foreground">{watchName}</span>
+                          <span className="mx-2 text-muted-foreground">•</span>
+                          <span className="text-muted-foreground">{days} {days === 1 ? 'day' : 'days'}</span>
+                        </p>
+                      );
+                    })}
                     <p className="text-xs text-muted-foreground pt-1">
                       Total: {trip.days} {trip.days === 1 ? 'day' : 'days'}
                     </p>
