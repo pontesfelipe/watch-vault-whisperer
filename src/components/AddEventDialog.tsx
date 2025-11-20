@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { LocationAutocomplete } from "./LocationAutocomplete";
 
 interface AddEventDialogProps {
   watches: { id: string; brand: string; model: string }[];
@@ -76,15 +77,14 @@ export const AddEventDialog = ({ watches, onSuccess, open, onOpenChange }: AddEv
           <DialogTitle>Add Event</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="location">Location</Label>
-            <Input
-              id="location"
-              value={formData.location}
-              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              required
-            />
-          </div>
+            <div>
+              <Label htmlFor="location">Location</Label>
+              <LocationAutocomplete
+                value={formData.location}
+                onChange={(value) => setFormData({ ...formData, location: value })}
+                placeholder="Enter event location..."
+              />
+            </div>
           <div>
             <Label htmlFor="startDate">Date</Label>
             <Input

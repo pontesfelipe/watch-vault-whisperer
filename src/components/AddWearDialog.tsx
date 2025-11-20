@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { useAuth } from "@/contexts/AuthContext";
+import { LocationAutocomplete } from "./LocationAutocomplete";
 
 const wearSchema = z.object({
   watchId: z.string().uuid(),
@@ -25,6 +26,8 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
   const [isTrip, setIsTrip] = useState(false);
   const [isEvent, setIsEvent] = useState(false);
   const [isWaterActivity, setIsWaterActivity] = useState(false);
+  const [tripLocation, setTripLocation] = useState("");
+  const [eventLocation, setEventLocation] = useState("");
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -57,7 +60,6 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
 
       // Create trip if marked
       if (isTrip) {
-        const tripLocation = formData.get("tripLocation") as string;
         const tripPurpose = formData.get("tripPurpose") as string;
         
         const { data: tripData, error: tripError } = await supabase
@@ -79,7 +81,6 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
 
       // Create event if marked
       if (isEvent) {
-        const eventLocation = formData.get("eventLocation") as string;
         const eventPurpose = formData.get("eventPurpose") as string;
         
         const { data: eventData, error: eventError } = await supabase
@@ -275,12 +276,10 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
                 <div className="ml-6 space-y-3 p-3 bg-muted/50 rounded-md">
                   <div>
                     <Label htmlFor="tripLocation" className="text-sm">Location</Label>
-                    <Input
-                      id="tripLocation"
-                      name="tripLocation"
-                      placeholder="e.g., Paris, France"
-                      required={isTrip}
-                      className="bg-background"
+                    <LocationAutocomplete
+                      value={tripLocation}
+                      onChange={setTripLocation}
+                      placeholder="Enter trip location..."
                     />
                   </div>
                   <div>
@@ -318,12 +317,10 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
                 <div className="ml-6 space-y-3 p-3 bg-muted/50 rounded-md">
                   <div>
                     <Label htmlFor="eventLocation" className="text-sm">Location</Label>
-                    <Input
-                      id="eventLocation"
-                      name="eventLocation"
-                      placeholder="e.g., Convention Center"
-                      required={isEvent}
-                      className="bg-background"
+                    <LocationAutocomplete
+                      value={eventLocation}
+                      onChange={setEventLocation}
+                      placeholder="Enter event location..."
                     />
                   </div>
                   <div>

@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { LocationAutocomplete } from "./LocationAutocomplete";
 
 interface AddTripDialogProps {
   watches: { id: string; brand: string; model: string }[];
@@ -76,15 +77,14 @@ export const AddTripDialog = ({ watches, onSuccess, open, onOpenChange }: AddTri
           <DialogTitle>Add Trip</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="location">Location</Label>
-            <Input
-              id="location"
-              value={formData.location}
-              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              required
-            />
-          </div>
+            <div>
+              <Label htmlFor="location">Location</Label>
+              <LocationAutocomplete
+                value={formData.location}
+                onChange={(value) => setFormData({ ...formData, location: value })}
+                placeholder="Enter trip location..."
+              />
+            </div>
           <div>
             <Label htmlFor="startDate">Start Date</Label>
             <Input
