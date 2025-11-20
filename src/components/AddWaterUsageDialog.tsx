@@ -101,9 +101,8 @@ export const AddWaterUsageDialog = ({ watches, onSuccess, open, onOpenChange }: 
               <SelectTrigger className="bg-background border-border">
                 <SelectValue placeholder="Select activity" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-background z-50">
                 <SelectItem value="Pool">Pool</SelectItem>
-                <SelectItem value="Hot tub">Hot tub</SelectItem>
                 <SelectItem value="Lake">Lake</SelectItem>
                 <SelectItem value="Beach">Beach</SelectItem>
                 <SelectItem value="Hot Tub">Hot Tub</SelectItem>

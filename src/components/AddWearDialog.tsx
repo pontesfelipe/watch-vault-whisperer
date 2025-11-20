@@ -360,14 +360,14 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
                       <SelectTrigger className="bg-background">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-background z-50">
+                        <SelectItem value="Pool">Pool</SelectItem>
                         <SelectItem value="Lake">Lake</SelectItem>
                         <SelectItem value="Beach">Beach</SelectItem>
                         <SelectItem value="Hot Tub">Hot Tub</SelectItem>
                         <SelectItem value="Diving">Diving</SelectItem>
                         <SelectItem value="Water Sports">Water Sports</SelectItem>
                         <SelectItem value="Snorkeling">Snorkeling</SelectItem>
-                        <SelectItem value="Pool">Pool</SelectItem>
                         <SelectItem value="Other">Other</SelectItem>
                       </SelectContent>
                     </Select>
