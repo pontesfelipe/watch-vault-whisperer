@@ -2,7 +2,7 @@ import { Trip } from "@/types/watch";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Briefcase, Palmtree, Eye, EyeOff, Pencil, Trash2 } from "lucide-react";
+import { MapPin, Briefcase, Palmtree, Eye, EyeOff, Pencil, Trash2, FileText } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { usePasscode } from "@/contexts/PasscodeContext";
@@ -28,6 +28,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 
 interface TripTimelineProps {
   trips: Trip[];
@@ -70,6 +71,7 @@ export const TripTimeline = ({ trips, limit, type, watches, onUpdate }: TripTime
     watchDays: {} as Record<string, number>,
     totalDays: "1",
     purpose: "",
+    notes: "",
   });
 
   const handleToggleLocation = () => {
@@ -172,6 +174,7 @@ export const TripTimeline = ({ trips, limit, type, watches, onUpdate }: TripTime
       watchDays: filteredWatchDays,
       totalDays: trip.days.toString(),
       purpose: trip.purpose,
+      notes: trip.notes || "",
     });
   };
 
@@ -195,6 +198,7 @@ export const TripTimeline = ({ trips, limit, type, watches, onUpdate }: TripTime
         watch_model: formData.watchDays,
         days: totalDays,
         purpose: formData.purpose,
+        notes: formData.notes || null,
       }).eq("id", editItem.id);
       
       if (error) throw error;
@@ -352,6 +356,14 @@ export const TripTimeline = ({ trips, limit, type, watches, onUpdate }: TripTime
                       Total: {trip.days} {trip.days === 1 ? 'day' : 'days'}
                     </p>
                   </div>
+                  {trip.notes && (
+                    <div className="mt-3 pt-3 border-t border-border">
+                      <div className="flex items-start gap-2">
+                        <FileText className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{trip.notes}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -480,6 +492,17 @@ export const TripTimeline = ({ trips, limit, type, watches, onUpdate }: TripTime
                   required
                 />
               )}
+            </div>
+            <div>
+              <Label htmlFor="edit-notes">Notes (Optional)</Label>
+              <Textarea
+                id="edit-notes"
+                value={formData.notes}
+                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                placeholder="Additional trip details, memories, etc..."
+                className="bg-background border-border resize-none"
+                rows={3}
+              />
             </div>
             <div className="flex gap-2">
               <Button type="submit" disabled={loading}>
