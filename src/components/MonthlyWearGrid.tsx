@@ -11,6 +11,8 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { EditWearEntryDialog } from "./EditWearEntryDialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { StickyNote } from "lucide-react";
 
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -226,6 +228,15 @@ filteredWearEntries.forEach((entry) => {
                   </TableCell>
                   {activeBreakdown.map((breakdown, monthIndex) => {
                     const val = breakdown[watchKey] || 0;
+                    const entriesForCell = filteredWearEntries.filter(entry => {
+                      const entryDate = new Date(entry.wear_date);
+                      return entry.watch_id === watch.id && entryDate.getMonth() === monthIndex;
+                    });
+                    const hasNotes = entriesForCell.some(entry => entry.notes);
+                    const allNotes = entriesForCell
+                      .filter(entry => entry.notes)
+                      .map(entry => `${format(new Date(entry.wear_date), 'MMM d')}: ${entry.notes}`)
+                      .join('\n\n');
                     
                     return (
                       <TableCell 
@@ -237,9 +248,23 @@ filteredWearEntries.forEach((entry) => {
                         }}
                         onClick={() => val > 0 && handleCellClick(watch, monthIndex)}
                       >
-                        <span>
-                          {val > 0 ? (metric === 'days' ? `${val.toFixed(1)}d` : Math.round(val)) : '-'}
-                        </span>
+                        <div className="flex items-center justify-center gap-1">
+                          <span>
+                            {val > 0 ? (metric === 'days' ? `${val.toFixed(1)}d` : Math.round(val)) : '-'}
+                          </span>
+                          {hasNotes && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <StickyNote className="w-3 h-3 text-muted-foreground" />
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-xs whitespace-pre-wrap">
+                                  <p className="text-sm">{allNotes}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                        </div>
                       </TableCell>
                     );
                   })}
