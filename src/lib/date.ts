@@ -83,3 +83,12 @@ export function formatPurchaseDateForDisplay(
       return "-";
   }
 }
+
+/**
+ * Parse a date string (YYYY-MM-DD) as a local date, not UTC.
+ * This prevents timezone shift issues when displaying dates.
+ */
+export function parseLocalDate(dateString: string): Date {
+  const [year, month, day] = dateString.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
