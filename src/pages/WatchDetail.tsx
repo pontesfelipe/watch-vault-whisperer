@@ -502,8 +502,10 @@ const WatchDetail = () => {
           {/* Wear History Tab */}
           <TabsContent value="history">
             <div className="mb-4">
-              <p className="text-sm text-muted-foreground">Total wears for this watch</p>
-              <p className="text-3xl font-bold text-primary">{wearEntries.length}</p>
+              <p className="text-sm text-muted-foreground">Total days worn</p>
+              <p className="text-3xl font-bold text-primary">
+                {wearEntries.reduce((sum, entry) => sum + Number(entry.days), 0)}
+              </p>
             </div>
             <Card className="border-border bg-card p-6">
               <div className="flex items-center justify-between mb-4">
