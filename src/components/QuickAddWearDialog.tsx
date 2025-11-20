@@ -25,6 +25,9 @@ export const QuickAddWearDialog = ({ watches, onSuccess }: QuickAddWearDialogPro
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedWatchId, setSelectedWatchId] = useState("");
+  const [isTrip, setIsTrip] = useState(false);
+  const [isEvent, setIsEvent] = useState(false);
+  const [isWaterActivity, setIsWaterActivity] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -49,6 +52,83 @@ export const QuickAddWearDialog = ({ watches, onSuccess }: QuickAddWearDialogPro
       const month = String(dateObj.getMonth() + 1).padStart(2, '0');
       const day = String(dateObj.getDate()).padStart(2, '0');
       const formattedDate = `${year}-${month}-${day}`;
+
+      let tripId = null;
+      let eventId = null;
+      let waterUsageId = null;
+
+      // Create trip if checkbox is checked
+      if (isTrip) {
+        const tripLocation = formData.get("tripLocation") as string;
+        const tripPurpose = formData.get("tripPurpose") as string;
+
+        if (tripLocation && tripPurpose) {
+          const { data: tripData, error: tripError } = await supabase
+            .from("trips")
+            .insert({
+              location: tripLocation,
+              purpose: tripPurpose,
+              start_date: formattedDate,
+              days: days,
+              user_id: user?.id,
+            })
+            .select()
+            .single();
+
+          if (tripError) throw tripError;
+          tripId = tripData.id;
+        }
+      }
+
+      // Create event if checkbox is checked
+      if (isEvent) {
+        const eventLocation = formData.get("eventLocation") as string;
+        const eventPurpose = formData.get("eventPurpose") as string;
+
+        if (eventLocation && eventPurpose) {
+          const { data: eventData, error: eventError } = await supabase
+            .from("events")
+            .insert({
+              location: eventLocation,
+              purpose: eventPurpose,
+              start_date: formattedDate,
+              days: days,
+              user_id: user?.id,
+            })
+            .select()
+            .single();
+
+          if (eventError) throw eventError;
+          eventId = eventData.id;
+        }
+      }
+
+      // Create water usage if checkbox is checked
+      if (isWaterActivity) {
+        const waterActivityType = formData.get("waterActivityType") as string;
+        const depthMeters = formData.get("depthMeters") as string;
+        const durationMinutes = formData.get("durationMinutes") as string;
+        const waterNotes = formData.get("waterNotes") as string;
+
+        if (waterActivityType) {
+          const { data: waterData, error: waterError } = await supabase
+            .from("water_usage")
+            .insert({
+              watch_id: data.watchId,
+              activity_type: waterActivityType,
+              activity_date: formattedDate,
+              depth_meters: depthMeters ? parseFloat(depthMeters) : null,
+              duration_minutes: durationMinutes ? parseFloat(durationMinutes) : null,
+              notes: waterNotes || null,
+              user_id: user?.id,
+            })
+            .select()
+            .single();
+
+          if (waterError) throw waterError;
+          waterUsageId = waterData.id;
+        }
+      }
       
       // Check if entry already exists
       const { data: existing } = await supabase
@@ -66,6 +146,9 @@ export const QuickAddWearDialog = ({ watches, onSuccess }: QuickAddWearDialogPro
           .from("wear_entries")
           .update({
             days: days,
+            trip_id: tripId,
+            event_id: eventId,
+            water_usage_id: waterUsageId,
           })
           .eq("id", existing.id);
         error = result.error;
@@ -75,6 +158,9 @@ export const QuickAddWearDialog = ({ watches, onSuccess }: QuickAddWearDialogPro
           watch_id: data.watchId,
           wear_date: formattedDate,
           days: days,
+          trip_id: tripId,
+          event_id: eventId,
+          water_usage_id: waterUsageId,
           user_id: user?.id,
         });
         error = result.error;
@@ -89,6 +175,9 @@ export const QuickAddWearDialog = ({ watches, onSuccess }: QuickAddWearDialogPro
 
       setOpen(false);
       setSelectedWatchId("");
+      setIsTrip(false);
+      setIsEvent(false);
+      setIsWaterActivity(false);
       onSuccess();
       (e.target as HTMLFormElement).reset();
     } catch (error) {
@@ -133,7 +222,7 @@ export const QuickAddWearDialog = ({ watches, onSuccess }: QuickAddWearDialogPro
           Add Wear
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-card border-border max-w-md">
+      <DialogContent className="bg-card border-border max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-foreground">Quick Add Wear Entry</DialogTitle>
         </DialogHeader>
@@ -190,6 +279,133 @@ export const QuickAddWearDialog = ({ watches, onSuccess }: QuickAddWearDialogPro
                 <span className="text-sm">Half Day</span>
               </label>
             </div>
+          </div>
+
+          <div className="space-y-4 border-t pt-4">
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="isTrip"
+                checked={isTrip}
+                onChange={(e) => setIsTrip(e.target.checked)}
+                className="w-4 h-4"
+              />
+              <Label htmlFor="isTrip" className="cursor-pointer">Link to Trip</Label>
+            </div>
+
+            {isTrip && (
+              <div className="space-y-2 pl-6">
+                <div className="space-y-2">
+                  <Label htmlFor="tripLocation">Location</Label>
+                  <Input
+                    id="tripLocation"
+                    name="tripLocation"
+                    placeholder="e.g., Tokyo, Japan"
+                    className="bg-background border-border"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="tripPurpose">Purpose</Label>
+                  <Input
+                    id="tripPurpose"
+                    name="tripPurpose"
+                    placeholder="e.g., Business, Vacation"
+                    className="bg-background border-border"
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="isEvent"
+                checked={isEvent}
+                onChange={(e) => setIsEvent(e.target.checked)}
+                className="w-4 h-4"
+              />
+              <Label htmlFor="isEvent" className="cursor-pointer">Link to Event</Label>
+            </div>
+
+            {isEvent && (
+              <div className="space-y-2 pl-6">
+                <div className="space-y-2">
+                  <Label htmlFor="eventLocation">Location</Label>
+                  <Input
+                    id="eventLocation"
+                    name="eventLocation"
+                    placeholder="e.g., Conference Center"
+                    className="bg-background border-border"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="eventPurpose">Purpose</Label>
+                  <Input
+                    id="eventPurpose"
+                    name="eventPurpose"
+                    placeholder="e.g., Wedding, Conference"
+                    className="bg-background border-border"
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="isWaterActivity"
+                checked={isWaterActivity}
+                onChange={(e) => setIsWaterActivity(e.target.checked)}
+                className="w-4 h-4"
+              />
+              <Label htmlFor="isWaterActivity" className="cursor-pointer">Link to Water Activity</Label>
+            </div>
+
+            {isWaterActivity && (
+              <div className="space-y-2 pl-6">
+                <div className="space-y-2">
+                  <Label htmlFor="waterActivityType">Activity Type</Label>
+                  <Input
+                    id="waterActivityType"
+                    name="waterActivityType"
+                    placeholder="e.g., Swimming, Diving"
+                    className="bg-background border-border"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="depthMeters">Depth (meters)</Label>
+                    <Input
+                      id="depthMeters"
+                      name="depthMeters"
+                      type="number"
+                      step="0.1"
+                      placeholder="e.g., 10"
+                      className="bg-background border-border"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="durationMinutes">Duration (min)</Label>
+                    <Input
+                      id="durationMinutes"
+                      name="durationMinutes"
+                      type="number"
+                      placeholder="e.g., 45"
+                      className="bg-background border-border"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="waterNotes">Notes</Label>
+                  <Input
+                    id="waterNotes"
+                    name="waterNotes"
+                    placeholder="Additional details..."
+                    className="bg-background border-border"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex gap-2">

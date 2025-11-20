@@ -59,6 +59,9 @@ export default function WearLogsAdmin() {
     days: "1",
     notes: "",
   });
+  const [isTrip, setIsTrip] = useState(false);
+  const [isEvent, setIsEvent] = useState(false);
+  const [isWaterActivity, setIsWaterActivity] = useState(false);
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) {
@@ -231,6 +234,83 @@ export default function WearLogsAdmin() {
 
     setIsSaving(true);
     try {
+      let tripId = null;
+      let eventId = null;
+      let waterUsageId = null;
+
+      // Create trip if checkbox is checked
+      if (isTrip) {
+        const tripLocation = (document.getElementById("tripLocation") as HTMLInputElement)?.value;
+        const tripPurpose = (document.getElementById("tripPurpose") as HTMLInputElement)?.value;
+
+        if (tripLocation && tripPurpose) {
+          const { data: tripData, error: tripError } = await supabase
+            .from("trips")
+            .insert({
+              location: tripLocation,
+              purpose: tripPurpose,
+              start_date: newEntry.wear_date,
+              days: Math.round(days * 2) / 2,
+              user_id: user?.id,
+            })
+            .select()
+            .single();
+
+          if (tripError) throw tripError;
+          tripId = tripData.id;
+        }
+      }
+
+      // Create event if checkbox is checked
+      if (isEvent) {
+        const eventLocation = (document.getElementById("eventLocation") as HTMLInputElement)?.value;
+        const eventPurpose = (document.getElementById("eventPurpose") as HTMLInputElement)?.value;
+
+        if (eventLocation && eventPurpose) {
+          const { data: eventData, error: eventError } = await supabase
+            .from("events")
+            .insert({
+              location: eventLocation,
+              purpose: eventPurpose,
+              start_date: newEntry.wear_date,
+              days: Math.round(days * 2) / 2,
+              user_id: user?.id,
+            })
+            .select()
+            .single();
+
+          if (eventError) throw eventError;
+          eventId = eventData.id;
+        }
+      }
+
+      // Create water usage if checkbox is checked
+      if (isWaterActivity) {
+        const waterActivityType = (document.getElementById("waterActivityType") as HTMLInputElement)?.value;
+        const depthMeters = (document.getElementById("depthMeters") as HTMLInputElement)?.value;
+        const durationMinutes = (document.getElementById("durationMinutes") as HTMLInputElement)?.value;
+        const waterNotes = (document.getElementById("waterNotes") as HTMLInputElement)?.value;
+
+        if (waterActivityType) {
+          const { data: waterData, error: waterError } = await supabase
+            .from("water_usage")
+            .insert({
+              watch_id: newEntry.watch_id,
+              activity_type: waterActivityType,
+              activity_date: newEntry.wear_date,
+              depth_meters: depthMeters ? parseFloat(depthMeters) : null,
+              duration_minutes: durationMinutes ? parseFloat(durationMinutes) : null,
+              notes: waterNotes || null,
+              user_id: user?.id,
+            })
+            .select()
+            .single();
+
+          if (waterError) throw waterError;
+          waterUsageId = waterData.id;
+        }
+      }
+
       const { error } = await supabase
         .from("wear_entries")
         .insert({
@@ -238,6 +318,9 @@ export default function WearLogsAdmin() {
           wear_date: newEntry.wear_date,
           days: Math.round(days * 2) / 2, // Round to nearest 0.5
           notes: newEntry.notes || null,
+          trip_id: tripId,
+          event_id: eventId,
+          water_usage_id: waterUsageId,
           user_id: user?.id,
         });
 
@@ -251,6 +334,9 @@ export default function WearLogsAdmin() {
         days: "1",
         notes: "",
       });
+      setIsTrip(false);
+      setIsEvent(false);
+      setIsWaterActivity(false);
       fetchWearLogs();
     } catch (error) {
       console.error("Error adding wear entry:", error);
@@ -323,7 +409,7 @@ export default function WearLogsAdmin() {
                         Add Entry
                       </Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
                       <DialogHeader>
                         <DialogTitle>Add Wear Entry</DialogTitle>
                         <DialogDescription>
@@ -385,6 +471,117 @@ export default function WearLogsAdmin() {
                             }
                             placeholder="Add notes..."
                           />
+                        </div>
+
+                        <div className="space-y-4 border-t pt-4">
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              id="isTrip"
+                              checked={isTrip}
+                              onChange={(e) => setIsTrip(e.target.checked)}
+                              className="w-4 h-4"
+                            />
+                            <Label htmlFor="isTrip" className="cursor-pointer">Link to Trip</Label>
+                          </div>
+
+                          {isTrip && (
+                            <div className="space-y-2 pl-6">
+                              <div className="space-y-2">
+                                <Label htmlFor="tripLocation">Location</Label>
+                                <Input
+                                  id="tripLocation"
+                                  placeholder="e.g., Tokyo, Japan"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="tripPurpose">Purpose</Label>
+                                <Input
+                                  id="tripPurpose"
+                                  placeholder="e.g., Business, Vacation"
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              id="isEvent"
+                              checked={isEvent}
+                              onChange={(e) => setIsEvent(e.target.checked)}
+                              className="w-4 h-4"
+                            />
+                            <Label htmlFor="isEvent" className="cursor-pointer">Link to Event</Label>
+                          </div>
+
+                          {isEvent && (
+                            <div className="space-y-2 pl-6">
+                              <div className="space-y-2">
+                                <Label htmlFor="eventLocation">Location</Label>
+                                <Input
+                                  id="eventLocation"
+                                  placeholder="e.g., Conference Center"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="eventPurpose">Purpose</Label>
+                                <Input
+                                  id="eventPurpose"
+                                  placeholder="e.g., Wedding, Conference"
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              id="isWaterActivity"
+                              checked={isWaterActivity}
+                              onChange={(e) => setIsWaterActivity(e.target.checked)}
+                              className="w-4 h-4"
+                            />
+                            <Label htmlFor="isWaterActivity" className="cursor-pointer">Link to Water Activity</Label>
+                          </div>
+
+                          {isWaterActivity && (
+                            <div className="space-y-2 pl-6">
+                              <div className="space-y-2">
+                                <Label htmlFor="waterActivityType">Activity Type</Label>
+                                <Input
+                                  id="waterActivityType"
+                                  placeholder="e.g., Swimming, Diving"
+                                />
+                              </div>
+                              <div className="grid grid-cols-2 gap-2">
+                                <div className="space-y-2">
+                                  <Label htmlFor="depthMeters">Depth (meters)</Label>
+                                  <Input
+                                    id="depthMeters"
+                                    type="number"
+                                    step="0.1"
+                                    placeholder="e.g., 10"
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <Label htmlFor="durationMinutes">Duration (min)</Label>
+                                  <Input
+                                    id="durationMinutes"
+                                    type="number"
+                                    placeholder="e.g., 45"
+                                  />
+                                </div>
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="waterNotes">Notes</Label>
+                                <Input
+                                  id="waterNotes"
+                                  placeholder="Additional details..."
+                                />
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                       <DialogFooter>
