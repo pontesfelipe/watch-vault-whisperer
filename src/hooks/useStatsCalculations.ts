@@ -113,10 +113,10 @@ export const useStatsCalculations = (
       },
       {} as Record<string, number>
     );
-    const topTripModelName = Object.entries(tripWatchCounts).sort(
+    const topTripWatchId = Object.entries(tripWatchCounts).sort(
       ([, a], [, b]) => b - a
     )[0]?.[0];
-    const topTripWatch = watches.find((w) => w.model === topTripModelName);
+    const topTripWatch = watches.find((w) => w.id === topTripWatchId);
 
     // Top water usage watch
     const waterWatchCounts = waterUsages.reduce(
