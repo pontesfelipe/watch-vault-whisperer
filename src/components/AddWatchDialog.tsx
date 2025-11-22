@@ -15,7 +15,9 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useCollection } from "@/contexts/CollectionContext";
 import { WarrantyCardUpload } from "./WarrantyCardUpload";
+import { WatchPhotoUpload } from "./WatchPhotoUpload";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Watch reference database for auto-population
 const WATCH_REFERENCES: Record<string, {
@@ -346,14 +348,51 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
           <DialogTitle className="text-foreground">Add New Watch</DialogTitle>
         </DialogHeader>
         
-        <div className="bg-muted/50 p-3 rounded-lg border border-border">
-          <p className="text-sm text-muted-foreground">
-            <strong className="text-foreground">Quick Add:</strong> Enter Brand and Model Reference, then click Search to auto-fill details from the web.
-          </p>
-        </div>
+        <Tabs defaultValue="manual" className="flex flex-col flex-1 min-h-0">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="photo">📸 Photo Upload</TabsTrigger>
+            <TabsTrigger value="manual">✍️ Manual Entry</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="photo" className="flex-1 overflow-y-auto mt-4">
+            <WatchPhotoUpload 
+              onIdentified={(info) => {
+                // Auto-fill form with identified watch information
+                setFormValues(prev => ({
+                  ...prev,
+                  brand: info.brand,
+                  model: info.model,
+                  dialColor: info.dial_color,
+                  type: info.type,
+                  caseSize: info.case_size || prev.caseSize,
+                  movement: info.movement || prev.movement,
+                  casebackMaterial: info.case_material || prev.casebackMaterial,
+                }));
+                
+                // Show additional details in toast if available
+                const additionalInfo = [];
+                if (info.bezel_type) additionalInfo.push(`Bezel: ${info.bezel_type}`);
+                if (info.strap_type) additionalInfo.push(`Strap: ${info.strap_type}`);
+                
+                if (additionalInfo.length > 0) {
+                  toast({
+                    title: "Additional Details",
+                    description: additionalInfo.join(' • '),
+                  });
+                }
+              }}
+            />
+          </TabsContent>
+          
+          <TabsContent value="manual" className="flex-1 overflow-y-auto">
+            <div className="bg-muted/50 p-3 rounded-lg border border-border mb-4">
+              <p className="text-sm text-muted-foreground">
+                <strong className="text-foreground">Quick Add:</strong> Enter Brand and Model Reference, then click Search to auto-fill details from the web.
+              </p>
+            </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
-          <div className="space-y-4 overflow-y-auto pr-2 flex-1">
+            <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+              <div className="space-y-4 overflow-y-auto pr-2 flex-1">
             <div className="space-y-2">
               <Label htmlFor="brand">Brand</Label>
               <Input
@@ -697,6 +736,8 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
             </Button>
           </div>
         </form>
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
