@@ -9,6 +9,8 @@ import { Edit } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { WarrantyCardUpload } from "./WarrantyCardUpload";
+import { Separator } from "@/components/ui/separator";
 
 const watchSchema = z.object({
   brand: z.string().trim().min(1, "Brand is required").max(100),
@@ -347,8 +349,40 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
             </p>
           </div>
 
+          <Separator className="my-6" />
+          
+          <WarrantyCardUpload 
+            onExtracted={(info) => {
+              // Auto-fill form with extracted warranty information
+              if (info.warranty_date) {
+                setFormValues(prev => ({ ...prev, warrantyDate: info.warranty_date }));
+              }
+              if (info.brand && !formValues.brand) {
+                setFormValues(prev => ({ ...prev, brand: info.brand! }));
+              }
+              if (info.model && !formValues.model) {
+                setFormValues(prev => ({ ...prev, model: info.model! }));
+              }
+              
+              // Show toast with additional extracted info
+              const additionalInfo = [];
+              if (info.serial_number) additionalInfo.push(`Serial: ${info.serial_number}`);
+              if (info.warranty_period) additionalInfo.push(`Period: ${info.warranty_period}`);
+              if (info.retailer) additionalInfo.push(`Retailer: ${info.retailer}`);
+              
+              if (additionalInfo.length > 0) {
+                toast({
+                  title: "Additional Information",
+                  description: additionalInfo.join(' • '),
+                });
+              }
+            }}
+          />
+
+          <Separator className="my-6" />
+
           <div className="space-y-2">
-            <Label htmlFor="warrantyDate">Warranty Expiration Date - Optional</Label>
+            <Label htmlFor="warrantyDate">Warranty Date</Label>
             <Input
               id="warrantyDate"
               value={formValues.warrantyDate}
