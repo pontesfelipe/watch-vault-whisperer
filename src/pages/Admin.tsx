@@ -8,16 +8,18 @@ import { RegisteredUsersTable } from "@/components/admin/RegisteredUsersTable";
 import { RegistrationRequestsTable } from "@/components/admin/RegistrationRequestsTable";
 import { TermsAcceptancesTable } from "@/components/admin/TermsAcceptancesTable";
 import { ManageCollectionsDialog } from "@/components/admin/ManageCollectionsDialog";
-import { Shield, Users, UserCog, FileCheck, Calendar, RefreshCw } from "lucide-react";
+import { Shield, Users, UserCog, FileCheck, Calendar, RefreshCw, Download } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import * as XLSX from 'xlsx';
 
 export default function Admin() {
   const { user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
   const [isUpdatingPrices, setIsUpdatingPrices] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const goToWearLogs = () => navigate("/admin/wear-logs");
 
   const handleUpdateMarketPrices = async () => {
@@ -33,6 +35,111 @@ export default function Admin() {
       toast.error('Failed to update market prices');
     } finally {
       setIsUpdatingPrices(false);
+    }
+  };
+
+  const handleExportWearLogs = async () => {
+    setIsExporting(true);
+    try {
+      // Fetch all wear entries with related data
+      const { data: wearEntries, error: wearError } = await supabase
+        .from('wear_entries')
+        .select('*')
+        .order('wear_date', { ascending: false });
+
+      if (wearError) throw wearError;
+
+      // Fetch all related data
+      const { data: watches } = await supabase.from('watches').select('*');
+      const { data: trips } = await supabase.from('trips').select('*');
+      const { data: events } = await supabase.from('events').select('*');
+      const { data: waterUsages } = await supabase.from('water_usage').select('*');
+      const { data: watchSpecs } = await supabase.from('watch_specs').select('*');
+
+      // Create a map for quick lookups
+      const watchMap = new Map(watches?.map(w => [w.id, w]) || []);
+      const tripMap = new Map(trips?.map(t => [t.id, t]) || []);
+      const eventMap = new Map(events?.map(e => [e.id, e]) || []);
+      const waterMap = new Map(waterUsages?.map(w => [w.id, w]) || []);
+      const specsMap = new Map(watchSpecs?.map(s => [s.watch_id, s]) || []);
+
+      // Flatten the data
+      const exportData = wearEntries?.map(entry => {
+        const watch = watchMap.get(entry.watch_id);
+        const trip = entry.trip_id ? tripMap.get(entry.trip_id) : null;
+        const event = entry.event_id ? eventMap.get(entry.event_id) : null;
+        const water = entry.water_usage_id ? waterMap.get(entry.water_usage_id) : null;
+        const specs = watch ? specsMap.get(watch.id) : null;
+
+        return {
+          // Wear Entry Info
+          'Wear Date': entry.wear_date,
+          'Days Worn': entry.days,
+          'Wear Notes': entry.notes || '',
+          
+          // Watch Info
+          'Watch Brand': watch?.brand || '',
+          'Watch Model': watch?.model || '',
+          'Watch Type': watch?.type || '',
+          'Dial Color': watch?.dial_color || '',
+          'Cost': watch?.cost || '',
+          'MSRP': watch?.msrp || '',
+          'Movement': watch?.movement || '',
+          'Case Size': watch?.case_size || '',
+          'Lug to Lug': watch?.lug_to_lug_size || '',
+          'When Bought': watch?.when_bought || '',
+          'Why Bought': watch?.why_bought || '',
+          'What I Like': watch?.what_i_like || '',
+          'What I Don\'t Like': watch?.what_i_dont_like || '',
+          
+          // Watch Specs
+          'Specs Case Material': specs?.case_material || '',
+          'Specs Crystal': specs?.crystal || '',
+          'Specs Caseback': specs?.caseback || '',
+          'Specs Band': specs?.band || '',
+          'Specs Power Reserve': specs?.power_reserve || '',
+          'Specs Water Resistance': specs?.water_resistance || '',
+          
+          // Trip Info
+          'Trip Location': trip?.location || '',
+          'Trip Purpose': trip?.purpose || '',
+          'Trip Start Date': trip?.start_date || '',
+          'Trip Days': trip?.days || '',
+          'Trip Notes': trip?.notes || '',
+          
+          // Event Info
+          'Event Location': event?.location || '',
+          'Event Purpose': event?.purpose || '',
+          'Event Start Date': event?.start_date || '',
+          'Event Days': event?.days || '',
+          
+          // Water Usage Info
+          'Water Activity Type': water?.activity_type || '',
+          'Water Activity Date': water?.activity_date || '',
+          'Water Depth (meters)': water?.depth_meters || '',
+          'Water Duration (minutes)': water?.duration_minutes || '',
+          'Water Notes': water?.notes || '',
+        };
+      }) || [];
+
+      // Create workbook and worksheet
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Wear Logs');
+
+      // Generate filename with timestamp
+      const timestamp = new Date().toISOString().split('T')[0];
+      const filename = `watch_wear_logs_${timestamp}.xlsx`;
+
+      // Download file
+      XLSX.writeFile(wb, filename);
+
+      toast.success('Wear logs exported successfully');
+    } catch (error) {
+      console.error('Error exporting wear logs:', error);
+      toast.error('Failed to export wear logs');
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -68,6 +175,10 @@ export default function Admin() {
             </p>
           </div>
           <div className="flex gap-2">
+            <Button onClick={handleExportWearLogs} variant="outline" disabled={isExporting}>
+              <Download className={`w-4 h-4 mr-2 ${isExporting ? 'animate-spin' : ''}`} />
+              {isExporting ? 'Exporting...' : 'Export Wear Logs'}
+            </Button>
             <Button onClick={handleUpdateMarketPrices} variant="outline" disabled={isUpdatingPrices}>
               <RefreshCw className={`w-4 h-4 mr-2 ${isUpdatingPrices ? 'animate-spin' : ''}`} />
               {isUpdatingPrices ? 'Updating...' : 'Update Market Prices'}
