@@ -183,9 +183,9 @@ export const CollectionInsights = ({ watchCount, watches }: CollectionInsightsPr
             <Sparkles className="w-6 h-6 text-accent" />
           </div>
           <div className="flex-1">
-            <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-textMuted mb-2">About Me</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-textMuted mb-2">About My Collection</h3>
             <p className="text-textMuted text-sm leading-relaxed">
-              I don't know you much yet, but soon I'll be able to tell you more about your collection and taste. 
+              I don't know you much yet, but soon I'll be able to tell you more about your collection and taste.
               Add at least {3 - watchCount} more {3 - watchCount === 1 ? "watch" : "watches"} to unlock AI-powered 
               insights about your preferences and collecting patterns.
             </p>
@@ -201,7 +201,7 @@ export const CollectionInsights = ({ watchCount, watches }: CollectionInsightsPr
         <TabsList className="w-full justify-start border-b border-borderSubtle rounded-none bg-transparent px-6 pt-4">
           <TabsTrigger value="about" className="gap-2">
             <Sparkles className="w-4 h-4" />
-            About Me
+            About My Collection
           </TabsTrigger>
           <TabsTrigger value="warranty" className="gap-2">
             <Shield className="w-4 h-4" />
@@ -216,7 +216,7 @@ export const CollectionInsights = ({ watchCount, watches }: CollectionInsightsPr
             </div>
             <div className="flex-1">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-textMuted">About Me</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-textMuted">About My Collection</h3>
                 <div className="flex flex-col items-end gap-1">
                   {remainingUsage !== null && (
                     <span className="text-xs text-textMuted">
