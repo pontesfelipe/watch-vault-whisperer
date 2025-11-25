@@ -213,7 +213,7 @@ const Collection = () => {
           </div>
         </div>
         <div className="flex gap-2">
-          <ImportSpreadsheetDialog />
+          {isAdmin && <ImportSpreadsheetDialog />}
           <Button
             variant="outline"
             size="sm"
