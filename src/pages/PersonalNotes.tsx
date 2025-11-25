@@ -121,13 +121,13 @@ export default function PersonalNotes() {
   if (!isVerified) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <Card className="w-full max-w-md">
+        <Card className="w-full max-w-md border-borderSubtle bg-surface shadow-card">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
-              <Lock className="h-12 w-12 text-muted-foreground" />
+              <Lock className="h-12 w-12 text-textMuted" />
             </div>
-            <CardTitle>Protected Content</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-textMain">Protected Content</CardTitle>
+            <CardDescription className="text-textMuted">
               This section contains personal notes about your watches. Enter the passcode to access.
             </CardDescription>
           </CardHeader>
@@ -144,12 +144,12 @@ export default function PersonalNotes() {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="border-borderSubtle bg-surface shadow-card">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Collection Insights</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-textMain">Collection Insights</CardTitle>
+              <CardDescription className="text-textMuted">
                 Your private thoughts, memories, and spending analytics
               </CardDescription>
             </div>

@@ -151,18 +151,18 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-accent/5 p-4">
       <div className="w-full max-w-2xl">
         <div className="flex justify-center mb-6">
-          <div className="rounded-full bg-primary/10 p-3">
-            <Watch className="h-8 w-8 text-primary" />
+          <div className="rounded-full bg-accent/10 p-3">
+            <Watch className="h-8 w-8 text-accent" />
           </div>
         </div>
         <div className="flex items-center justify-center gap-2 mb-2">
-          <h1 className="text-3xl font-bold text-center">Welcome to Watch Tracker</h1>
+          <h1 className="text-3xl font-semibold text-center text-textMain">Welcome to Watch Tracker</h1>
           <BetaBadge />
         </div>
-        <p className="text-center text-muted-foreground mb-8">
+        <p className="text-center text-textMuted mb-8">
           Sign in or request access to manage your watch collection
         </p>
         
