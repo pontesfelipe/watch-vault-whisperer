@@ -168,14 +168,14 @@ export const CollectionInsights = ({ watchCount, watches }: CollectionInsightsPr
 
   if (watchCount < 3) {
     return (
-      <Card className="border-border bg-card p-6">
+      <Card className="border-borderSubtle bg-surface p-6 shadow-card">
         <div className="flex items-start gap-4">
-          <div className="p-3 rounded-lg bg-primary/10">
-            <Sparkles className="w-6 h-6 text-primary" />
+          <div className="p-3 rounded-xl bg-accent/10">
+            <Sparkles className="w-6 h-6 text-accent" />
           </div>
           <div className="flex-1">
-            <h3 className="text-lg font-semibold mb-2 text-foreground">About Me</h3>
-            <p className="text-muted-foreground text-sm leading-relaxed">
+            <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-textMuted mb-2">About Me</h3>
+            <p className="text-textMuted text-sm leading-relaxed">
               I don't know you much yet, but soon I'll be able to tell you more about your collection and taste. 
               Add at least {3 - watchCount} more {3 - watchCount === 1 ? "watch" : "watches"} to unlock AI-powered 
               insights about your preferences and collecting patterns.
@@ -187,17 +187,17 @@ export const CollectionInsights = ({ watchCount, watches }: CollectionInsightsPr
   }
 
   return (
-    <Card className="border-border bg-card p-6">
+    <Card className="border-borderSubtle bg-surface p-6 shadow-card">
       <div className="flex items-start gap-4">
-        <div className="p-3 rounded-lg bg-primary/10">
-          <Sparkles className="w-6 h-6 text-primary" />
+        <div className="p-3 rounded-xl bg-accent/10">
+          <Sparkles className="w-6 h-6 text-accent" />
         </div>
         <div className="flex-1">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold text-foreground">About Me</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-textMuted">About Me</h3>
             <div className="flex flex-col items-end gap-1">
               {remainingUsage !== null && (
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-textMuted">
                   {remainingUsage} left this month
                 </span>
               )}
@@ -224,14 +224,14 @@ export const CollectionInsights = ({ watchCount, watches }: CollectionInsightsPr
           </div>
           
           {insights ? (
-            <div className="prose prose-sm max-w-none text-muted-foreground">
+            <div className="prose prose-sm max-w-none text-textMuted">
               {insights.split('\n').map((paragraph, idx) => (
                 paragraph.trim() && <p key={idx} className="mb-2">{paragraph}</p>
               ))}
             </div>
           ) : (
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-textMuted">
                 Discover personalized insights about your collection and taste. AI will analyze your watches, 
                 brands, styles, and preferences to give you a unique perspective on your collecting journey.
               </p>

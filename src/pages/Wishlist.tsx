@@ -311,8 +311,8 @@ const Wishlist = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Loading wishlist...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto"></div>
+          <p className="mt-4 text-textMuted">Loading wishlist...</p>
         </div>
       </div>
     );
@@ -325,10 +325,10 @@ const Wishlist = () => {
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+          <h1 className="text-3xl md:text-4xl font-semibold text-textMain">
             Wishlist
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm text-textMuted mt-1">
             Track watches you want to acquire
           </p>
         </div>

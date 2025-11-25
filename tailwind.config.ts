@@ -57,11 +57,22 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        surface: "#111827",
+        surfaceMuted: "#181B23",
+        borderSubtle: "#1F2933",
+        accentSoft: "#FDE7C2",
+        textMain: "#F9FAFB",
+        textMuted: "#9CA3AF",
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        xl: "0.9rem",
+        "2xl": "1.25rem",
+      },
+      boxShadow: {
+        card: "0 18px 45px rgba(0,0,0,0.45)",
       },
       keyframes: {
         "accordion-down": {
