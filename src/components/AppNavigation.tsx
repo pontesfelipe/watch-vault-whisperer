@@ -51,10 +51,20 @@ export function AppNavigation() {
     >
       <SidebarContent>
         <SidebarGroup>
-          <div className={`mb-6 ${open ? "px-4" : "px-2"} pt-6 transition-all duration-200`}>
-            <span className={`${open ? "text-[10px]" : "text-[8px]"} font-semibold uppercase tracking-[0.24em] text-sidebar-foreground transition-all duration-200`}>
-              {open ? "CollectionVault" : "CV"}
-            </span>
+          <div className={`mb-6 ${open ? "px-4" : "px-2"} pt-6 transition-all duration-200 flex items-center gap-2`}>
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-accentSubtle text-xs font-semibold text-accent">
+              CV
+            </div>
+            {open && (
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-textSoft">
+                  CollectionVault
+                </div>
+                <div className="text-xs text-textMuted">
+                  Watch collection studio
+                </div>
+              </div>
+            )}
           </div>
           <SidebarMenu className="space-y-1 px-2">
             {navItems.map((item) => {
@@ -66,10 +76,10 @@ export function AppNavigation() {
                       to={item.url}
                       className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm transition-colors ${
                         isActive
-                          ? "bg-surface text-textMain"
+                          ? "bg-accentSubtle text-textMain"
                           : "text-textMuted hover:bg-surfaceMuted hover:text-textMain"
                       }`}
-                      activeClassName="bg-surface text-textMain"
+                      activeClassName="bg-accentSubtle text-textMain"
                     >
                       <item.icon className="h-5 w-5" />
                       {open && <span>{item.title}</span>}

@@ -57,12 +57,16 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        surface: "#111827",
-        surfaceMuted: "#181B23",
-        borderSubtle: "#1F2933",
-        accentSoft: "#FDE7C2",
-        textMain: "#F9FAFB",
-        textMuted: "#9CA3AF",
+        surface: "#FFFFFF",
+        surfaceMuted: "#F1F3F5",
+        borderSubtle: "#E2E4E8",
+        borderSoft: "#EDF0F4",
+        accentHover: "#6C93D2",
+        accentSubtle: "#E3EEFF",
+        textMain: "#1C1F23",
+        textMuted: "#4A4F55",
+        textSoft: "#80858E",
+        danger: "#E5484D",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -72,7 +76,8 @@ export default {
         "2xl": "1.25rem",
       },
       boxShadow: {
-        card: "0 18px 45px rgba(0,0,0,0.45)",
+        card: "0 4px 16px rgba(15, 23, 42, 0.08)",
+        soft: "0 2px 8px rgba(15, 23, 42, 0.04)",
       },
       keyframes: {
         "accordion-down": {
