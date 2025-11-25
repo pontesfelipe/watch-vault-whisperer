@@ -224,7 +224,7 @@ const Collection = () => {
             <RefreshCw className={`w-4 h-4 ${isBulkUpdating ? 'animate-spin' : ''}`} />
             {isBulkUpdating ? 'Updating...' : 'Update All Prices'}
           </Button>
-          {isAdmin && <AnalyzeWatchMetadataDialog watches={watches} onSuccess={refetch} />}
+          <AnalyzeWatchMetadataDialog watches={watches} onSuccess={refetch} />
           <QuickAddWearDialog watches={watches} onSuccess={refetch} />
           <AddWatchDialog onSuccess={refetch} />
         </div>
