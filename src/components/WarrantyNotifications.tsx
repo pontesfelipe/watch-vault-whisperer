@@ -37,7 +37,7 @@ export const WarrantyNotifications = () => {
 
   const handleViewInsights = () => {
     setOpen(false);
-    navigate("/");
+    navigate("/personal-notes");
   };
 
   if (notificationCount === 0) {
