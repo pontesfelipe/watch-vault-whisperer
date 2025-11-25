@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AllowedUsersTable } from "@/components/admin/AllowedUsersTable";
@@ -8,7 +9,7 @@ import { RegisteredUsersTable } from "@/components/admin/RegisteredUsersTable";
 import { RegistrationRequestsTable } from "@/components/admin/RegistrationRequestsTable";
 import { TermsAcceptancesTable } from "@/components/admin/TermsAcceptancesTable";
 import { ManageCollectionsDialog } from "@/components/admin/ManageCollectionsDialog";
-import { Shield, Users, UserCog, FileCheck, Calendar, RefreshCw, Download } from "lucide-react";
+import { Shield, Users, UserCog, FileCheck, Calendar, RefreshCw, Download, Moon, Sun } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,6 +18,7 @@ import * as XLSX from 'xlsx';
 
 export default function Admin() {
   const { user, isAdmin, loading } = useAuth();
+  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const [isUpdatingPrices, setIsUpdatingPrices] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -258,25 +260,57 @@ export default function Admin() {
           </TabsContent>
         </Tabs>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Your Profile</CardTitle>
-            <CardDescription>Administrator account details</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold">Email:</span>
-              <span className="text-muted-foreground">{user?.email}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="font-semibold">Role:</span>
-              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 text-primary text-sm">
-                <Shield className="h-3 w-3" />
-                Administrator
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Your Profile</CardTitle>
+              <CardDescription>Administrator account details</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold">Email:</span>
+                <span className="text-muted-foreground">{user?.email}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-semibold">Role:</span>
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 text-primary text-sm">
+                  <Shield className="h-3 w-3" />
+                  Administrator
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>UI Theme</CardTitle>
+              <CardDescription>Switch between light and dark mode</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <div className="font-medium">Current Theme</div>
+                  <div className="text-sm text-muted-foreground capitalize">{theme} mode</div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+                  className="h-10 w-10"
+                >
+                  {theme === "light" ? (
+                    <Moon className="h-5 w-5" />
+                  ) : (
+                    <Sun className="h-5 w-5" />
+                  )}
+                </Button>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Your theme preference is saved and will persist across sessions.
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </AppLayout>
   );
