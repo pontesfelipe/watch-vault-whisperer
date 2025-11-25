@@ -19,6 +19,8 @@ interface Watch {
   available_for_trade?: boolean;
   movement?: string;
   has_sapphire?: boolean;
+  warranty_date?: string;
+  warranty_card_url?: string;
 }
 
 interface WearEntry {
