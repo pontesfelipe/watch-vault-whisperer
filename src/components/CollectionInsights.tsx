@@ -318,6 +318,80 @@ export const CollectionInsights = ({ watchCount, watches }: CollectionInsightsPr
               </div>
             </div>
 
+            {/* Warranty Timeline Chart */}
+            {warrantyAnalysis.length > 0 && (
+              <div className="p-6 rounded-lg border border-borderSubtle bg-surface">
+                <h4 className="text-sm font-semibold text-textMain mb-4 flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  Warranty Expiration Timeline
+                </h4>
+                <div className="space-y-3">
+                  {warrantyAnalysis.map((watch) => {
+                    // Calculate percentage for visual indicator
+                    const maxDays = 365 * 3; // 3 years max display
+                    const percentage = watch.isExpired 
+                      ? 0 
+                      : Math.min(100, Math.max(0, (watch.daysRemaining / maxDays) * 100));
+                    
+                    return (
+                      <div key={watch.id} className="space-y-1">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="font-medium text-textMain truncate flex-1 mr-4">
+                            {watch.brand} {watch.model}
+                          </span>
+                          <span className={`text-xs font-medium ${
+                            watch.isExpired ? 'text-danger' : 
+                            watch.isExpiringSoon ? 'text-yellow-600' : 
+                            'text-green-600'
+                          }`}>
+                            {watch.isExpired 
+                              ? `Expired ${Math.abs(watch.daysRemaining)}d ago` 
+                              : `${watch.daysRemaining}d left`
+                            }
+                          </span>
+                        </div>
+                        <div className="relative h-2 bg-surfaceMuted rounded-full overflow-hidden">
+                          <div 
+                            className={`absolute left-0 top-0 h-full transition-all rounded-full ${
+                              watch.isExpired ? 'bg-danger' : 
+                              watch.daysRemaining <= 30 ? 'bg-danger' :
+                              watch.daysRemaining <= 90 ? 'bg-yellow-500' : 
+                              'bg-green-500'
+                            }`}
+                            style={{ width: `${percentage}%` }}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between text-xs text-textMuted">
+                          <span>Expires: {format(watch.warrantyDate, 'MMM d, yyyy')}</span>
+                          <span className={`font-medium ${
+                            watch.isExpired ? 'text-danger' : 
+                            watch.isExpiringSoon ? 'text-yellow-600' : 
+                            'text-green-600'
+                          }`}>
+                            {watch.status}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="mt-4 pt-4 border-t border-borderSubtle flex items-center gap-6 text-xs">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-danger" />
+                    <span className="text-textMuted">Expired / ≤30 days</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                    <span className="text-textMuted">≤90 days</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-green-500" />
+                    <span className="text-textMuted">&gt;90 days</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Watches with Warranty */}
             {warrantyAnalysis.length > 0 && (
               <div>
