@@ -23,6 +23,8 @@ import { Users } from "lucide-react";
 interface Collection {
   id: string;
   name: string;
+  created_by: string;
+  creator_email?: string;
 }
 
 interface Profile {
@@ -48,15 +50,24 @@ export const ManageCollectionsDialog = () => {
   const fetchData = async () => {
     try {
       const [collectionsRes, usersRes] = await Promise.all([
-        supabase.from('collections' as any).select('id, name'),
+        supabase.from('collections' as any).select('id, name, created_by'),
         supabase.from('profiles' as any).select('id, email')
       ]);
 
       if (collectionsRes.error) throw collectionsRes.error;
       if (usersRes.error) throw usersRes.error;
 
-      setCollections((collectionsRes.data as any) || []);
-      setUsers((usersRes.data as any) || []);
+      const collections = (collectionsRes.data as any) || [];
+      const profiles = (usersRes.data as any) || [];
+
+      // Map creator emails to collections
+      const collectionsWithCreators = collections.map((collection: any) => ({
+        ...collection,
+        creator_email: profiles.find((p: any) => p.id === collection.created_by)?.email || 'Unknown'
+      }));
+
+      setCollections(collectionsWithCreators);
+      setUsers(profiles);
     } catch (error: any) {
       console.error("Error fetching data:", error);
       toast.error("Failed to load data");
@@ -125,7 +136,7 @@ export const ManageCollectionsDialog = () => {
                 <SelectContent>
                   {collections.map((collection) => (
                     <SelectItem key={collection.id} value={collection.id}>
-                      {collection.name}
+                      {collection.name} ({collection.creator_email})
                     </SelectItem>
                   ))}
                 </SelectContent>
