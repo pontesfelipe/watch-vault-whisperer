@@ -1,4 +1,4 @@
-import { Watch, Heart, Plane, Calendar, Droplets, BarChart3, LogOut, BookHeart, Shield } from "lucide-react";
+import { Watch, Heart, Plane, Calendar, Droplets, BarChart3, LogOut, BookHeart, Shield, Settings } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -40,6 +40,7 @@ export function AppNavigation() {
     { title: "Events", url: "/events", icon: Calendar },
     { title: "Water Usage", url: "/water-usage", icon: Droplets },
     { title: "Collection Insights", url: "/personal-notes", icon: BookHeart },
+    { title: "Settings", url: "/settings", icon: Settings },
     ...(isAdmin ? [{ title: "Admin", url: "/admin", icon: Shield }] : []),
   ];
 

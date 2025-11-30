@@ -7,7 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { Shield, User, Pencil, AlertCircle } from "lucide-react";
-import { EditUserRoleDialog } from "./EditUserRoleDialog";
+import { EditUserDialog } from "./EditUserDialog";
 
 interface RegisteredUser {
   id: string;
@@ -124,7 +124,7 @@ export function RegisteredUsersTable() {
                       className="gap-1"
                     >
                       <Pencil className="h-3 w-3" />
-                      Edit Role
+                      Edit
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -135,7 +135,7 @@ export function RegisteredUsersTable() {
       )}
       
       {editingUser && (
-        <EditUserRoleDialog
+        <EditUserDialog
           user={editingUser}
           open={!!editingUser}
           onOpenChange={(open) => !open && setEditingUser(null)}
