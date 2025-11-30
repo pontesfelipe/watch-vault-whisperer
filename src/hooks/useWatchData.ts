@@ -8,6 +8,7 @@ interface Watch {
   model: string;
   cost: number;
   image_url?: string;
+  ai_image_url?: string;
   dial_color: string;
   case_size?: string;
   type: string;

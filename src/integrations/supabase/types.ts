@@ -478,6 +478,7 @@ export type Database = {
       }
       watches: {
         Row: {
+          ai_image_url: string | null
           available_for_trade: boolean
           average_resale_price: number | null
           brand: string
@@ -513,6 +514,7 @@ export type Database = {
           why_bought: string | null
         }
         Insert: {
+          ai_image_url?: string | null
           available_for_trade?: boolean
           average_resale_price?: number | null
           brand: string
@@ -548,6 +550,7 @@ export type Database = {
           why_bought?: string | null
         }
         Update: {
+          ai_image_url?: string | null
           available_for_trade?: boolean
           average_resale_price?: number | null
           brand?: string

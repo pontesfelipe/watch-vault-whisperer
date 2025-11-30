@@ -20,6 +20,11 @@ interface SortableWatchCardProps {
     warranty_date?: string;
     warranty_card_url?: string;
     when_bought?: string;
+    rarity?: string;
+    historical_significance?: string;
+    available_for_trade?: boolean;
+    metadata_analysis_reasoning?: string;
+    ai_image_url?: string;
   };
   totalDays: number;
   onDelete: () => void;

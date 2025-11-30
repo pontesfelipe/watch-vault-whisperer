@@ -44,6 +44,7 @@ interface Watch {
   historical_significance?: string;
   metadata_analysis_reasoning?: string;
   available_for_trade?: boolean;
+  ai_image_url?: string;
 }
 
 interface WearEntry {
@@ -213,6 +214,21 @@ const WatchDetail = () => {
           <TabsContent value="specs">
             <Card className="border-border bg-card p-6">
               <h2 className="text-xl font-semibold text-foreground mb-6">Watch Specifications</h2>
+              
+              {/* AI Generated Image */}
+              {watch.ai_image_url && (
+                <div className="mb-6 flex justify-center">
+                  <div className="rounded-lg overflow-hidden border border-border max-w-md">
+                    <img 
+                      src={watch.ai_image_url} 
+                      alt={`${watch.brand} ${watch.model}`}
+                      className="w-full h-auto object-contain bg-muted"
+                    />
+                    <p className="text-xs text-muted-foreground text-center py-2 bg-muted/50">AI Generated Image</p>
+                  </div>
+                </div>
+              )}
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
