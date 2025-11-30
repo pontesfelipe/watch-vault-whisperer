@@ -42,21 +42,39 @@ export function AllowedUsersTable() {
   }, []);
 
   const handleDelete = async (id: string, email: string) => {
-    if (!confirm(`Remove access for ${email}?`)) return;
+    if (!confirm(`Remove access for ${email}? This will also delete all their data if they have an account.`)) return;
 
     try {
-      const { error } = await supabase
-        .from('allowed_users' as any)
-        .delete()
-        .eq('id', id);
+      // Check if user exists in profiles by email
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', email)
+        .maybeSingle();
 
-      if (error) throw error;
+      if (profile) {
+        // User exists - delete via edge function which handles all data cleanup
+        const { error: deleteError } = await supabase.functions.invoke('delete-user', {
+          body: { userId: profile.id, selfDelete: false }
+        });
 
-      toast.success("User access removed");
+        if (deleteError) throw deleteError;
+        toast.success("User and all their data deleted");
+      } else {
+        // No user account - just remove from allowed_users
+        const { error } = await supabase
+          .from('allowed_users' as any)
+          .delete()
+          .eq('id', id);
+
+        if (error) throw error;
+        toast.success("User access removed");
+      }
+
       fetchAllowedUsers();
     } catch (error) {
       console.error("Error deleting user:", error);
-      toast.error("Failed to remove user access");
+      toast.error("Failed to remove user");
     }
   };
 
