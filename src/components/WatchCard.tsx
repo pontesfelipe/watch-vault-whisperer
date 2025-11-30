@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import { usePasscode } from "@/contexts/PasscodeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { EditWatchDialog } from "@/components/EditWatchDialog";
+import { UploadWatchPhotoDialog } from "@/components/UploadWatchPhotoDialog";
 import {
   Dialog,
   DialogContent,
@@ -367,6 +368,8 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
           </Button>
 
           <EditWatchDialog watch={watch} onSuccess={onDelete} />
+
+          <UploadWatchPhotoDialog watch={watch} onSuccess={onDelete} />
 
           <Button 
             variant="outline" 
