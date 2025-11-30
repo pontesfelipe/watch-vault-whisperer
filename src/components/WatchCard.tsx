@@ -48,6 +48,7 @@ interface WatchCardProps {
     historical_significance?: string;
     available_for_trade?: boolean;
     metadata_analysis_reasoning?: string;
+    ai_image_url?: string;
   };
   totalDays: number;
   onDelete: () => void;
@@ -183,6 +184,17 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
       <div className="absolute inset-0 bg-[var(--gradient-luxury)] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       
       <div className="relative p-6">
+        {/* AI Generated Watch Image */}
+        {watch.ai_image_url && (
+          <div className="mb-4 rounded-lg overflow-hidden border border-border">
+            <img 
+              src={watch.ai_image_url} 
+              alt={`${watch.brand} ${watch.model}`}
+              className="w-full h-40 object-contain bg-muted"
+            />
+          </div>
+        )}
+        
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">

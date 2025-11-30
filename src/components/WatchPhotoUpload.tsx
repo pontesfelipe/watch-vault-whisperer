@@ -23,9 +23,10 @@ interface WatchInfo {
 
 interface WatchPhotoUploadProps {
   onIdentified: (info: WatchInfo) => void;
+  onPhotoUploaded?: (base64: string) => void;
 }
 
-export const WatchPhotoUpload = ({ onIdentified }: WatchPhotoUploadProps) => {
+export const WatchPhotoUpload = ({ onIdentified, onPhotoUploaded }: WatchPhotoUploadProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [identifiedWatch, setIdentifiedWatch] = useState<WatchInfo | null>(null);
@@ -42,6 +43,9 @@ export const WatchPhotoUpload = ({ onIdentified }: WatchPhotoUploadProps) => {
       reader.onload = async () => {
         const base64Image = reader.result as string;
         setPreview(base64Image);
+        
+        // Pass the photo to parent for AI image generation
+        onPhotoUploaded?.(base64Image);
 
         try {
           const { data, error } = await supabase.functions.invoke('identify-watch-from-photo', {

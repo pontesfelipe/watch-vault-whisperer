@@ -62,6 +62,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
   const [loading, setLoading] = useState(false);
   const [modelRef, setModelRef] = useState("");
   const [purchaseDate, setPurchaseDate] = useState<Date | undefined>();
+  const [uploadedPhotoBase64, setUploadedPhotoBase64] = useState<string | null>(null);
   const [formValues, setFormValues] = useState({
     brand: "",
     model: "",
@@ -288,6 +289,30 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
           console.error('Auto-analysis failed:', aiError);
           // Don't block the main flow if AI analysis fails
         }
+
+        // Generate AI image for the watch in the background
+        try {
+          supabase.functions.invoke('generate-watch-image', {
+            body: { 
+              watchId: insertData.id,
+              brand: data.brand, 
+              model: data.model,
+              dialColor: data.dialColor,
+              type: formValues.type,
+              caseSize: formValues.caseSize,
+              movement: formValues.movement,
+              referenceImageBase64: uploadedPhotoBase64 
+            }
+          }).then(({ error }) => {
+            if (error) {
+              console.error('AI image generation failed:', error);
+            } else {
+              console.log('AI image generation started for watch:', insertData.id);
+            }
+          });
+        } catch (imageError) {
+          console.error('Failed to trigger AI image generation:', imageError);
+        }
       }
 
       toast({
@@ -298,6 +323,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
       setOpen(false);
       setModelRef("");
       setPurchaseDate(undefined);
+      setUploadedPhotoBase64(null);
       setFormValues({
         brand: "",
         model: "",
@@ -381,6 +407,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
                   });
                 }
               }}
+              onPhotoUploaded={(base64) => setUploadedPhotoBase64(base64)}
             />
           </TabsContent>
           
