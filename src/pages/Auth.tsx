@@ -21,6 +21,8 @@ export default function Auth() {
   const [signingIn, setSigningIn] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
@@ -73,9 +75,15 @@ export default function Auth() {
       return;
     }
 
-    if (isSignUp && (!acceptedTerms || !acceptedPrivacy)) {
-      toast.error("Please accept Terms & Conditions and Privacy Policy");
-      return;
+    if (isSignUp) {
+      if (!firstName.trim() || !lastName.trim()) {
+        toast.error("Please enter your first and last name");
+        return;
+      }
+      if (!acceptedTerms || !acceptedPrivacy) {
+        toast.error("Please accept Terms & Conditions and Privacy Policy");
+        return;
+      }
     }
 
     setSigningIn(true);
@@ -86,6 +94,10 @@ export default function Auth() {
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/`,
+            data: {
+              first_name: firstName.trim(),
+              last_name: lastName.trim(),
+            },
           },
         });
 
@@ -96,6 +108,8 @@ export default function Auth() {
           setIsSignUp(false);
           setAcceptedTerms(false);
           setAcceptedPrivacy(false);
+          setFirstName("");
+          setLastName("");
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -228,6 +242,34 @@ export default function Auth() {
                   </form>
                 ) : (
                   <form onSubmit={handleEmailAuth} className="space-y-4">
+                    {isSignUp && (
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="firstName">First Name</Label>
+                          <Input
+                            id="firstName"
+                            type="text"
+                            placeholder="John"
+                            value={firstName}
+                            onChange={(e) => setFirstName(e.target.value)}
+                            disabled={signingIn}
+                            maxLength={50}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="lastName">Last Name</Label>
+                          <Input
+                            id="lastName"
+                            type="text"
+                            placeholder="Doe"
+                            value={lastName}
+                            onChange={(e) => setLastName(e.target.value)}
+                            disabled={signingIn}
+                            maxLength={50}
+                          />
+                        </div>
+                      </div>
+                    )}
                     <div className="space-y-2">
                       <Label htmlFor="email">Email</Label>
                       <Input
