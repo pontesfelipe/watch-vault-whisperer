@@ -63,6 +63,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
   const [modelRef, setModelRef] = useState("");
   const [purchaseDate, setPurchaseDate] = useState<Date | undefined>();
   const [uploadedPhotoBase64, setUploadedPhotoBase64] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("manual");
   const [formValues, setFormValues] = useState({
     brand: "",
     model: "",
@@ -374,7 +375,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
           <DialogTitle className="text-foreground">Add New Watch</DialogTitle>
         </DialogHeader>
         
-        <Tabs defaultValue="manual" className="flex flex-col flex-1 min-h-0">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col flex-1 min-h-0">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="photo">📸 Photo Upload</TabsTrigger>
             <TabsTrigger value="manual">✍️ Manual Entry</TabsTrigger>
@@ -408,6 +409,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
                 }
               }}
               onPhotoUploaded={(base64) => setUploadedPhotoBase64(base64)}
+              onContinueToForm={() => setActiveTab("manual")}
             />
           </TabsContent>
           
