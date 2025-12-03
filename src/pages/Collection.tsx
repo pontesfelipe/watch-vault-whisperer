@@ -189,28 +189,34 @@ const Collection = () => {
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-4">
-          <CollectionSwitcher />
-          <div className="flex items-center gap-2">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-semibold text-textMain">
-                {currentCollection?.name || "My Collection"}
-              </h1>
-              <p className="text-sm text-textMuted mt-1">
-                {watches.length} {watches.length === 1 ? "watch" : "watches"} in your collection
-              </p>
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="flex items-center gap-4">
+            <CollectionSwitcher />
+            <div className="flex items-center gap-2">
+              <div>
+                <h1 className="text-3xl md:text-4xl font-semibold text-textMain">
+                  {currentCollection?.name || "My Collection"}
+                </h1>
+                <p className="text-sm text-textMuted mt-1">
+                  {watches.length} {watches.length === 1 ? "watch" : "watches"} in your collection
+                </p>
+              </div>
+              {currentCollection && currentCollection.role === 'owner' && (
+                <EditCollectionDialog 
+                  collectionId={currentCollection.id}
+                  currentName={currentCollection.name}
+                  onSuccess={refetchCollections}
+                />
+              )}
             </div>
-            {currentCollection && currentCollection.role === 'owner' && (
-              <EditCollectionDialog 
-                collectionId={currentCollection.id}
-                currentName={currentCollection.name}
-                onSuccess={refetchCollections}
-              />
-            )}
+          </div>
+          <div className="flex gap-2">
+            <QuickAddWearDialog watches={watches} onSuccess={refetch} />
+            <AddWatchDialog onSuccess={refetch} />
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 justify-end">
           {isAdmin && <ImportSpreadsheetDialog />}
           <Button
             variant="outline"
@@ -223,8 +229,6 @@ const Collection = () => {
             {isBulkUpdating ? 'Updating...' : 'Update All Prices'}
           </Button>
           <AnalyzeWatchMetadataDialog watches={watches} onSuccess={refetch} />
-          <QuickAddWearDialog watches={watches} onSuccess={refetch} />
-          <AddWatchDialog onSuccess={refetch} />
         </div>
       </div>
 
