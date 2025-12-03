@@ -309,12 +309,15 @@ export const QuickAddWearDialog = ({ watches, onSuccess }: QuickAddWearDialogPro
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="tripPurpose">Purpose</Label>
-                  <Input
-                    id="tripPurpose"
-                    name="tripPurpose"
-                    placeholder="e.g., Business, Vacation"
-                    className="bg-background border-border"
-                  />
+                  <Select name="tripPurpose" defaultValue="Business">
+                    <SelectTrigger className="bg-background border-border">
+                      <SelectValue placeholder="Select purpose" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover border-border">
+                      <SelectItem value="Business">Business</SelectItem>
+                      <SelectItem value="Vacation">Vacation</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="tripNotes">Notes (Optional)</Label>
