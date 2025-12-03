@@ -15,7 +15,6 @@ import { useWatchData } from "@/hooks/useWatchData";
 import { useStatsCalculations } from "@/hooks/useStatsCalculations";
 import { useTripData } from "@/hooks/useTripData";
 import { useWaterUsageData } from "@/hooks/useWaterUsageData";
-import { useCollectionData } from "@/hooks/useCollectionData";
 import { useCollection } from "@/contexts/CollectionContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,11 +36,10 @@ import {
 } from "@dnd-kit/sortable";
 
 const Collection = () => {
-  const { selectedCollectionId, currentCollection } = useCollection();
+  const { selectedCollectionId, currentCollection, collections, collectionsLoading, refetchCollections } = useCollection();
   const { watches, wearEntries, loading, refetch } = useWatchData(selectedCollectionId);
   const { trips } = useTripData();
   const { waterUsages } = useWaterUsageData();
-  const { collections, loading: collectionsLoading, refetch: refetchCollections } = useCollectionData();
   const { isAdmin } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBrand, setSelectedBrand] = useState<string>("all");
