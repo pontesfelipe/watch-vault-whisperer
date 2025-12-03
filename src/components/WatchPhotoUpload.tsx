@@ -24,9 +24,10 @@ interface WatchInfo {
 interface WatchPhotoUploadProps {
   onIdentified: (info: WatchInfo) => void;
   onPhotoUploaded?: (base64: string) => void;
+  onContinueToForm?: () => void;
 }
 
-export const WatchPhotoUpload = ({ onIdentified, onPhotoUploaded }: WatchPhotoUploadProps) => {
+export const WatchPhotoUpload = ({ onIdentified, onPhotoUploaded, onContinueToForm }: WatchPhotoUploadProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [identifiedWatch, setIdentifiedWatch] = useState<WatchInfo | null>(null);
@@ -141,9 +142,9 @@ export const WatchPhotoUpload = ({ onIdentified, onPhotoUploaded }: WatchPhotoUp
             </div>
             
             {identifiedWatch && (
-              <Alert>
+              <Alert className="border-primary/50 bg-primary/5">
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription className="space-y-2">
+                <AlertDescription className="space-y-3">
                   <div className="flex items-center gap-2">
                     <strong>Identified:</strong> {identifiedWatch.brand} {identifiedWatch.model}
                     <Badge variant={getConfidenceBadgeVariant(identifiedWatch.confidence)}>
@@ -151,19 +152,28 @@ export const WatchPhotoUpload = ({ onIdentified, onPhotoUploaded }: WatchPhotoUp
                     </Badge>
                   </div>
                   {identifiedWatch.notes && (
-                    <p className="text-sm text-muted-foreground mt-2">{identifiedWatch.notes}</p>
+                    <p className="text-sm text-muted-foreground">{identifiedWatch.notes}</p>
                   )}
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => {
-                      setPreview(null);
-                      setIdentifiedWatch(null);
-                    }}
-                    className="mt-2"
-                  >
-                    Try Another Photo
-                  </Button>
+                  <div className="flex gap-2 pt-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => {
+                        setPreview(null);
+                        setIdentifiedWatch(null);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      onClick={() => {
+                        onContinueToForm?.();
+                      }}
+                    >
+                      Continue to Add Watch
+                    </Button>
+                  </div>
                 </AlertDescription>
               </Alert>
             )}
