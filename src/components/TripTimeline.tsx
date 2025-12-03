@@ -283,8 +283,29 @@ export const TripTimeline = ({ trips, limit, type, watches, onUpdate }: TripTime
             </div>
           </div>
         )}
-        {displayTrips.map((trip, index) => (
-          <Card key={index} className="border-border bg-card p-6 hover:shadow-[var(--shadow-luxury)] transition-all duration-300">
+        {displayTrips.map((trip, index) => {
+          // Check if this trip is part of a consecutive group (same location + purpose)
+          const prevTrip = index > 0 ? displayTrips[index - 1] : null;
+          const nextTrip = index < displayTrips.length - 1 ? displayTrips[index + 1] : null;
+          
+          const isSameGroup = (t1: Trip | null, t2: Trip | null) => {
+            if (!t1 || !t2) return false;
+            return t1.location === t2.location && t1.purpose === t2.purpose;
+          };
+          
+          const isFirstInGroup = !isSameGroup(prevTrip, trip);
+          const isLastInGroup = !isSameGroup(trip, nextTrip);
+          const isInGroup = isSameGroup(prevTrip, trip) || isSameGroup(trip, nextTrip);
+          
+          return (
+          <div key={index} className="relative">
+            {/* Connecting line for grouped items */}
+            {isInGroup && !isLastInGroup && (
+              <div className="absolute left-[52px] top-[72px] bottom-[-16px] w-0.5 bg-primary/30 z-0" />
+            )}
+            <Card className={`border-border bg-card p-6 hover:shadow-[var(--shadow-luxury)] transition-all duration-300 relative z-10 ${
+              isInGroup && !isFirstInGroup ? 'border-l-2 border-l-primary/50' : ''
+            } ${isInGroup ? 'ml-0' : ''}`}>
             <div className="flex items-start gap-4">
               {(isVerified || isAdmin) && (
                 <Checkbox
@@ -368,7 +389,9 @@ export const TripTimeline = ({ trips, limit, type, watches, onUpdate }: TripTime
               </div>
             </div>
           </Card>
-        ))}
+          </div>
+          );
+        })}
       </div>
 
       {/* Delete Confirmation Dialog */}
