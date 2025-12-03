@@ -291,29 +291,6 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
           // Don't block the main flow if AI analysis fails
         }
 
-        // Generate AI image for the watch in the background
-        try {
-          supabase.functions.invoke('generate-watch-image', {
-            body: { 
-              watchId: insertData.id,
-              brand: data.brand, 
-              model: data.model,
-              dialColor: data.dialColor,
-              type: formValues.type,
-              caseSize: formValues.caseSize,
-              movement: formValues.movement,
-              referenceImageBase64: uploadedPhotoBase64 
-            }
-          }).then(({ error }) => {
-            if (error) {
-              console.error('AI image generation failed:', error);
-            } else {
-              console.log('AI image generation started for watch:', insertData.id);
-            }
-          });
-        } catch (imageError) {
-          console.error('Failed to trigger AI image generation:', imageError);
-        }
       }
 
       toast({
