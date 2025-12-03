@@ -1,16 +1,19 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useCollectionData } from '@/hooks/useCollectionData';
+import { useCollectionData, Collection } from '@/hooks/useCollectionData';
 
 interface CollectionContextType {
   selectedCollectionId: string | null;
   setSelectedCollectionId: (id: string) => void;
-  currentCollection: any;
+  currentCollection: Collection | undefined;
+  collections: Collection[];
+  collectionsLoading: boolean;
+  refetchCollections: () => Promise<void>;
 }
 
 const CollectionContext = createContext<CollectionContextType | undefined>(undefined);
 
 export const CollectionProvider = ({ children }: { children: ReactNode }) => {
-  const { collections, loading } = useCollectionData();
+  const { collections, loading, refetch } = useCollectionData();
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
 
   // Auto-select first collection when data loads
@@ -44,7 +47,10 @@ export const CollectionProvider = ({ children }: { children: ReactNode }) => {
     <CollectionContext.Provider value={{ 
       selectedCollectionId, 
       setSelectedCollectionId,
-      currentCollection 
+      currentCollection,
+      collections,
+      collectionsLoading: loading,
+      refetchCollections: refetch
     }}>
       {children}
     </CollectionContext.Provider>
