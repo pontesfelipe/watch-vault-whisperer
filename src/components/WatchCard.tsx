@@ -180,32 +180,32 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
   const costPerUse = totalDays > 0 ? watch.cost / totalDays : watch.cost;
 
   return (
-    <Card className="group relative overflow-hidden border-border bg-card hover:shadow-[var(--shadow-luxury)] transition-all duration-300">
-      <div className="absolute inset-0 bg-[var(--gradient-luxury)] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+    <Card className="group relative overflow-hidden border-borderSubtle bg-surface hover:shadow-luxury transition-all duration-300">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       
-      <div className="relative p-6">
+      <div className="relative p-5">
         
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-1">
               <WatchIcon className="w-5 h-5 text-primary" />
-              <h3 className="font-semibold text-lg text-foreground">{watch.brand}</h3>
+              <h3 className="font-semibold text-[17px] text-textMain">{watch.brand}</h3>
             </div>
-            <p className="text-sm text-muted-foreground mb-2">{watch.model}</p>
+            <p className="text-sm text-textSoft">{watch.model}</p>
           </div>
-          <Badge variant="secondary" className="text-xs">
+          <Badge variant="secondary" className="text-xs font-medium">
             {watch.type}
           </Badge>
         </div>
 
         <div className="space-y-3 mb-4">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Dial Color</span>
-            <span className="font-medium text-foreground">{watch.dial_color}</span>
+            <span className="text-textMuted">Dial Color</span>
+            <span className="font-medium text-textMain">{watch.dial_color}</span>
           </div>
 
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Rarity</span>
+            <span className="text-textMuted">Rarity</span>
             <div className="flex items-center gap-1">
               <Badge variant={
                 watch.rarity === 'grail' ? 'default' :
@@ -221,14 +221,14 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
                   className="h-5 w-5 p-0"
                   onClick={() => setShowReasoningDialog(true)}
                 >
-                  <Info className="w-3 h-3 text-muted-foreground" />
+                  <Info className="w-3 h-3 text-textMuted" />
                 </Button>
               )}
             </div>
           </div>
 
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Historical</span>
+            <span className="text-textMuted">Historical</span>
             <div className="flex items-center gap-1">
               <Badge variant={
                 watch.historical_significance === 'historically_significant' ? 'default' :
@@ -243,26 +243,26 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
                   className="h-5 w-5 p-0"
                   onClick={() => setShowReasoningDialog(true)}
                 >
-                  <Info className="w-3 h-3 text-muted-foreground" />
+                  <Info className="w-3 h-3 text-textMuted" />
                 </Button>
               )}
             </div>
           </div>
 
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Trade/Sell</span>
+            <span className="text-textMuted">Trade/Sell</span>
             <Badge variant={watch.available_for_trade ? 'default' : 'outline'} className="text-xs">
               {watch.available_for_trade ? 'Available' : 'Not Available'}
             </Badge>
           </div>
 
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Cost</span>
+            <span className="text-textMuted">Cost</span>
             <div className="flex items-center gap-2">
               {showCost ? (
-                <span className="font-medium text-foreground">${watch.cost.toLocaleString()}</span>
+                <span className="font-medium text-textMain">${watch.cost.toLocaleString()}</span>
               ) : (
-                <span className="font-medium text-muted-foreground">••••••</span>
+                <span className="font-medium text-textMuted">••••••</span>
               )}
               <Button
                 variant="ghost"
@@ -271,33 +271,33 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
                 onClick={handleToggleCost}
               >
                 {showCost ? (
-                  <EyeOff className="w-4 h-4 text-muted-foreground" />
+                  <EyeOff className="w-4 h-4 text-textMuted" />
                 ) : (
-                  <Eye className="w-4 h-4 text-muted-foreground" />
+                  <Eye className="w-4 h-4 text-textMuted" />
                 )}
               </Button>
             </div>
           </div>
 
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Cost/Day</span>
+            <span className="text-textMuted">Cost/Day</span>
             <div className="flex items-center gap-2">
               {showCost ? (
                 <span className="font-medium text-primary">${costPerUse.toFixed(0)}</span>
               ) : (
-                <span className="font-medium text-muted-foreground">••••</span>
+                <span className="font-medium text-textMuted">••••</span>
               )}
             </div>
           </div>
           
           {watch.average_resale_price ? (
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Resale Value</span>
+              <span className="text-textMuted">Resale Value</span>
               <div className="flex items-center gap-2">
                 {showCost ? (
-                  <span className="font-medium text-foreground">${watch.average_resale_price.toLocaleString()}</span>
+                  <span className="font-medium text-textMain">${watch.average_resale_price.toLocaleString()}</span>
                 ) : (
-                  <span className="font-medium text-muted-foreground">••••••</span>
+                  <span className="font-medium text-textMuted">••••••</span>
                 )}
                 <Button
                   variant="ghost"
@@ -307,13 +307,13 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
                   disabled={isFetchingPrice}
                   title="Update market price"
                 >
-                  <RefreshCw className={`w-3 h-3 text-muted-foreground ${isFetchingPrice ? 'animate-spin' : ''}`} />
+                  <RefreshCw className={`w-3 h-3 text-textMuted ${isFetchingPrice ? 'animate-spin' : ''}`} />
                 </Button>
               </div>
             </div>
           ) : (
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Resale Value</span>
+              <span className="text-textMuted">Resale Value</span>
               <Button
                 variant="outline"
                 size="sm"
@@ -329,15 +329,15 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
           
           {watch.warranty_date && (
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Warranty</span>
-              <span className={`font-medium text-xs ${new Date(watch.warranty_date) < new Date() ? 'text-destructive' : 'text-green-500'}`}>
+              <span className="text-textMuted">Warranty</span>
+              <span className={`font-medium text-xs ${new Date(watch.warranty_date) < new Date() ? 'text-destructive' : 'text-green-600 dark:text-green-400'}`}>
                 {new Date(watch.warranty_date) < new Date() ? 'Expired' : 'Valid'}
               </span>
             </div>
           )}
           
-          <div className="flex items-center justify-between pt-3 border-t border-border">
-            <div className="flex items-center gap-2 text-muted-foreground">
+          <div className="flex items-center justify-between pt-3 border-t border-borderSubtle">
+            <div className="flex items-center gap-2 text-textMuted">
               <Calendar className="w-4 h-4" />
               <span className="text-sm">Days Worn</span>
             </div>
@@ -349,7 +349,7 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
           <Button
             variant="outline"
             size="sm"
-            className="flex-1 gap-2"
+            className="flex-1 gap-2 border-borderSubtle hover:bg-surfaceMuted"
             onClick={() => navigate(`/watch/${watch.id}`)}
           >
             <Eye className="w-4 h-4" />
@@ -361,22 +361,22 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
           <Button
             variant="outline" 
             size="sm" 
-            className="gap-2 hover:bg-destructive hover:text-destructive-foreground"
+            className="gap-2 border-borderSubtle hover:bg-destructive hover:text-destructive-foreground hover:border-destructive"
             onClick={handleDeleteClick}
           >
             <Trash2 className="w-4 h-4" />
           </Button>
 
           <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-            <AlertDialogContent className="bg-card border-border">
+            <AlertDialogContent className="bg-surface border-borderSubtle">
               <AlertDialogHeader>
-                <AlertDialogTitle className="text-foreground">Delete Watch</AlertDialogTitle>
-                <AlertDialogDescription className="text-muted-foreground">
+                <AlertDialogTitle className="text-textMain">Delete Watch</AlertDialogTitle>
+                <AlertDialogDescription className="text-textSoft">
                   Are you sure you want to remove <span className="font-semibold">{watch.brand} {watch.model}</span> from your collection? This will also delete all wear entries.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogCancel className="border-borderSubtle">Cancel</AlertDialogCancel>
                 <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                   Delete
                 </AlertDialogAction>

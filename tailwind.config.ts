@@ -57,10 +57,11 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        // Custom design system tokens
         surface: "hsl(var(--surface))",
         surfaceMuted: "hsl(var(--surface-muted))",
         borderSubtle: "hsl(var(--border-subtle))",
-        borderSoft: "hsl(var(--border-soft))",
+        borderStrong: "hsl(var(--border-strong))",
         accentHover: "hsl(var(--accent-hover))",
         accentSubtle: "hsl(var(--accent-subtle))",
         textMain: "hsl(var(--text-main))",
@@ -69,15 +70,16 @@ export default {
         danger: "hsl(var(--danger))",
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-        xl: "0.9rem",
-        "2xl": "1.25rem",
+        lg: "var(--radius-lg)",
+        md: "var(--radius-md)",
+        sm: "var(--radius-sm)",
+        xl: "1.25rem",
+        "2xl": "1.5rem",
       },
       boxShadow: {
-        card: "0 4px 16px rgba(15, 23, 42, 0.08)",
-        soft: "0 2px 8px rgba(15, 23, 42, 0.04)",
+        card: "var(--shadow-card)",
+        soft: "var(--shadow-soft)",
+        luxury: "var(--shadow-luxury)",
       },
       keyframes: {
         "accordion-down": {

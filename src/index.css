@@ -2,71 +2,134 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* CollectionVault Design System - All colors in HSL */
 
 @layer base {
   :root {
-    --background: 216 33% 97%;
-    --foreground: 215 25% 12%;
+    /* Light Theme - Premium Minimal Aesthetic */
+    --background: 220 14% 97%;
+    --foreground: 220 19% 13%;
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 12%;
+    --card-foreground: 220 19% 13%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 12%;
+    --popover-foreground: 220 19% 13%;
 
-    --primary: 215 65% 57%;
+    --primary: 219 98% 61%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 214 14% 95%;
-    --secondary-foreground: 215 25% 12%;
+    --secondary: 220 14% 95%;
+    --secondary-foreground: 220 19% 13%;
 
-    --muted: 214 14% 95%;
-    --muted-foreground: 215 15% 33%;
+    --muted: 220 14% 95%;
+    --muted-foreground: 220 9% 46%;
 
-    --accent: 215 65% 57%;
+    --accent: 219 98% 61%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 72% 61%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 215 15% 89%;
-    --input: 215 15% 89%;
-    --ring: 215 65% 57%;
+    --border: 220 13% 90%;
+    --input: 220 13% 90%;
+    --ring: 219 98% 61%;
 
     --radius: 0.75rem;
-    
-    --gradient-luxury: linear-gradient(135deg, hsl(215 65% 57% / 0.1), hsl(215 65% 57% / 0.05));
-    --shadow-luxury: 0 4px 16px hsl(215 25% 27% / 0.08);
-    --shadow-glow: 0 0 20px hsl(215 65% 57% / 0.15);
+    --radius-lg: 1.125rem;
+    --radius-md: 0.75rem;
+    --radius-sm: 0.5rem;
 
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 215 15% 33%;
-    --sidebar-primary: 215 25% 12%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 214 100% 97%;
-    --sidebar-accent-foreground: 215 25% 12%;
-    --sidebar-border: 215 15% 89%;
-    --sidebar-ring: 215 65% 57%;
-
-    /* Light theme custom colors */
+    /* Custom design tokens */
     --surface: 0 0% 100%;
-    --surface-muted: 214 14% 95%;
-    --border-subtle: 215 15% 89%;
-    --border-soft: 214 19% 95%;
-    --accent-hover: 215 59% 63%;
-    --accent-subtle: 214 100% 97%;
-    --text-main: 215 25% 12%;
-    --text-muted: 215 15% 33%;
-    --text-soft: 220 9% 55%;
-    --danger: 0 72% 61%;
+    --surface-muted: 220 14% 95%;
+    --border-subtle: 220 13% 90%;
+    --border-strong: 220 11% 80%;
+    --text-main: 220 19% 13%;
+    --text-soft: 220 12% 34%;
+    --text-muted: 220 9% 46%;
+    --accent-hover: 219 72% 52%;
+    --accent-subtle: 219 100% 94%;
+
+    /* Shadows */
+    --shadow-soft: 0px 2px 6px rgba(0, 0, 0, 0.04);
+    --shadow-card: 0px 4px 20px rgba(0, 0, 0, 0.06);
+    --shadow-luxury: 0px 8px 30px rgba(0, 0, 0, 0.08);
+    --shadow-glow: 0 0 20px hsl(219 98% 61% / 0.15);
+    --gradient-luxury: linear-gradient(135deg, hsl(219 98% 61% / 0.08), hsl(219 98% 61% / 0.02));
+
+    /* Sidebar */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 220 9% 46%;
+    --sidebar-primary: 220 19% 13%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 219 100% 97%;
+    --sidebar-accent-foreground: 220 19% 13%;
+    --sidebar-border: 220 13% 90%;
+    --sidebar-ring: 219 98% 61%;
+
+    --danger: 0 72% 51%;
   }
 
   .dark {
-    --background: 216 33% 97%;
-    --foreground: 215 25% 12%;
+    /* Dark Theme - Premium Modern Aesthetic */
+    --background: 216 28% 7%;
+    --foreground: 216 20% 93%;
+
+    --card: 216 21% 11%;
+    --card-foreground: 216 20% 93%;
+
+    --popover: 216 21% 11%;
+    --popover-foreground: 216 20% 93%;
+
+    --primary: 219 98% 61%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 216 17% 15%;
+    --secondary-foreground: 216 20% 93%;
+
+    --muted: 216 17% 15%;
+    --muted-foreground: 215 14% 58%;
+
+    --accent: 219 98% 61%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 215 18% 20%;
+    --input: 215 18% 20%;
+    --ring: 219 98% 61%;
+
+    /* Custom design tokens - dark */
+    --surface: 216 21% 11%;
+    --surface-muted: 216 17% 15%;
+    --border-subtle: 215 18% 20%;
+    --border-strong: 215 16% 27%;
+    --text-main: 216 20% 93%;
+    --text-soft: 215 15% 76%;
+    --text-muted: 215 14% 58%;
+    --accent-hover: 219 72% 52%;
+    --accent-subtle: 219 98% 61% / 0.15;
+
+    /* Shadows - dark */
+    --shadow-soft: 0px 2px 4px rgba(0, 0, 0, 0.25);
+    --shadow-card: 0px 4px 16px rgba(0, 0, 0, 0.35);
+    --shadow-luxury: 0px 8px 30px rgba(0, 0, 0, 0.45);
+    --shadow-glow: 0 0 20px hsl(219 98% 61% / 0.25);
+    --gradient-luxury: linear-gradient(135deg, hsl(219 98% 61% / 0.12), hsl(219 98% 61% / 0.04));
+
+    /* Sidebar - dark */
+    --sidebar-background: 216 21% 11%;
+    --sidebar-foreground: 215 14% 58%;
+    --sidebar-primary: 216 20% 93%;
+    --sidebar-primary-foreground: 216 28% 7%;
+    --sidebar-accent: 219 98% 61% / 0.15;
+    --sidebar-accent-foreground: 216 20% 93%;
+    --sidebar-border: 215 18% 20%;
+    --sidebar-ring: 219 98% 61%;
+
+    --danger: 0 72% 51%;
   }
 }
 
@@ -76,6 +139,20 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+@layer utilities {
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+  
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+  
+  .shadow-luxury {
+    box-shadow: var(--shadow-luxury);
   }
 }
