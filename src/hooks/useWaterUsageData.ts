@@ -2,13 +2,22 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
+interface LinkedWatch {
+  watchId: string;
+  brand: string;
+  model: string;
+  days: number;
+}
+
 interface WaterUsage {
   id: string;
   watch_id: string;
   activity_type: string;
-  depth_meters: number;
-  duration_minutes: number;
+  depth_meters: number | null;
+  duration_minutes: number | null;
   activity_date: string;
+  notes?: string | null;
+  linkedWatch?: LinkedWatch;
 }
 
 export const useWaterUsageData = () => {
@@ -25,15 +34,29 @@ export const useWaterUsageData = () => {
 
     setLoading(true);
     try {
-      const query: any = (supabase.from('water_usage' as any) as any).select('*');
+      // Fetch water usage with watch info
+      let query = supabase
+        .from('water_usage')
+        .select('*, watches(id, brand, model)');
       
       if (!isAdmin) {
-        query.eq('user_id', user.id);
+        query = query.eq('user_id', user.id);
       }
       
       const result = await query.order('activity_date', { ascending: false });
 
-      if (result.data) setWaterUsages(result.data);
+      if (result.data) {
+        const usagesWithWatches = result.data.map((entry: any) => ({
+          ...entry,
+          linkedWatch: entry.watches ? {
+            watchId: entry.watches.id,
+            brand: entry.watches.brand,
+            model: entry.watches.model,
+            days: 1,
+          } : undefined,
+        }));
+        setWaterUsages(usagesWithWatches);
+      }
     } catch (error) {
       console.error("Error fetching water usage data:", error);
     } finally {

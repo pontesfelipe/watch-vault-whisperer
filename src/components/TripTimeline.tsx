@@ -160,18 +160,10 @@ export const TripTimeline = ({ trips, limit, type, watches, onUpdate }: TripTime
 
   const handleEdit = (trip: Trip) => {
     setEditItem(trip);
-    // Filter out watches that no longer exist
-    const currentWatchNames = watches.map(w => `${w.brand} ${w.model}`);
-    const filteredWatchDays: Record<string, number> = {};
-    Object.entries(trip.watch || {}).forEach(([watchName, days]) => {
-      if (currentWatchNames.includes(watchName)) {
-        filteredWatchDays[watchName] = days;
-      }
-    });
     setFormData({
       location: trip.location,
       startDate: trip.startDate,
-      watchDays: filteredWatchDays,
+      watchDays: {},
       totalDays: trip.days.toString(),
       purpose: trip.purpose,
       notes: trip.notes || "",
@@ -185,17 +177,11 @@ export const TripTimeline = ({ trips, limit, type, watches, onUpdate }: TripTime
     setLoading(true);
     try {
       const totalDays = parseFloat(formData.totalDays);
-      const watchDaysSum = Object.values(formData.watchDays).reduce((sum, days) => sum + days, 0);
-      
-      if (watchDaysSum !== totalDays && watchDaysSum > 0) {
-        toast.warning(`Watch days (${watchDaysSum}) don't match total days (${totalDays}), but updating anyway`);
-      }
 
       const table = type === "trip" ? "trips" : "events";
       const { error } = await supabase.from(table).update({
         location: formData.location,
         start_date: formData.startDate,
-        watch_model: formData.watchDays,
         days: totalDays,
         purpose: formData.purpose,
         notes: formData.notes || null,
@@ -362,17 +348,17 @@ export const TripTimeline = ({ trips, limit, type, watches, onUpdate }: TripTime
                 
                 <div className="mt-3 pt-3 border-t border-border">
                   <div className="space-y-1">
-                    {Object.entries(trip.watch || {}).map(([watchId, days]) => {
-                      const watch = watches.find(w => w.id === watchId);
-                      const watchName = watch ? `${watch.brand} ${watch.model}` : watchId;
-                      return (
-                        <p key={watchId} className="text-sm">
-                          <span className="font-medium text-foreground">{watchName}</span>
+                    {trip.linkedWatches && trip.linkedWatches.length > 0 ? (
+                      trip.linkedWatches.map((lw) => (
+                        <p key={lw.watchId} className="text-sm">
+                          <span className="font-medium text-foreground">{lw.brand} {lw.model}</span>
                           <span className="mx-2 text-muted-foreground">•</span>
-                          <span className="text-muted-foreground">{days} {days === 1 ? 'day' : 'days'}</span>
+                          <span className="text-muted-foreground">{lw.days} {lw.days === 1 ? 'day' : 'days'}</span>
                         </p>
-                      );
-                    })}
+                      ))
+                    ) : (
+                      <p className="text-sm text-muted-foreground italic">No watches linked via wear log</p>
+                    )}
                     <p className="text-xs text-muted-foreground pt-1">
                       Total: {trip.days} {trip.days === 1 ? 'day' : 'days'}
                     </p>
@@ -450,47 +436,21 @@ export const TripTimeline = ({ trips, limit, type, watches, onUpdate }: TripTime
                 required
               />
             </div>
-            <div>
-              <Label>Watches & Days Worn</Label>
-              <div className="border rounded-md p-3 space-y-3 max-h-64 overflow-y-auto">
-                {watches.map((watch) => {
-                  const watchName = `${watch.brand} ${watch.model}`;
-                  const days = formData.watchDays[watchName] || 0;
-                  return (
-                    <div key={watch.id} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">{watchName}</span>
-                        <Input
-                          type="number"
-                          step="0.5"
-                          min="0"
-                          value={days}
-                          onChange={(e) => {
-                            const newDays = parseFloat(e.target.value) || 0;
-                            const newWatchDays = { ...formData.watchDays };
-                            if (newDays > 0) {
-                              newWatchDays[watchName] = newDays;
-                            } else {
-                              delete newWatchDays[watchName];
-                            }
-                            setFormData({ ...formData, watchDays: newWatchDays });
-                          }}
-                          className="w-20 h-8"
-                          placeholder="0"
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              {Object.keys(formData.watchDays).length > 0 && (
-                <div className="mt-2 p-2 bg-muted rounded-md">
-                  <p className="text-xs text-muted-foreground">
-                    Total allocated: {Object.values(formData.watchDays).reduce((sum, d) => sum + d, 0).toFixed(1)} / {formData.totalDays} days
-                  </p>
+            {editItem?.linkedWatches && editItem.linkedWatches.length > 0 && (
+              <div className="p-3 bg-muted/50 rounded-md">
+                <Label className="text-sm text-muted-foreground">Linked Watches (from wear logs)</Label>
+                <div className="mt-2 space-y-1">
+                  {editItem.linkedWatches.map((lw) => (
+                    <p key={lw.watchId} className="text-sm">
+                      {lw.brand} {lw.model} • {lw.days} {lw.days === 1 ? 'day' : 'days'}
+                    </p>
+                  ))}
                 </div>
-              )}
-            </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  To change linked watches, edit the wear logs directly.
+                </p>
+              </div>
+            )}
             <div>
               <Label htmlFor="edit-purpose">{type === "trip" ? "Purpose" : "Purpose/Name"}</Label>
               {type === "trip" ? (

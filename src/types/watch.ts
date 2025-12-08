@@ -8,11 +8,18 @@ export interface Watch {
   cost: number;
 }
 
+export interface LinkedWatch {
+  watchId: string;
+  brand: string;
+  model: string;
+  days: number;
+}
+
 export interface Trip {
   id: string;
   startDate: string;
   location: string;
-  watch: Record<string, number>; // { "Rolex Submariner": 6, "Omega Speedmaster": 4 }
+  linkedWatches: LinkedWatch[];
   days: number;
   purpose: string;
   notes?: string;
@@ -22,7 +29,7 @@ export interface Event {
   id: string;
   startDate: string;
   location: string;
-  watch: Record<string, number>;
+  linkedWatches: LinkedWatch[];
   days: number;
   purpose: string;
 }
