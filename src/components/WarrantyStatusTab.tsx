@@ -92,28 +92,28 @@ export function WarrantyStatusTab({ watches }: WarrantyStatusTabProps) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20">
-          <div className="flex items-center gap-2 text-green-500">
+        <div className="p-4 rounded-lg bg-green-500/10 dark:bg-green-500/15 border border-green-500/20">
+          <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
             <ShieldCheck className="h-5 w-5" />
             <span className="font-medium">Active</span>
           </div>
           <p className="text-2xl font-bold text-textMain mt-1">{stats.active}</p>
         </div>
-        <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
-          <div className="flex items-center gap-2 text-amber-500">
+        <div className="p-4 rounded-lg bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/20">
+          <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
             <ShieldAlert className="h-5 w-5" />
             <span className="font-medium">Expiring Soon</span>
           </div>
           <p className="text-2xl font-bold text-textMain mt-1">{stats.expiring}</p>
         </div>
-        <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20">
+        <div className="p-4 rounded-lg bg-destructive/10 dark:bg-destructive/15 border border-destructive/20">
           <div className="flex items-center gap-2 text-destructive">
             <ShieldX className="h-5 w-5" />
             <span className="font-medium">Expired</span>
           </div>
           <p className="text-2xl font-bold text-textMain mt-1">{stats.expired}</p>
         </div>
-        <div className="p-4 rounded-lg bg-muted/50 border border-borderSubtle">
+        <div className="p-4 rounded-lg bg-surfaceMuted border border-borderSubtle">
           <div className="flex items-center gap-2 text-textMuted">
             <Shield className="h-5 w-5" />
             <span className="font-medium">No Warranty</span>
