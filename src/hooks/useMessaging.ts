@@ -244,18 +244,28 @@ export const useMessaging = () => {
   const sendFriendRequest = async (email: string, message?: string) => {
     if (!user) return { error: 'Not authenticated' };
 
-    // Find user by email
+    console.log('sendFriendRequest called with email:', email);
+
+    // Find user by email (case-insensitive)
     const { data: targetProfile, error: profileError } = await supabase
       .from('profiles')
-      .select('id')
-      .eq('email', email.toLowerCase())
-      .single();
+      .select('id, email')
+      .ilike('email', email.trim());
 
-    if (profileError || !targetProfile) {
+    console.log('Profile lookup result:', { targetProfile, profileError });
+
+    if (profileError) {
+      console.error('Profile lookup error:', profileError);
+      return { error: 'Error finding user' };
+    }
+
+    if (!targetProfile || targetProfile.length === 0) {
       return { error: 'User not found with that email' };
     }
 
-    if (targetProfile.id === user.id) {
+    const targetUser = targetProfile[0];
+
+    if (targetUser.id === user.id) {
       return { error: 'You cannot send a friend request to yourself' };
     }
 
@@ -264,7 +274,7 @@ export const useMessaging = () => {
       .from('friendships' as any) as any)
       .select('id')
       .eq('user_id', user.id)
-      .eq('friend_id', targetProfile.id)
+      .eq('friend_id', targetUser.id)
       .single();
 
     if (existing) {
@@ -276,7 +286,7 @@ export const useMessaging = () => {
       .from('friend_requests' as any) as any)
       .select('id, status')
       .eq('from_user_id', user.id)
-      .eq('to_user_id', targetProfile.id)
+      .eq('to_user_id', targetUser.id)
       .single();
 
     if (existingRequest) {
@@ -285,19 +295,27 @@ export const useMessaging = () => {
       }
     }
 
-    const { error } = await (supabase
+    console.log('Inserting friend request:', {
+      from_user_id: user.id,
+      to_user_id: targetUser.id,
+      message: message || null,
+    });
+
+    const { error, data } = await (supabase
       .from('friend_requests' as any) as any)
       .insert({
         from_user_id: user.id,
-        to_user_id: targetProfile.id,
+        to_user_id: targetUser.id,
         message: message || null,
-      });
+      })
+      .select();
 
     if (error) {
       console.error('Error sending friend request:', error);
-      return { error: 'Failed to send friend request' };
+      return { error: 'Failed to send friend request: ' + error.message };
     }
 
+    console.log('Friend request created:', data);
     return { success: true };
   };
 
