@@ -42,9 +42,21 @@ export function TradeNotificationsList({
                   <p className="font-semibold text-foreground">
                     {notification.watch_brand} {notification.watch_model}
                   </p>
-                  <Badge variant="secondary" className="mt-1 text-xs">
-                    Available for Trade
-                  </Badge>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {notification.watch_dial_color && (
+                      <Badge variant="outline" className="text-xs">
+                        {notification.watch_dial_color}
+                      </Badge>
+                    )}
+                    {notification.watch_type && (
+                      <Badge variant="outline" className="text-xs">
+                        {notification.watch_type}
+                      </Badge>
+                    )}
+                    <Badge variant="secondary" className="text-xs">
+                      Available for Trade
+                    </Badge>
+                  </div>
                 </div>
               </div>
               <Button

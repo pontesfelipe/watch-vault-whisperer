@@ -7,6 +7,7 @@ import { Conversation } from "@/hooks/useMessaging";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { ShareWatchDetailsDialog } from "./ShareWatchDetailsDialog";
 
 interface ChatWindowProps {
   conversation: Conversation | null;
@@ -117,6 +118,10 @@ export function ChatWindow({ conversation, onSendMessage, onMarkAsRead }: ChatWi
       {/* Input */}
       <div className="p-4 border-t border-borderSubtle">
         <div className="flex gap-2">
+          <ShareWatchDetailsDialog 
+            conversationId={conversation.id} 
+            onSendMessage={onSendMessage} 
+          />
           <Input
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}

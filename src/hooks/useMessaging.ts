@@ -55,6 +55,7 @@ export interface TradeMatchNotification {
   watch_brand?: string;
   watch_model?: string;
   watch_dial_color?: string;
+  watch_type?: string;
   owner_email?: string;
   owner_username?: string;
   owner_location?: string;
@@ -209,7 +210,7 @@ export const useMessaging = () => {
       (data || []).map(async (n: any) => {
         const { data: watch } = await supabase
           .from('watches')
-          .select('brand, model, dial_color')
+          .select('brand, model, dial_color, type')
           .eq('id', n.trade_watch_id)
           .single();
 
@@ -231,6 +232,7 @@ export const useMessaging = () => {
           watch_brand: watch?.brand || '',
           watch_model: watch?.model || '',
           watch_dial_color: watch?.dial_color || '',
+          watch_type: watch?.type || '',
           owner_email: owner?.email || '',
           owner_username: owner?.username || '',
           owner_location: ownerLocation,
