@@ -19,49 +19,60 @@ export function FriendRequestsList({ requests, onAccept, onDecline }: FriendRequ
   return (
     <div className="space-y-2">
       <h3 className="text-sm font-medium text-textMain px-1">Friend Requests</h3>
-      {requests.map((request) => (
-        <Card key={request.id} className="p-3">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="font-medium text-textMain text-sm truncate">
-                  {request.from_user_name || request.from_user_email}
-                </span>
-                {request.trade_match_watch_id && (
-                  <Badge variant="secondary" className="text-xs">
-                    <Sparkles className="h-3 w-3 mr-1" />
-                    Trade Match
-                  </Badge>
+      {requests.map((request) => {
+        const isTradeRequest = !!request.trade_match_watch_id || request.message?.toLowerCase().includes('trade');
+        
+        return (
+          <Card 
+            key={request.id} 
+            className={`p-3 ${isTradeRequest ? 'border-primary/30 bg-primary/5' : ''}`}
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-foreground text-sm truncate">
+                    {request.from_user_name || request.from_user_email}
+                  </span>
+                  {isTradeRequest && (
+                    <Badge variant="secondary" className="text-xs bg-primary/20 text-primary">
+                      <Sparkles className="h-3 w-3 mr-1" />
+                      Trade Interest
+                    </Badge>
+                  )}
+                </div>
+                {request.message && (
+                  <p className="text-sm text-muted-foreground mt-2 bg-muted/50 p-2 rounded-md">
+                    "{request.message}"
+                  </p>
                 )}
+                <p className="text-xs text-muted-foreground mt-2">
+                  {formatDistanceToNow(new Date(request.created_at), { addSuffix: true })}
+                </p>
               </div>
-              {request.message && (
-                <p className="text-xs text-textMuted mt-1 line-clamp-2">{request.message}</p>
-              )}
-              <p className="text-xs text-textMuted mt-1">
-                {formatDistanceToNow(new Date(request.created_at), { addSuffix: true })}
-              </p>
+              <div className="flex gap-1 shrink-0">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-8 w-8 text-green-500 hover:text-green-600 hover:bg-green-500/10"
+                  onClick={() => onAccept(request.id)}
+                  title="Accept"
+                >
+                  <Check className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  onClick={() => onDecline(request.id)}
+                  title="Decline"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
-            <div className="flex gap-1">
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-8 w-8 text-green-500 hover:text-green-600 hover:bg-green-500/10"
-                onClick={() => onAccept(request.id)}
-              >
-                <Check className="h-4 w-4" />
-              </Button>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                onClick={() => onDecline(request.id)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </Card>
-      ))}
+          </Card>
+        );
+      })}
     </div>
   );
 }
