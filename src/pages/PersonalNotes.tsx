@@ -11,6 +11,7 @@ import { EditPersonalNotesDialog } from "@/components/EditPersonalNotesDialog";
 import { PersonalNotesTable } from "@/components/PersonalNotesTable";
 import { PurchaseTimelineTab } from "@/components/PurchaseTimelineTab";
 import { SpendingAnalyticsTab } from "@/components/SpendingAnalyticsTab";
+import { WarrantyStatusTab } from "@/components/WarrantyStatusTab";
 
 interface Watch {
   id: string;
@@ -24,6 +25,7 @@ interface Watch {
   created_at: string;
   sentiment?: string;
   sentiment_analyzed_at?: string;
+  warranty_date?: string | null;
 }
 
 export default function PersonalNotes() {
@@ -45,7 +47,7 @@ export default function PersonalNotes() {
     try {
       const { data, error } = await supabase
         .from("watches")
-        .select("id, brand, model, cost, why_bought, when_bought, what_i_like, what_i_dont_like, created_at, sentiment, sentiment_analyzed_at")
+        .select("id, brand, model, cost, why_bought, when_bought, what_i_like, what_i_dont_like, created_at, sentiment, sentiment_analyzed_at, warranty_date")
         .eq("collection_id", selectedCollectionId)
         .order("created_at", { ascending: true });
 
@@ -172,10 +174,11 @@ export default function PersonalNotes() {
             <div className="text-center py-8 text-muted-foreground">No watches found</div>
           ) : (
             <Tabs defaultValue="notes" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="notes">Personal Notes</TabsTrigger>
                 <TabsTrigger value="timeline">Purchase Timeline</TabsTrigger>
                 <TabsTrigger value="analytics">Spending Analytics</TabsTrigger>
+                <TabsTrigger value="warranty">Warranty Status</TabsTrigger>
               </TabsList>
               
               <TabsContent value="notes" className="mt-6">
@@ -191,6 +194,10 @@ export default function PersonalNotes() {
               
               <TabsContent value="analytics" className="mt-6">
                 <SpendingAnalyticsTab watches={watches} />
+              </TabsContent>
+
+              <TabsContent value="warranty" className="mt-6">
+                <WarrantyStatusTab watches={watches} />
               </TabsContent>
             </Tabs>
           )}
