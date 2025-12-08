@@ -15,6 +15,7 @@ import Trips from "./pages/Trips";
 import Events from "./pages/Events";
 import WaterUsage from "./pages/WaterUsage";
 import PersonalNotes from "./pages/PersonalNotes";
+import Messages from "./pages/Messages";
 import WatchDetail from "./pages/WatchDetail";
 import Admin from "./pages/Admin";
 import WearLogsAdmin from "./pages/WearLogsAdmin";
@@ -61,6 +62,7 @@ const App = () => (
                 <Route path="/events" element={<ProtectedRoute><AppLayout><Events /></AppLayout></ProtectedRoute>} />
                 <Route path="/water-usage" element={<ProtectedRoute><AppLayout><WaterUsage /></AppLayout></ProtectedRoute>} />
                 <Route path="/personal-notes" element={<ProtectedRoute><AppLayout><PersonalNotes /></AppLayout></ProtectedRoute>} />
+                <Route path="/messages" element={<ProtectedRoute><AppLayout><Messages /></AppLayout></ProtectedRoute>} />
                 <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
                 <Route path="/admin/wear-logs" element={<ProtectedRoute><WearLogsAdmin /></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
