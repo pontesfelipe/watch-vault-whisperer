@@ -1,5 +1,5 @@
 import { formatDistanceToNow } from "date-fns";
-import { Sparkles, X, UserPlus, Watch, MapPin } from "lucide-react";
+import { Sparkles, X, UserPlus, Watch, Eye } from "lucide-react";
 import { TradeMatchNotification } from "@/hooks/useMessaging";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -57,21 +57,15 @@ export function TradeNotificationsList({
               </Button>
             </div>
             
-            <div className="text-sm text-muted-foreground space-y-1">
-              <div className="flex items-center gap-1">
-                <span>Owned by</span>
-                <span className="font-medium text-foreground">
-                  {notification.owner_username || notification.owner_email}
+            <div className="text-sm text-muted-foreground space-y-2">
+              <div className="flex items-center gap-2 bg-muted/50 p-2 rounded-md">
+                <Eye className="h-4 w-4 text-primary" />
+                <span className="text-xs">
+                  Owner details will be revealed after they accept your request
                 </span>
               </div>
-              {notification.owner_location && (
-                <div className="flex items-center gap-1">
-                  <MapPin className="h-3 w-3" />
-                  <span>{notification.owner_location}</span>
-                </div>
-              )}
               <p className="text-xs">
-                {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
+                Found {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
               </p>
             </div>
 
