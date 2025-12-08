@@ -146,6 +146,30 @@ export type Database = {
         }
         Relationships: []
       }
+      conversations: {
+        Row: {
+          created_at: string
+          id: string
+          updated_at: string
+          user1_id: string
+          user2_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user1_id: string
+          user2_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user1_id?: string
+          user2_id?: string
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           created_at: string
@@ -181,6 +205,95 @@ export type Database = {
           watch_model?: Json | null
         }
         Relationships: []
+      }
+      friend_requests: {
+        Row: {
+          created_at: string
+          from_user_id: string
+          id: string
+          message: string | null
+          status: Database["public"]["Enums"]["friend_request_status"]
+          to_user_id: string
+          trade_match_watch_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          from_user_id: string
+          id?: string
+          message?: string | null
+          status?: Database["public"]["Enums"]["friend_request_status"]
+          to_user_id: string
+          trade_match_watch_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          from_user_id?: string
+          id?: string
+          message?: string | null
+          status?: Database["public"]["Enums"]["friend_request_status"]
+          to_user_id?: string
+          trade_match_watch_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      friendships: {
+        Row: {
+          created_at: string
+          friend_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          friend_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          friend_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          read_at: string | null
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -297,6 +410,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      trade_match_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_dismissed: boolean
+          is_read: boolean
+          trade_owner_id: string
+          trade_watch_id: string
+          user_id: string
+          wishlist_item_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_dismissed?: boolean
+          is_read?: boolean
+          trade_owner_id: string
+          trade_watch_id: string
+          user_id: string
+          wishlist_item_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_dismissed?: boolean
+          is_read?: boolean
+          trade_owner_id?: string
+          trade_watch_id?: string
+          user_id?: string
+          wishlist_item_id?: string
+        }
+        Relationships: []
       }
       trips: {
         Row: {
@@ -757,6 +903,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_friend_request: {
+        Args: { _request_id: string }
+        Returns: undefined
+      }
       can_use_ai_feature: {
         Args: { _feature_name: string; _user_id: string }
         Returns: boolean
@@ -785,6 +935,7 @@ export type Database = {
     Enums: {
       app_role: "admin" | "user"
       collection_role: "owner" | "editor" | "viewer"
+      friend_request_status: "pending" | "accepted" | "declined"
       watch_historical_significance:
         | "regular"
         | "notable"
@@ -919,6 +1070,7 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "user"],
       collection_role: ["owner", "editor", "viewer"],
+      friend_request_status: ["pending", "accepted", "declined"],
       watch_historical_significance: [
         "regular",
         "notable",
