@@ -1,8 +1,9 @@
 import { formatDistanceToNow } from "date-fns";
-import { Sparkles, X, UserPlus } from "lucide-react";
+import { Sparkles, X, UserPlus, Watch, MapPin } from "lucide-react";
 import { TradeMatchNotification } from "@/hooks/useMessaging";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 interface TradeNotificationsListProps {
   notifications: TradeMatchNotification[];
@@ -29,42 +30,59 @@ export function TradeNotificationsList({
     <div className="space-y-2">
       <div className="flex items-center gap-2 px-1">
         <Sparkles className="h-4 w-4 text-primary" />
-        <h3 className="text-sm font-medium text-textMain">Trade Matches</h3>
+        <h3 className="text-sm font-medium text-foreground">Trade Matches</h3>
       </div>
       {notifications.map((notification) => (
-        <Card key={notification.id} className="p-3 border-primary/30 bg-primary/5">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1 min-w-0">
-              <p className="text-sm text-textMain">
-                <span className="font-medium">{notification.watch_brand} {notification.watch_model}</span>
-                {" is available for trade!"}
-              </p>
-              <p className="text-xs text-textMuted mt-1">
-                Owned by {notification.owner_email}
-              </p>
-              <p className="text-xs text-textMuted">
-                {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
-              </p>
-            </div>
-            <div className="flex gap-1">
-              <Button
-                size="sm"
-                variant="default"
-                className="h-8 text-xs"
-                onClick={() => handleConnect(notification)}
-              >
-                <UserPlus className="h-3 w-3 mr-1" />
-                Connect
-              </Button>
+        <Card key={notification.id} className="p-4 border-primary/30 bg-primary/5">
+          <div className="space-y-3">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Watch className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="font-semibold text-foreground">
+                    {notification.watch_brand} {notification.watch_model}
+                  </p>
+                  <Badge variant="secondary" className="mt-1 text-xs">
+                    Available for Trade
+                  </Badge>
+                </div>
+              </div>
               <Button
                 size="icon"
                 variant="ghost"
-                className="h-8 w-8 text-textMuted hover:text-textMain"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground shrink-0"
                 onClick={() => onDismiss(notification.id)}
               >
                 <X className="h-4 w-4" />
               </Button>
             </div>
+            
+            <div className="text-sm text-muted-foreground space-y-1">
+              <div className="flex items-center gap-1">
+                <span>Owned by</span>
+                <span className="font-medium text-foreground">
+                  {notification.owner_username || notification.owner_email}
+                </span>
+              </div>
+              {notification.owner_location && (
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-3 w-3" />
+                  <span>{notification.owner_location}</span>
+                </div>
+              )}
+              <p className="text-xs">
+                {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
+              </p>
+            </div>
+
+            <Button
+              size="sm"
+              className="w-full"
+              onClick={() => handleConnect(notification)}
+            >
+              <UserPlus className="h-4 w-4 mr-2" />
+              Connect to Discuss Trade
+            </Button>
           </div>
         </Card>
       ))}

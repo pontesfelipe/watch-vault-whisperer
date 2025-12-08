@@ -298,27 +298,39 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          city: string | null
+          country: string | null
           created_at: string | null
           email: string
           full_name: string | null
           id: string
+          state: string | null
           updated_at: string | null
+          username: string | null
         }
         Insert: {
           avatar_url?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string | null
           email: string
           full_name?: string | null
           id: string
+          state?: string | null
           updated_at?: string | null
+          username?: string | null
         }
         Update: {
           avatar_url?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string | null
           email?: string
           full_name?: string | null
           id?: string
+          state?: string | null
           updated_at?: string | null
+          username?: string | null
         }
         Relationships: []
       }
@@ -520,6 +532,7 @@ export type Database = {
           created_at: string
           id: string
           taste_description: string | null
+          trade_match_scope: string | null
           updated_at: string
           user_id: string | null
         }
@@ -527,6 +540,7 @@ export type Database = {
           created_at?: string
           id?: string
           taste_description?: string | null
+          trade_match_scope?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -534,6 +548,7 @@ export type Database = {
           created_at?: string
           id?: string
           taste_description?: string | null
+          trade_match_scope?: string | null
           updated_at?: string
           user_id?: string | null
         }

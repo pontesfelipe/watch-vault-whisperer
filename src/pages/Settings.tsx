@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Trash2, User } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,6 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { ProfileSettingsCard } from "@/components/ProfileSettingsCard";
 
 const Settings = () => {
   const { user, signOut } = useAuth();
@@ -55,19 +56,18 @@ const Settings = () => {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Account Information
-              </CardTitle>
-              <CardDescription>Your account details</CardDescription>
+              <CardTitle>Account Information</CardTitle>
+              <CardDescription>Your account email</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent>
               <div>
                 <label className="text-sm font-medium text-muted-foreground">Email</label>
                 <p className="text-foreground">{user?.email}</p>
               </div>
             </CardContent>
           </Card>
+
+          <ProfileSettingsCard />
 
           <Card className="border-destructive/50">
             <CardHeader>

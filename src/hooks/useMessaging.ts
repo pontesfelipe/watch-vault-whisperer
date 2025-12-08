@@ -54,7 +54,10 @@ export interface TradeMatchNotification {
   created_at: string;
   watch_brand?: string;
   watch_model?: string;
+  watch_dial_color?: string;
   owner_email?: string;
+  owner_username?: string;
+  owner_location?: string;
 }
 
 export const useMessaging = () => {
@@ -206,21 +209,31 @@ export const useMessaging = () => {
       (data || []).map(async (n: any) => {
         const { data: watch } = await supabase
           .from('watches')
-          .select('brand, model')
+          .select('brand, model, dial_color')
           .eq('id', n.trade_watch_id)
           .single();
 
         const { data: owner } = await supabase
           .from('profiles')
-          .select('email')
+          .select('email, username, city, state, country')
           .eq('id', n.trade_owner_id)
           .single();
+
+        // Build location string
+        let ownerLocation = '';
+        if (owner) {
+          const parts = [owner.city, owner.state, owner.country].filter(Boolean);
+          ownerLocation = parts.join(', ');
+        }
 
         return {
           ...n,
           watch_brand: watch?.brand || '',
           watch_model: watch?.model || '',
+          watch_dial_color: watch?.dial_color || '',
           owner_email: owner?.email || '',
+          owner_username: owner?.username || '',
+          owner_location: ownerLocation,
         };
       })
     );
