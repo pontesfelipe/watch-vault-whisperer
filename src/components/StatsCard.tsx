@@ -16,7 +16,7 @@ export const StatsCard = ({ title, value, icon: Icon, subtitle, variant = "defau
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <p className={`${isCompact ? "text-xs" : "text-xs"} font-semibold uppercase tracking-[0.16em] text-textSoft ${isCompact ? "mb-0.5" : "mb-2"}`}>{title}</p>
-          <p className={`${isCompact ? "text-lg" : "text-3xl"} font-semibold text-textMain truncate`}>{value}</p>
+          <p className={`${isCompact ? "text-base leading-tight" : "text-2xl leading-tight"} font-semibold text-textMain line-clamp-2`}>{value}</p>
           {subtitle && (
             <p className="text-xs text-textMuted mt-1">{subtitle}</p>
           )}
