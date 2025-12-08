@@ -60,10 +60,10 @@ const Trips = () => {
           id: trip.id,
           startDate: trip.start_date,
           location: trip.location,
-          watch: {},
+          linkedWatches: trip.linkedWatches,
           days: trip.days,
           purpose: trip.purpose,
-          notes: trip.notes,
+          notes: trip.notes || undefined,
         }))}
         type="trip"
         watches={watches}

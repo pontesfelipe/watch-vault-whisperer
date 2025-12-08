@@ -17,8 +17,15 @@ interface WearEntry {
   days: number;
 }
 
+interface LinkedWatch {
+  watchId: string;
+  brand: string;
+  model: string;
+  days: number;
+}
+
 interface Trip {
-  watch_model?: any;
+  linkedWatches: LinkedWatch[];
 }
 
 interface WaterUsage {
@@ -101,12 +108,12 @@ export const useStatsCalculations = (
     )[0]?.[0];
     const trendingWatch = watches.find((w) => w.id === trendingWatchId);
 
-    // Top trip watch - extract watch model names from watch_model JSON
+    // Top trip watch - count from linkedWatches
     const tripWatchCounts = trips.reduce(
       (acc, trip) => {
-        if (trip.watch_model && typeof trip.watch_model === 'object') {
-          Object.keys(trip.watch_model).forEach((modelName) => {
-            acc[modelName] = (acc[modelName] || 0) + 1;
+        if (trip.linkedWatches) {
+          trip.linkedWatches.forEach((lw) => {
+            acc[lw.watchId] = (acc[lw.watchId] || 0) + 1;
           });
         }
         return acc;

@@ -97,7 +97,7 @@ const Index = () => {
             year: "2-digit"
           }),
           location: trip.location,
-          watch: (trip.watch_model as Record<string, number>) || {},
+          linkedWatches: [],
           days: Number(trip.days),
           purpose: trip.purpose,
         }))
@@ -113,7 +113,7 @@ const Index = () => {
             year: "2-digit"
           }),
           location: event.location,
-          watch: (event.watch_model as Record<string, number>) || {},
+          linkedWatches: [],
           days: Number(event.days),
           purpose: event.purpose,
         }))
@@ -264,12 +264,13 @@ const Index = () => {
   // Calculate #1 trip watch (most worn across all trips)
   const tripWatchTotals = new Map<string, number>();
   trips.forEach(trip => {
-    Object.entries(trip.watch || {}).forEach(([watchName, days]) => {
-      tripWatchTotals.set(watchName, (tripWatchTotals.get(watchName) || 0) + days);
+    trip.linkedWatches?.forEach((lw) => {
+      tripWatchTotals.set(lw.watchId, (tripWatchTotals.get(lw.watchId) || 0) + lw.days);
     });
   });
-  const topTripWatch = Array.from(tripWatchTotals.entries())
-    .sort((a, b) => b[1] - a[1])[0];
+  const topTripWatchId = Array.from(tripWatchTotals.entries())
+    .sort((a, b) => b[1] - a[1])[0]?.[0];
+  const topTripWatch = topTripWatchId ? watches.find(w => w.id === topTripWatchId) : undefined;
 
   // Calculate #1 water usage watch (most used in water activities)
   const waterWatchCounts = new Map<string, number>();
