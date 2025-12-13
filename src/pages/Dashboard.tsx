@@ -66,6 +66,7 @@ const Dashboard = () => {
             value={stats.mostWornWatch ? `${stats.mostWornWatch.brand} ${stats.mostWornWatch.model}` : "N/A"}
             icon={TrendingUp}
             variant="compact"
+            watchId={stats.mostWornWatch?.id}
           />
           <StatsCard
             title="Avg Days/Watch"
@@ -92,6 +93,7 @@ const Dashboard = () => {
             value={stats.trendingWatch ? `${stats.trendingWatch.brand} ${stats.trendingWatch.model}` : "N/A"}
             icon={Flame}
             variant="compact"
+            watchId={stats.trendingWatch?.id}
           />
           <StatsCard
             title="Trending Down (90d)"
@@ -99,18 +101,21 @@ const Dashboard = () => {
             subtitle={stats.trendingDownCount ? `${stats.trendingDownCount} watches ↓` : undefined}
             icon={TrendingDown}
             variant="compact"
+            watchId={stats.trendingDownWatch?.id}
           />
           <StatsCard
             title="#1 Trip Watch"
             value={stats.topTripWatch ? `${stats.topTripWatch.brand} ${stats.topTripWatch.model}` : "N/A"}
             icon={Plane}
             variant="compact"
+            watchId={stats.topTripWatch?.id}
           />
           <StatsCard
             title="#1 Water Usage"
             value={stats.topWaterWatch ? `${stats.topWaterWatch.brand} ${stats.topWaterWatch.model}` : "N/A"}
             icon={Droplets}
             variant="compact"
+            watchId={stats.topWaterWatch?.id}
           />
         </div>
       </div>
@@ -145,6 +150,7 @@ const Dashboard = () => {
                 }
                 icon={TrendingDown}
                 variant="default"
+                watchId={stats.mostDepreciatedWatch?.watch.id}
               />
               <StatsCard
                 title="Best Value Retention"
@@ -162,6 +168,7 @@ const Dashboard = () => {
                 }
                 icon={stats.bestValueRetention?.depreciation < 0 ? TrendingUp : DollarSign}
                 variant="default"
+                watchId={stats.bestValueRetention?.watch.id}
               />
             </div>
             {stats.appreciatingWatchesCount > 0 && (

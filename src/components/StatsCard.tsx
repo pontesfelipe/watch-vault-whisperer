@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { LucideIcon } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface StatsCardProps {
   title: string;
@@ -7,12 +8,25 @@ interface StatsCardProps {
   icon: LucideIcon;
   subtitle?: string;
   variant?: "default" | "compact";
+  watchId?: string;
 }
 
-export const StatsCard = ({ title, value, icon: Icon, subtitle, variant = "default" }: StatsCardProps) => {
+export const StatsCard = ({ title, value, icon: Icon, subtitle, variant = "default", watchId }: StatsCardProps) => {
+  const navigate = useNavigate();
   const isCompact = variant === "compact";
+  const isClickable = !!watchId;
+
+  const handleClick = () => {
+    if (watchId) {
+      navigate(`/watch/${watchId}`);
+    }
+  };
+
   return (
-    <Card className={`border-borderSubtle bg-surface ${isCompact ? "p-3" : "p-6"} shadow-card hover:shadow-soft transition-all duration-300`}>
+    <Card 
+      className={`border-borderSubtle bg-surface ${isCompact ? "p-3" : "p-6"} shadow-card hover:shadow-soft transition-all duration-300 ${isClickable ? "cursor-pointer hover:border-accent/50" : ""}`}
+      onClick={isClickable ? handleClick : undefined}
+    >
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <p className={`${isCompact ? "text-xs" : "text-xs"} font-semibold uppercase tracking-[0.16em] text-textSoft ${isCompact ? "mb-0.5" : "mb-2"}`}>{title}</p>
