@@ -18,6 +18,7 @@ const WATCH_TYPES = [
   "Tool",
   "Vintage",
   "Skeleton",
+  "Fun",
 ] as const;
 
 interface WatchTypeMultiSelectProps {
