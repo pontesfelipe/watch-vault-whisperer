@@ -11,6 +11,7 @@ const WATCH_TYPES = [
   "GMT",
   "Pilot",
   "Dress",
+  "Business Casual",
   "Field",
   "Racing",
   "Sport",
