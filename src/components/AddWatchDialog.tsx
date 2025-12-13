@@ -18,6 +18,7 @@ import { WarrantyCardUpload } from "./WarrantyCardUpload";
 import { WatchPhotoUpload } from "./WatchPhotoUpload";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { WatchTypeMultiSelect } from "./WatchTypeMultiSelect";
 
 // Watch reference database for auto-population
 const WATCH_REFERENCES: Record<string, {
@@ -468,15 +469,13 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
 
             <div className="space-y-2">
               <Label htmlFor="type">Type</Label>
-              <Input
-                id="type"
+              <WatchTypeMultiSelect
                 value={formValues.type}
-                onChange={(e) => setFormValues({ ...formValues, type: e.target.value })}
-                placeholder="e.g., Diver, Chronograph, Pilot"
-                required
-                maxLength={100}
-                className="bg-background border-border"
+                onChange={(value) => setFormValues({ ...formValues, type: value })}
               />
+              <p className="text-xs text-muted-foreground">
+                Select one or more watch types
+              </p>
             </div>
 
             <div className="space-y-2">
