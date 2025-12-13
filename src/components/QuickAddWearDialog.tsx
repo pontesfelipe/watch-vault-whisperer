@@ -382,12 +382,21 @@ export const QuickAddWearDialog = ({ watches, onSuccess }: QuickAddWearDialogPro
               <div className="space-y-2 pl-6">
                 <div className="space-y-2">
                   <Label htmlFor="waterActivityType">Activity Type</Label>
-                  <Input
-                    id="waterActivityType"
-                    name="waterActivityType"
-                    placeholder="e.g., Lake, Beach, Hot Tub"
-                    className="bg-background border-border"
-                  />
+                  <Select name="waterActivityType" defaultValue="Pool">
+                    <SelectTrigger className="bg-background border-border">
+                      <SelectValue placeholder="Select activity" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover border-border z-50">
+                      <SelectItem value="Pool">Pool</SelectItem>
+                      <SelectItem value="Lake">Lake</SelectItem>
+                      <SelectItem value="Beach">Beach</SelectItem>
+                      <SelectItem value="Hot Tub">Hot Tub</SelectItem>
+                      <SelectItem value="Diving">Diving</SelectItem>
+                      <SelectItem value="Water Sports">Water Sports</SelectItem>
+                      <SelectItem value="Snorkeling">Snorkeling</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-2">
