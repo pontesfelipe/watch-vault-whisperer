@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { WarrantyCardUpload } from "./WarrantyCardUpload";
 import { Separator } from "@/components/ui/separator";
+import { WatchTypeMultiSelect } from "./WatchTypeMultiSelect";
 
 const watchSchema = z.object({
   brand: z.string().trim().min(1, "Brand is required").max(100),
@@ -241,14 +242,13 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
 
           <div className="space-y-2">
             <Label htmlFor="type">Type</Label>
-            <Input
-              id="type"
+            <WatchTypeMultiSelect
               value={formValues.type}
-              onChange={(e) => setFormValues({ ...formValues, type: e.target.value })}
-              required
-              maxLength={100}
-              className="bg-background border-border"
+              onChange={(value) => setFormValues({ ...formValues, type: value })}
             />
+            <p className="text-xs text-muted-foreground">
+              Select one or more watch types
+            </p>
           </div>
 
           <div className="space-y-2">
