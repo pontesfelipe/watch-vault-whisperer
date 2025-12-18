@@ -1,4 +1,4 @@
-# CollectionVault
+# Sora Vault
 Luxury watch collection management app.
 
 ## Features
