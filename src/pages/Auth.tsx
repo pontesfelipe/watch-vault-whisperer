@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Watch } from "lucide-react";
+
 import { useAuth } from "@/contexts/AuthContext";
 import { RegistrationRequestForm } from "@/components/RegistrationRequestForm";
 import { BetaBadge } from "@/components/BetaBadge";
@@ -165,20 +165,22 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-accent/5 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-accent/10 p-4">
       <div className="w-full max-w-2xl">
-        <div className="flex justify-center mb-6">
-          <div className="rounded-full bg-accent/10 p-3">
-            <Watch className="h-8 w-8 text-accent" />
+        <div className="flex flex-col items-center mb-8">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent/15 text-xl font-bold text-accent shadow-lg shadow-accent/20">
+              SV
+            </div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-3xl font-bold tracking-tight text-textMain">Sora Vault</h1>
+              <BetaBadge />
+            </div>
           </div>
+          <p className="text-center text-textMuted max-w-md">
+            Your premium watch collection management studio. Sign in or request access to get started.
+          </p>
         </div>
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <h1 className="text-3xl font-semibold text-center text-textMain">Welcome to Watch Tracker</h1>
-          <BetaBadge />
-        </div>
-        <p className="text-center text-textMuted mb-8">
-          Sign in or request access to manage your watch collection
-        </p>
         
         <Tabs defaultValue="signin" className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-6">
