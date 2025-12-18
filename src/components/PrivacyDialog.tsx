@@ -21,7 +21,7 @@ export const PrivacyDialog = ({ open, onOpenChange }: PrivacyDialogProps) => {
             <section>
               <h3 className="font-semibold mb-2">1. Introduction</h3>
               <p className="text-muted-foreground">
-                This Privacy Policy explains how CollectionVault ("the Application") collects, uses, and 
+                This Privacy Policy explains how Sora Vault ("the Application") collects, uses, and 
                 protects user information during the Beta phase.
               </p>
             </section>
@@ -52,7 +52,7 @@ export const PrivacyDialog = ({ open, onOpenChange }: PrivacyDialogProps) => {
             <section>
               <h3 className="font-semibold mb-2">4. No Data Selling</h3>
               <p className="text-muted-foreground">
-                CollectionVault does not sell, rent, trade, or monetize user data.
+                Sora Vault does not sell, rent, trade, or monetize user data.
               </p>
             </section>
 
