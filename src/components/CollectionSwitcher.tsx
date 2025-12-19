@@ -67,11 +67,18 @@ export const CollectionSwitcher = () => {
               onClick={() => setSelectedCollectionId(collection.id)}
               className="flex items-center justify-between cursor-pointer"
             >
-              <div className="flex items-center gap-2">
-                {collection.id === selectedCollectionId && <Check className="w-4 h-4" />}
-                <span>{collection.name}</span>
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                {collection.id === selectedCollectionId && <Check className="w-4 h-4 flex-shrink-0" />}
+                <div className="flex flex-col min-w-0">
+                  <span className="truncate">{collection.name}</span>
+                  {isAdmin && collection.role !== 'owner' && (collection.ownerName || collection.ownerEmail) && (
+                    <span className="text-xs text-muted-foreground truncate">
+                      by {collection.ownerName || collection.ownerEmail}
+                    </span>
+                  )}
+                </div>
               </div>
-              <Badge variant={getRoleBadgeVariant(collection.role || 'viewer')} className="gap-1">
+              <Badge variant={getRoleBadgeVariant(collection.role || 'viewer')} className="gap-1 flex-shrink-0 ml-2">
                 {getRoleIcon(collection.role)}
                 {collection.role}
               </Badge>

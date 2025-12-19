@@ -10,10 +10,12 @@ export interface Collection {
   created_at: string;
   updated_at: string;
   role?: 'owner' | 'editor' | 'viewer';
+  ownerName?: string;
+  ownerEmail?: string;
 }
 
 export const useCollectionData = () => {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -44,9 +46,28 @@ export const useCollectionData = () => {
       if (collectionsError) throw collectionsError;
 
       const collectionsArr = (collectionsData as any[]) || [];
+      
+      // For admins, fetch owner profile info
+      let ownerProfiles: Record<string, { full_name: string | null; email: string }> = {};
+      if (isAdmin) {
+        const ownerIds = [...new Set(collectionsArr.map(c => c.created_by))];
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, full_name, email')
+          .in('id', ownerIds);
+        
+        if (profilesData) {
+          profilesData.forEach((p: any) => {
+            ownerProfiles[p.id] = { full_name: p.full_name, email: p.email };
+          });
+        }
+      }
+      
       const collectionsWithRoles = collectionsArr.map((collection: any) => ({
         ...collection,
-        role: userCollectionsArr.find((uc: any) => uc.collection_id === collection.id)?.role as 'owner' | 'editor' | 'viewer'
+        role: userCollectionsArr.find((uc: any) => uc.collection_id === collection.id)?.role as 'owner' | 'editor' | 'viewer',
+        ownerName: ownerProfiles[collection.created_by]?.full_name || undefined,
+        ownerEmail: ownerProfiles[collection.created_by]?.email || undefined,
       }));
 
       setCollections(collectionsWithRoles as any);
@@ -60,7 +81,7 @@ export const useCollectionData = () => {
 
   useEffect(() => {
     fetchCollections();
-  }, [user]);
+  }, [user, isAdmin]);
 
   return {
     collections,
