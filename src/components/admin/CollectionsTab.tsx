@@ -13,6 +13,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -23,7 +33,6 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Edit, Trash2, UserPlus, Users, Crown, Edit3, Eye } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
 
 interface CollectionAccess {
   id: string;
@@ -50,13 +59,13 @@ interface Profile {
 }
 
 export const CollectionsTab = () => {
-  const { user } = useAuth();
   const [collections, setCollections] = useState<Collection[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
   const [newName, setNewName] = useState("");
   const [addingAccessTo, setAddingAccessTo] = useState<Collection | null>(null);
+  const [deletingCollection, setDeletingCollection] = useState<Collection | null>(null);
   const [selectedUserId, setSelectedUserId] = useState("");
   const [selectedRole, setSelectedRole] = useState<'owner' | 'editor' | 'viewer'>("viewer");
   const [saving, setSaving] = useState(false);
@@ -215,6 +224,38 @@ export const CollectionsTab = () => {
     }
   };
 
+  const handleDeleteCollection = async () => {
+    if (!deletingCollection) return;
+
+    setSaving(true);
+    try {
+      // First delete all user_collections entries
+      const { error: accessError } = await supabase
+        .from('user_collections')
+        .delete()
+        .eq('collection_id', deletingCollection.id);
+
+      if (accessError) throw accessError;
+
+      // Then delete the collection itself
+      const { error } = await supabase
+        .from('collections')
+        .delete()
+        .eq('id', deletingCollection.id);
+
+      if (error) throw error;
+
+      toast.success("Collection deleted successfully");
+      setDeletingCollection(null);
+      fetchData();
+    } catch (error: any) {
+      console.error("Error deleting collection:", error);
+      toast.error("Failed to delete collection");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const getRoleIcon = (role: string) => {
     switch (role) {
       case 'owner': return <Crown className="w-3 h-3" />;
@@ -333,6 +374,13 @@ export const CollectionsTab = () => {
                       >
                         <UserPlus className="h-4 w-4" />
                       </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setDeletingCollection(collection)}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -431,6 +479,28 @@ export const CollectionsTab = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deletingCollection} onOpenChange={(open) => !open && setDeletingCollection(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Collection</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{deletingCollection?.name}"? This will permanently delete the collection and remove all user access. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteCollection}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={saving}
+            >
+              {saving ? "Deleting..." : "Delete Collection"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };
