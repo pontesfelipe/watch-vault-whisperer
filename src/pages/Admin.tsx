@@ -9,7 +9,11 @@ import { RegisteredUsersTable } from "@/components/admin/RegisteredUsersTable";
 import { RegistrationRequestsTable } from "@/components/admin/RegistrationRequestsTable";
 import { TermsAcceptancesTable } from "@/components/admin/TermsAcceptancesTable";
 import { ManageCollectionsDialog } from "@/components/admin/ManageCollectionsDialog";
-import { Shield, Users, UserCog, FileCheck, Calendar, RefreshCw, Download, Moon, Sun } from "lucide-react";
+import { MethodologyTab } from "@/components/admin/MethodologyTab";
+import { DocumentationTab } from "@/components/admin/DocumentationTab";
+import { AccessLogsTab } from "@/components/admin/AccessLogsTab";
+import { UsageMetricsTab } from "@/components/admin/UsageMetricsTab";
+import { Shield, Users, UserCog, FileCheck, Calendar, RefreshCw, Download, Moon, Sun, BookOpen, FileText, Activity, BarChart3 } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -194,22 +198,38 @@ export default function Admin() {
         </div>
 
         <Tabs defaultValue="requests" className="w-full">
-          <TabsList className="grid w-full max-w-3xl grid-cols-4">
-            <TabsTrigger value="requests" className="flex items-center gap-2">
-              <UserCog className="h-4 w-4" />
+          <TabsList className="grid w-full max-w-5xl grid-cols-8">
+            <TabsTrigger value="requests" className="flex items-center gap-1 text-xs">
+              <UserCog className="h-3 w-3" />
               Requests
             </TabsTrigger>
-            <TabsTrigger value="allowed" className="flex items-center gap-2">
-              <UserCog className="h-4 w-4" />
-              Allowed Users
+            <TabsTrigger value="allowed" className="flex items-center gap-1 text-xs">
+              <UserCog className="h-3 w-3" />
+              Allowed
             </TabsTrigger>
-            <TabsTrigger value="registered" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Registered Users
+            <TabsTrigger value="registered" className="flex items-center gap-1 text-xs">
+              <Users className="h-3 w-3" />
+              Users
             </TabsTrigger>
-            <TabsTrigger value="acceptances" className="flex items-center gap-2">
-              <FileCheck className="h-4 w-4" />
-              Terms Acceptances
+            <TabsTrigger value="acceptances" className="flex items-center gap-1 text-xs">
+              <FileCheck className="h-3 w-3" />
+              Terms
+            </TabsTrigger>
+            <TabsTrigger value="methodology" className="flex items-center gap-1 text-xs">
+              <BookOpen className="h-3 w-3" />
+              Methodology
+            </TabsTrigger>
+            <TabsTrigger value="documentation" className="flex items-center gap-1 text-xs">
+              <FileText className="h-3 w-3" />
+              Docs
+            </TabsTrigger>
+            <TabsTrigger value="logs" className="flex items-center gap-1 text-xs">
+              <Activity className="h-3 w-3" />
+              Logs
+            </TabsTrigger>
+            <TabsTrigger value="metrics" className="flex items-center gap-1 text-xs">
+              <BarChart3 className="h-3 w-3" />
+              Metrics
             </TabsTrigger>
           </TabsList>
 
@@ -257,6 +277,22 @@ export default function Admin() {
 
           <TabsContent value="acceptances" className="space-y-4">
             <TermsAcceptancesTable />
+          </TabsContent>
+
+          <TabsContent value="methodology" className="space-y-4">
+            <MethodologyTab />
+          </TabsContent>
+
+          <TabsContent value="documentation" className="space-y-4">
+            <DocumentationTab />
+          </TabsContent>
+
+          <TabsContent value="logs" className="space-y-4">
+            <AccessLogsTab />
+          </TabsContent>
+
+          <TabsContent value="metrics" className="space-y-4">
+            <UsageMetricsTab />
           </TabsContent>
         </Tabs>
 
