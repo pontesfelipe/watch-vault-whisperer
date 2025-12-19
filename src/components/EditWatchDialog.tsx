@@ -116,8 +116,14 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
       // Upload warranty card if provided
       let warrantyCardUrl = watch.warranty_card_url;
       if (formValues.warrantyCardFile) {
+        // Get current user for the folder path
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        if (!currentUser) {
+          throw new Error("User not authenticated");
+        }
+        
         const fileExt = formValues.warrantyCardFile.name.split('.').pop();
-        const fileName = `${crypto.randomUUID()}.${fileExt}`;
+        const fileName = `${currentUser.id}/${crypto.randomUUID()}.${fileExt}`;
         const { error: uploadError } = await supabase.storage
           .from('warranty-cards')
           .upload(fileName, formValues.warrantyCardFile);
@@ -132,11 +138,12 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
           return;
         }
 
-        const { data: { publicUrl } } = supabase.storage
+        // Create signed URL for private bucket access
+        const { data: signedUrlData } = await supabase.storage
           .from('warranty-cards')
-          .getPublicUrl(fileName);
+          .createSignedUrl(fileName, 60 * 60 * 24 * 365); // 1 year validity
 
-        warrantyCardUrl = publicUrl;
+        warrantyCardUrl = signedUrlData?.signedUrl || null;
       }
 
       const { error } = await supabase
