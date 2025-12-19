@@ -248,28 +248,27 @@ export const useMessaging = () => {
 
     console.log('sendFriendRequest called with email:', email);
 
-    // Find user by email (case-insensitive)
-    const { data: targetProfile, error: profileError } = await supabase
-      .from('profiles')
-      .select('id, email')
-      .ilike('email', email.trim());
+    // Use secure RPC function to find user by exact email match
+    // This prevents enumeration of all profiles
+    const { data: targetUserId, error: lookupError } = await supabase
+      .rpc('get_profile_id_by_email', { _email: email.trim() });
 
-    console.log('Profile lookup result:', { targetProfile, profileError });
+    console.log('Profile lookup result:', { targetUserId, lookupError });
 
-    if (profileError) {
-      console.error('Profile lookup error:', profileError);
+    if (lookupError) {
+      console.error('Profile lookup error:', lookupError);
       return { error: 'Error finding user' };
     }
 
-    if (!targetProfile || targetProfile.length === 0) {
+    if (!targetUserId) {
       return { error: 'User not found with that email' };
     }
 
-    const targetUser = targetProfile[0];
-
-    if (targetUser.id === user.id) {
+    if (targetUserId === user.id) {
       return { error: 'You cannot send a friend request to yourself' };
     }
+
+    const targetUser = { id: targetUserId };
 
     // Check if already friends
     const { data: existing } = await (supabase
