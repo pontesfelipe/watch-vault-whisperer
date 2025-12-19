@@ -20,6 +20,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { ProfileSettingsCard } from "@/components/ProfileSettingsCard";
+import { PasswordStrengthIndicator } from "@/components/PasswordStrengthIndicator";
 
 const Settings = () => {
   const { user, signOut } = useAuth();
@@ -153,6 +154,7 @@ const Settings = () => {
                         )}
                       </Button>
                     </div>
+                    <PasswordStrengthIndicator password={newPassword} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="confirmPassword">Confirm New Password</Label>
