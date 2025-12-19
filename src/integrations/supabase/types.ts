@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_logs: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          id: string
+          ip_address: string | null
+          page: string | null
+          user_agent: string | null
+          user_email: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          page?: string | null
+          user_agent?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          page?: string | null
+          user_agent?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       ai_feature_usage: {
         Row: {
           created_at: string
@@ -915,7 +951,15 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      usage_metrics: {
+        Row: {
+          action: string | null
+          count: number | null
+          date: string | null
+          unique_users: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       accept_friend_request: {
