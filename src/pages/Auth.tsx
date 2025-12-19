@@ -14,6 +14,7 @@ import { RegistrationRequestForm } from "@/components/RegistrationRequestForm";
 import { BetaBadge } from "@/components/BetaBadge";
 import { PrivacyDialog } from "@/components/PrivacyDialog";
 import { TermsDialog } from "@/components/TermsDialog";
+import { MfaVerification } from "@/components/MfaVerification";
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -30,6 +31,7 @@ export default function Auth() {
   const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
+  const [showMfaVerification, setShowMfaVerification] = useState(false);
 
   useEffect(() => {
     if (!loading && user) {
@@ -112,13 +114,22 @@ export default function Auth() {
           setLastName("");
         }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
         if (error) {
           toast.error(error.message);
+        } else if (data.session) {
+          // Check if MFA is required
+          const { data: factorsData } = await supabase.auth.mfa.listFactors();
+          const verifiedFactors = factorsData?.totp.filter(f => f.status === 'verified') || [];
+          
+          if (verifiedFactors.length > 0) {
+            // User has MFA enabled, show verification screen
+            setShowMfaVerification(true);
+          }
         }
       }
     } catch (error) {
@@ -160,6 +171,37 @@ export default function Auth() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // Show MFA verification screen
+  if (showMfaVerification) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-accent/10 p-4">
+        <div className="w-full max-w-md">
+          <div className="flex flex-col items-center mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent/15 text-xl font-bold text-accent shadow-lg shadow-accent/20">
+                SV
+              </div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-3xl font-bold tracking-tight text-textMain">Sora Vault</h1>
+                <BetaBadge />
+              </div>
+            </div>
+          </div>
+          <MfaVerification
+            onSuccess={() => {
+              setShowMfaVerification(false);
+              navigate("/");
+            }}
+            onCancel={async () => {
+              await supabase.auth.signOut();
+              setShowMfaVerification(false);
+            }}
+          />
+        </div>
       </div>
     );
   }
