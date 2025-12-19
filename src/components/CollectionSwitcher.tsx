@@ -71,7 +71,7 @@ export const CollectionSwitcher = () => {
                 {collection.id === selectedCollectionId && <Check className="w-4 h-4 flex-shrink-0" />}
                 <div className="flex flex-col min-w-0">
                   <span className="truncate">{collection.name}</span>
-                  {isAdmin && collection.role !== 'owner' && (collection.ownerName || collection.ownerEmail) && (
+                  {isAdmin && (collection.ownerName || collection.ownerEmail) && (
                     <span className="text-xs text-muted-foreground truncate">
                       by {collection.ownerName || collection.ownerEmail}
                     </span>
