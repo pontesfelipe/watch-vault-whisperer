@@ -13,7 +13,8 @@ import { MethodologyTab } from "@/components/admin/MethodologyTab";
 import { DocumentationTab } from "@/components/admin/DocumentationTab";
 import { AccessLogsTab } from "@/components/admin/AccessLogsTab";
 import { UsageMetricsTab } from "@/components/admin/UsageMetricsTab";
-import { Shield, Users, UserCog, FileCheck, Calendar, RefreshCw, Download, Moon, Sun, BookOpen, FileText, Activity, BarChart3 } from "lucide-react";
+import { CollectionsTab } from "@/components/admin/CollectionsTab";
+import { Shield, Users, UserCog, FileCheck, Calendar, RefreshCw, Download, Moon, Sun, BookOpen, FileText, Activity, BarChart3, FolderOpen } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -198,7 +199,7 @@ export default function Admin() {
         </div>
 
         <Tabs defaultValue="requests" className="w-full">
-          <TabsList className="grid w-full max-w-5xl grid-cols-8">
+          <TabsList className="grid w-full max-w-6xl grid-cols-9">
             <TabsTrigger value="requests" className="flex items-center gap-1 text-xs">
               <UserCog className="h-3 w-3" />
               Requests
@@ -210,6 +211,10 @@ export default function Admin() {
             <TabsTrigger value="registered" className="flex items-center gap-1 text-xs">
               <Users className="h-3 w-3" />
               Users
+            </TabsTrigger>
+            <TabsTrigger value="collections" className="flex items-center gap-1 text-xs">
+              <FolderOpen className="h-3 w-3" />
+              Collections
             </TabsTrigger>
             <TabsTrigger value="acceptances" className="flex items-center gap-1 text-xs">
               <FileCheck className="h-3 w-3" />
@@ -273,6 +278,10 @@ export default function Admin() {
                 <RegisteredUsersTable />
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="collections" className="space-y-4">
+            <CollectionsTab />
           </TabsContent>
 
           <TabsContent value="acceptances" className="space-y-4">
