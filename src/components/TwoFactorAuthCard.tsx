@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Shield, ShieldCheck, ShieldOff, QrCode, Copy, Check } from "lucide-react";
+import { Loader2, Shield, ShieldCheck, ShieldOff, QrCode, Copy, Check, Key, RefreshCw, Download } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -23,11 +23,34 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useAuth } from "@/contexts/AuthContext";
+
+// Generate a random recovery code
+const generateRecoveryCode = (): string => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 10; i++) {
+    if (i === 5) code += '-';
+    code += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return code;
+};
+
+// Simple hash function for storing codes (in production, use bcrypt via edge function)
+const hashCode = async (code: string): Promise<string> => {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(code.replace(/-/g, '').toUpperCase());
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+};
 
 export const TwoFactorAuthCard = () => {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [mfaEnabled, setMfaEnabled] = useState(false);
   const [factors, setFactors] = useState<any[]>([]);
+  const [hasRecoveryCodes, setHasRecoveryCodes] = useState(false);
   
   // Enrollment state
   const [showEnrollDialog, setShowEnrollDialog] = useState(false);
@@ -38,6 +61,12 @@ export const TwoFactorAuthCard = () => {
   const [verifyCode, setVerifyCode] = useState("");
   const [verifying, setVerifying] = useState(false);
   const [copied, setCopied] = useState(false);
+  
+  // Recovery codes state
+  const [recoveryCodes, setRecoveryCodes] = useState<string[]>([]);
+  const [showRecoveryCodes, setShowRecoveryCodes] = useState(false);
+  const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
+  const [regenerating, setRegenerating] = useState(false);
   
   // Disable state
   const [showDisableConfirm, setShowDisableConfirm] = useState(false);
@@ -57,11 +86,50 @@ export const TwoFactorAuthCard = () => {
       const verifiedFactors = data.totp.filter(f => f.status === 'verified');
       setFactors(verifiedFactors);
       setMfaEnabled(verifiedFactors.length > 0);
+      
+      // Check for existing recovery codes
+      if (user) {
+        const { count } = await supabase
+          .from('mfa_recovery_codes')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .is('used_at', null);
+        setHasRecoveryCodes((count || 0) > 0);
+      }
     } catch (error: any) {
       console.error("Error checking MFA status:", error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const generateAndStoreRecoveryCodes = async (): Promise<string[]> => {
+    if (!user) return [];
+    
+    // Generate 10 recovery codes
+    const codes = Array.from({ length: 10 }, () => generateRecoveryCode());
+    
+    // Delete existing codes
+    await supabase
+      .from('mfa_recovery_codes')
+      .delete()
+      .eq('user_id', user.id);
+    
+    // Store hashed codes
+    const hashedCodes = await Promise.all(
+      codes.map(async (code) => ({
+        user_id: user.id,
+        code_hash: await hashCode(code),
+      }))
+    );
+    
+    const { error } = await supabase
+      .from('mfa_recovery_codes')
+      .insert(hashedCodes);
+    
+    if (error) throw error;
+    
+    return codes;
   };
 
   const startEnrollment = async () => {
@@ -105,8 +173,13 @@ export const TwoFactorAuthCard = () => {
       
       if (verifyError) throw verifyError;
       
-      toast.success("Two-factor authentication enabled successfully!");
+      // Generate recovery codes
+      const codes = await generateAndStoreRecoveryCodes();
+      setRecoveryCodes(codes);
+      
+      toast.success("Two-factor authentication enabled!");
       setShowEnrollDialog(false);
+      setShowRecoveryCodes(true);
       setVerifyCode("");
       setQrCode(null);
       setSecret(null);
@@ -120,19 +193,34 @@ export const TwoFactorAuthCard = () => {
     }
   };
 
+  const regenerateRecoveryCodes = async () => {
+    setRegenerating(true);
+    try {
+      const codes = await generateAndStoreRecoveryCodes();
+      setRecoveryCodes(codes);
+      setShowRegenerateConfirm(false);
+      setShowRecoveryCodes(true);
+      setHasRecoveryCodes(true);
+      toast.success("New recovery codes generated");
+    } catch (error: any) {
+      console.error("Error regenerating codes:", error);
+      toast.error(error.message || "Failed to generate recovery codes");
+    } finally {
+      setRegenerating(false);
+    }
+  };
+
   const disableMfa = async () => {
     if (factors.length === 0) return;
     
     setDisabling(true);
     try {
-      // First challenge the factor
       const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
         factorId: factors[0].id
       });
       
       if (challengeError) throw challengeError;
       
-      // Verify the code
       const { error: verifyError } = await supabase.auth.mfa.verify({
         factorId: factors[0].id,
         challengeId: challengeData.id,
@@ -141,12 +229,19 @@ export const TwoFactorAuthCard = () => {
       
       if (verifyError) throw verifyError;
       
-      // Now unenroll
       const { error: unenrollError } = await supabase.auth.mfa.unenroll({
         factorId: factors[0].id
       });
       
       if (unenrollError) throw unenrollError;
+      
+      // Delete recovery codes
+      if (user) {
+        await supabase
+          .from('mfa_recovery_codes')
+          .delete()
+          .eq('user_id', user.id);
+      }
       
       toast.success("Two-factor authentication disabled");
       setShowDisableConfirm(false);
@@ -166,6 +261,22 @@ export const TwoFactorAuthCard = () => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
+  };
+
+  const copyRecoveryCodes = () => {
+    navigator.clipboard.writeText(recoveryCodes.join('\n'));
+    toast.success("Recovery codes copied to clipboard");
+  };
+
+  const downloadRecoveryCodes = () => {
+    const content = `Sora Vault Recovery Codes\n${'='.repeat(30)}\n\nSave these codes in a safe place. Each code can only be used once.\n\n${recoveryCodes.join('\n')}\n\nGenerated: ${new Date().toLocaleString()}`;
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'sora-vault-recovery-codes.txt';
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   if (loading) {
@@ -212,14 +323,24 @@ export const TwoFactorAuthCard = () => {
                   </p>
                 </div>
               </div>
-              <Button
-                variant="outline"
-                className="text-destructive border-destructive/50 hover:bg-destructive/10"
-                onClick={() => setShowDisableConfirm(true)}
-              >
-                <ShieldOff className="w-4 h-4 mr-2" />
-                Disable Two-Factor Authentication
-              </Button>
+              
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowRegenerateConfirm(true)}
+                >
+                  <Key className="w-4 h-4 mr-2" />
+                  {hasRecoveryCodes ? "Regenerate Recovery Codes" : "Generate Recovery Codes"}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="text-destructive border-destructive/50 hover:bg-destructive/10"
+                  onClick={() => setShowDisableConfirm(true)}
+                >
+                  <ShieldOff className="w-4 h-4 mr-2" />
+                  Disable 2FA
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="space-y-4">
@@ -321,6 +442,79 @@ export const TwoFactorAuthCard = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Recovery Codes Dialog */}
+      <Dialog open={showRecoveryCodes} onOpenChange={setShowRecoveryCodes}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Key className="h-5 w-5" />
+              Save Your Recovery Codes
+            </DialogTitle>
+            <DialogDescription>
+              Store these codes in a safe place. Each code can only be used once to sign in if you lose access to your authenticator app.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-2 p-4 bg-muted rounded-lg">
+              {recoveryCodes.map((code, index) => (
+                <code key={index} className="text-sm font-mono p-1">
+                  {code}
+                </code>
+              ))}
+            </div>
+            
+            <div className="flex gap-2">
+              <Button variant="outline" className="flex-1" onClick={copyRecoveryCodes}>
+                <Copy className="w-4 h-4 mr-2" />
+                Copy
+              </Button>
+              <Button variant="outline" className="flex-1" onClick={downloadRecoveryCodes}>
+                <Download className="w-4 h-4 mr-2" />
+                Download
+              </Button>
+            </div>
+            
+            <p className="text-xs text-muted-foreground text-center">
+              After closing this dialog, you won't be able to see these codes again.
+            </p>
+            
+            <Button className="w-full" onClick={() => setShowRecoveryCodes(false)}>
+              I've Saved My Codes
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Regenerate Codes Confirmation */}
+      <AlertDialog open={showRegenerateConfirm} onOpenChange={setShowRegenerateConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Generate New Recovery Codes?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {hasRecoveryCodes 
+                ? "This will invalidate all your existing recovery codes. Make sure you save the new codes in a safe place."
+                : "This will generate 10 new recovery codes that you can use if you lose access to your authenticator app."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={regenerating}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={regenerateRecoveryCodes} disabled={regenerating}>
+              {regenerating ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Generate Codes
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Disable Confirmation Dialog */}
       <AlertDialog open={showDisableConfirm} onOpenChange={setShowDisableConfirm}>
