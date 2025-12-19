@@ -50,6 +50,7 @@ interface Collection {
   owner_email?: string;
   owner_name?: string;
   access: CollectionAccess[];
+  watch_count: number;
 }
 
 interface Profile {
@@ -96,6 +97,21 @@ export const CollectionsTab = () => {
 
       if (accessError) throw accessError;
 
+      // Fetch watch counts per collection
+      const { data: watchesData, error: watchesError } = await supabase
+        .from('watches')
+        .select('collection_id');
+
+      if (watchesError) throw watchesError;
+
+      // Create a map of collection_id -> watch count
+      const watchCountMap = new Map<string, number>();
+      (watchesData || []).forEach(watch => {
+        if (watch.collection_id) {
+          watchCountMap.set(watch.collection_id, (watchCountMap.get(watch.collection_id) || 0) + 1);
+        }
+      });
+
       const profileMap = new Map(profilesData?.map(p => [p.id, p]) || []);
 
       // Map collections with owner info and access list
@@ -119,6 +135,7 @@ export const CollectionsTab = () => {
           owner_email: ownerProfile?.email,
           owner_name: ownerProfile?.full_name || undefined,
           access: collectionAccess,
+          watch_count: watchCountMap.get(collection.id) || 0,
         };
       });
 
@@ -300,6 +317,7 @@ export const CollectionsTab = () => {
               <TableRow>
                 <TableHead>Collection Name</TableHead>
                 <TableHead>Owner</TableHead>
+                <TableHead className="text-center">Watches</TableHead>
                 <TableHead>Users with Access</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -314,6 +332,9 @@ export const CollectionsTab = () => {
                       <span className="text-sm">{collection.owner_name || 'Unknown'}</span>
                       <span className="text-xs text-muted-foreground">{collection.owner_email}</span>
                     </div>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Badge variant="outline">{collection.watch_count}</Badge>
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
@@ -387,7 +408,7 @@ export const CollectionsTab = () => {
               ))}
               {collections.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                     No collections found
                   </TableCell>
                 </TableRow>
