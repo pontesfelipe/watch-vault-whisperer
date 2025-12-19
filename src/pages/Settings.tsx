@@ -42,7 +42,8 @@ const Settings = () => {
 
   // Check if user signed up with Google (has google provider)
   const isGoogleUser = user?.app_metadata?.provider === "google" || 
-                       user?.app_metadata?.providers?.includes("google");
+                       user?.app_metadata?.providers?.includes("google") ||
+                       user?.identities?.some((identity: any) => identity.provider === "google");
 
   const handleDeleteAccount = async () => {
     if (!user) return;
