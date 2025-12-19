@@ -15,6 +15,7 @@ import { BetaBadge } from "@/components/BetaBadge";
 import { PrivacyDialog } from "@/components/PrivacyDialog";
 import { TermsDialog } from "@/components/TermsDialog";
 import { MfaVerification } from "@/components/MfaVerification";
+import { recordLoginAttempt } from "@/utils/loginTracking";
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -121,7 +122,12 @@ export default function Auth() {
 
         if (error) {
           toast.error(error.message);
-        } else if (data.session) {
+          // Record failed login attempt - we need to find the user ID or skip recording
+          // For failed logins, we can't record without user_id due to RLS
+        } else if (data.session && data.user) {
+          // Record successful login
+          recordLoginAttempt(data.user.id, true);
+          
           // Check if MFA is required
           const { data: factorsData } = await supabase.auth.mfa.listFactors();
           const verifiedFactors = factorsData?.totp.filter(f => f.status === 'verified') || [];
