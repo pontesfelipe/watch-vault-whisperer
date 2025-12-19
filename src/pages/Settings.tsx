@@ -22,6 +22,7 @@ import {
 import { ProfileSettingsCard } from "@/components/ProfileSettingsCard";
 import { PasswordStrengthIndicator } from "@/components/PasswordStrengthIndicator";
 import { TwoFactorAuthCard } from "@/components/TwoFactorAuthCard";
+import { SessionManagementCard } from "@/components/SessionManagementCard";
 
 const Settings = () => {
   const { user, signOut } = useAuth();
@@ -201,6 +202,8 @@ const Settings = () => {
           <ProfileSettingsCard />
 
           {!isGoogleUser && <TwoFactorAuthCard />}
+
+          <SessionManagementCard />
 
           <Card className="border-destructive/50">
             <CardHeader>
