@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Trash2, KeyRound, Eye, EyeOff } from "lucide-react";
+import { Loader2, Trash2, KeyRound, Eye, EyeOff, Info } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,6 +45,52 @@ export const EditUserDialog = ({ user, open, onOpenChange, onSuccess }: EditUser
   const [resettingPassword, setResettingPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Provider info (for disabling password reset for Google-only users)
+  const [providerLoading, setProviderLoading] = useState(false);
+  const [isGoogleOnlyUser, setIsGoogleOnlyUser] = useState<boolean | null>(null);
+  const [providers, setProviders] = useState<string[]>([]);
+
+  const providerLabel = useMemo(() => {
+    if (!providers.length) return null;
+    return providers
+      .map((p) => (p === "google" ? "Google" : p === "email" ? "Email/Password" : p))
+      .join(", ");
+  }, [providers]);
+
+  useEffect(() => {
+    setFullName(user.full_name || "");
+    setRole(user.role);
+  }, [user.id, user.full_name, user.role]);
+
+  useEffect(() => {
+    const fetchProviders = async () => {
+      if (!open) return;
+      setProviderLoading(true);
+      setIsGoogleOnlyUser(null);
+      setProviders([]);
+
+      try {
+        const { data, error } = await supabase.functions.invoke("admin-user-providers", {
+          body: { userEmail: user.email },
+        });
+
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+
+        setProviders(Array.isArray(data?.providers) ? data.providers : []);
+        setIsGoogleOnlyUser(!!data?.isGoogleOnly);
+      } catch (err: any) {
+        // If we can't fetch providers, we don't block admin actions.
+        console.error("Failed to fetch user providers:", err);
+        setIsGoogleOnlyUser(null);
+      } finally {
+        setProviderLoading(false);
+      }
+    };
+
+    fetchProviders();
+  }, [open, user.email]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -245,78 +291,107 @@ export const EditUserDialog = ({ user, open, onOpenChange, onSuccess }: EditUser
               <KeyRound className="h-4 w-4 text-muted-foreground" />
               <h4 className="font-medium text-sm">Reset Password</h4>
             </div>
-            <div className="space-y-3">
-              <div className="space-y-2">
-                <Label htmlFor="newPassword" className="text-sm">New Password</Label>
-                <div className="relative">
-                  <Input
-                    id="newPassword"
-                    type={showNewPassword ? "text" : "password"}
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Enter new password"
-                  />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => setShowNewPassword(!showNewPassword)}
-                      >
-                        {showNewPassword ? (
-                          <EyeOff className="h-4 w-4 text-muted-foreground" />
-                        ) : (
-                          <Eye className="h-4 w-4 text-muted-foreground" />
-                        )}
-                      </Button>
-                    </div>
-                    <PasswordStrengthIndicator password={newPassword} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="confirmPassword" className="text-sm">Confirm Password</Label>
-                    <div className="relative">
-                  <Input
-                    id="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Confirm new password"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" />
+
+            {providerLoading ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Checking sign-in method…
+              </div>
+            ) : isGoogleOnlyUser ? (
+              <div className="rounded-lg border bg-muted/30 p-3 text-sm">
+                <div className="flex items-start gap-2">
+                  <Info className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                  <div className="space-y-1">
+                    <p className="font-medium">Password reset unavailable for Google-only accounts</p>
+                    <p className="text-muted-foreground">
+                      This user signs in with Google. To enable password sign-in, they must add Email/Password to their account.
+                    </p>
+                    {providerLabel && (
+                      <p className="text-xs text-muted-foreground">Connected: {providerLabel}</p>
                     )}
-                  </Button>
+                  </div>
                 </div>
               </div>
-              <Button
-                type="button"
-                variant="secondary"
-                className="w-full"
-                onClick={handleResetPassword}
-                disabled={resettingPassword || !newPassword || !confirmPassword}
-              >
-                {resettingPassword ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Resetting...
-                  </>
-                ) : (
-                  <>
-                    <KeyRound className="w-4 h-4 mr-2" />
-                    Reset Password
-                  </>
+            ) : (
+              <div className="space-y-3">
+                {providerLabel && (
+                  <p className="text-xs text-muted-foreground">Connected: {providerLabel}</p>
                 )}
-              </Button>
-            </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="newPassword" className="text-sm">New Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="newPassword"
+                      type={showNewPassword ? "text" : "password"}
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Enter new password"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                    >
+                      {showNewPassword ? (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </Button>
+                  </div>
+                  <PasswordStrengthIndicator password={newPassword} />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword" className="text-sm">Confirm Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Confirm new password"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="w-full"
+                  onClick={handleResetPassword}
+                  disabled={resettingPassword || !newPassword || !confirmPassword}
+                >
+                  {resettingPassword ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Resetting...
+                    </>
+                  ) : (
+                    <>
+                      <KeyRound className="w-4 h-4 mr-2" />
+                      Reset Password
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
           </div>
 
           <div className="pt-4 border-t">
