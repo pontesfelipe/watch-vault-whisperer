@@ -109,6 +109,26 @@ serve(async (req) => {
       );
     }
 
+    // Don't allow resetting password for Google-only users
+    const providers = Array.from(
+      new Set(
+        [
+          ...(targetUser.identities || []).map((i: any) => i.provider).filter(Boolean),
+          ...(targetUser.app_metadata?.providers || []),
+          targetUser.app_metadata?.provider,
+        ].filter(Boolean)
+      )
+    ) as string[];
+
+    const isGoogleOnly = providers.includes('google') && !providers.includes('email');
+    if (isGoogleOnly) {
+      console.log('Password reset blocked for Google-only user:', userEmail);
+      return new Response(
+        JSON.stringify({ error: 'This user signs in with Google. Add Email/Password to enable a password.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Update the user's password
     const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
       targetUser.id,
