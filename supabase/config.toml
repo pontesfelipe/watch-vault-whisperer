@@ -1,37 +1,8 @@
 project_id = "thrwpxiahqgubjkjnkgt"
 
-[functions.analyze-watch-metadata]
+# Only check-user-access needs to be public (pre-login access check)
+[functions.check-user-access]
 verify_jwt = false
 
-[functions.search-watch-info]
-verify_jwt = false
-
-[functions.suggest-watches]
-verify_jwt = false
-
-[functions.fetch-watch-price]
-verify_jwt = false
-
-[functions.import-spreadsheet-data]
-verify_jwt = false
-
-[functions.analyze-sentiment]
-verify_jwt = false
-
-[functions.extract-warranty-info]
-verify_jwt = false
-
-[functions.identify-watch-from-photo]
-verify_jwt = false
-
-[functions.delete-user]
-verify_jwt = false
-
-[functions.generate-watch-image]
-verify_jwt = false
-
-[functions.generate-all-watch-images]
-verify_jwt = false
-
-[functions.admin-reset-password]
-verify_jwt = false
+# All other functions use default JWT verification (verify_jwt = true)
+# No need to explicitly set verify_jwt = true as it's the default
