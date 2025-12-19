@@ -1,4 +1,4 @@
-import { Watch, Heart, Plane, Calendar, Droplets, BarChart3, LogOut, BookHeart, Shield, Settings, MessageCircle } from "lucide-react";
+import { Watch, Heart, Plane, Calendar, Droplets, BarChart3, LogOut, BookHeart, Shield, Settings, MessageCircle, HelpCircle, Info } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,16 +17,6 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 
-const navItems = [
-  { title: "Dashboard", url: "/", icon: BarChart3 },
-  { title: "Collection", url: "/collection", icon: Watch },
-  { title: "Wishlist", url: "/wishlist", icon: Heart },
-  { title: "Trips", url: "/trips", icon: Plane },
-  { title: "Events", url: "/events", icon: Calendar },
-  { title: "Water Usage", url: "/water-usage", icon: Droplets },
-  { title: "Collection Insights", url: "/personal-notes", icon: BookHeart },
-];
-
 export function AppNavigation() {
   const { open } = useSidebar();
   const location = useLocation();
@@ -42,6 +32,8 @@ export function AppNavigation() {
     { title: "Collection Insights", url: "/personal-notes", icon: BookHeart },
     { title: "Messages", url: "/messages", icon: MessageCircle },
     { title: "Settings", url: "/settings", icon: Settings },
+    { title: "FAQ", url: "/faq", icon: HelpCircle },
+    { title: "About", url: "/about", icon: Info },
     ...(isAdmin ? [{ title: "Admin", url: "/admin", icon: Shield }] : []),
   ];
 
