@@ -39,6 +39,9 @@ export const useStatsCalculations = (
   waterUsages: WaterUsage[]
 ) => {
   return useMemo(() => {
+    // Get set of watch IDs in the current collection for filtering
+    const collectionWatchIds = new Set(watches.map(w => w.id));
+    
     const totalWatches = watches.length;
     const totalDaysWorn = wearEntries.reduce((sum, entry) => sum + (entry.days || 1), 0);
 
@@ -108,12 +111,15 @@ export const useStatsCalculations = (
     )[0]?.[0];
     const trendingWatch = watches.find((w) => w.id === trendingWatchId);
 
-    // Top trip watch - count from linkedWatches
+    // Top trip watch - count from linkedWatches, only for watches in current collection
     const tripWatchCounts = trips.reduce(
       (acc, trip) => {
         if (trip.linkedWatches) {
           trip.linkedWatches.forEach((lw) => {
-            acc[lw.watchId] = (acc[lw.watchId] || 0) + 1;
+            // Only count if watch is in current collection
+            if (collectionWatchIds.has(lw.watchId)) {
+              acc[lw.watchId] = (acc[lw.watchId] || 0) + 1;
+            }
           });
         }
         return acc;
@@ -125,10 +131,13 @@ export const useStatsCalculations = (
     )[0]?.[0];
     const topTripWatch = watches.find((w) => w.id === topTripWatchId);
 
-    // Top water usage watch
+    // Top water usage watch - only for watches in current collection
     const waterWatchCounts = waterUsages.reduce(
       (acc, usage) => {
-        acc[usage.watch_id] = (acc[usage.watch_id] || 0) + 1;
+        // Only count if watch is in current collection
+        if (collectionWatchIds.has(usage.watch_id)) {
+          acc[usage.watch_id] = (acc[usage.watch_id] || 0) + 1;
+        }
         return acc;
       },
       {} as Record<string, number>

@@ -16,23 +16,31 @@ export const CollectionProvider = ({ children }: { children: ReactNode }) => {
   const { collections, loading, refetch } = useCollectionData();
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
 
-  // Auto-select first collection when data loads
+  // Auto-select user's own collection when data loads (always prioritize owned)
   useEffect(() => {
-    if (!loading && collections.length > 0 && !selectedCollectionId) {
-      const savedId = localStorage.getItem('selectedCollectionId');
-      const collectionIds = collections.map(c => c.id);
+    if (!loading && collections.length > 0) {
+      // Always prioritize the user's owned collection on page load
+      const ownedCollection = collections.find(c => c.role === 'owner');
       
-      // Use saved ID if it exists in current collections
-      if (savedId && collectionIds.includes(savedId)) {
-        setSelectedCollectionId(savedId);
-      } else {
-        // Prioritize user's own collections (owner role) over shared ones
-        const ownedCollection = collections.find(c => c.role === 'owner');
-        const defaultCollection = ownedCollection || collections[0];
-        setSelectedCollectionId(defaultCollection.id);
+      if (ownedCollection && (!selectedCollectionId || selectedCollectionId !== ownedCollection.id)) {
+        // Check if there's a saved ID and it's not the owned collection
+        const savedId = localStorage.getItem('selectedCollectionId');
+        const collectionIds = collections.map(c => c.id);
+        
+        // Only use saved ID if user explicitly selected it before (not on first load)
+        if (selectedCollectionId && savedId && collectionIds.includes(savedId)) {
+          // User has already made a selection in this session, respect it
+          return;
+        }
+        
+        // Default to owned collection
+        setSelectedCollectionId(ownedCollection.id);
+      } else if (!ownedCollection && !selectedCollectionId) {
+        // No owned collection, fall back to first available
+        setSelectedCollectionId(collections[0].id);
       }
     }
-  }, [collections, loading, selectedCollectionId]);
+  }, [collections, loading]);
 
   // Persist selection
   useEffect(() => {
