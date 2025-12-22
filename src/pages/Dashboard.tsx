@@ -131,7 +131,7 @@ const Dashboard = () => {
 
       <UsageChart watches={watches} wearEntries={wearEntries} />
 
-      <MonthlyUsageTable />
+      <MonthlyUsageTable watches={watches} wearEntries={wearEntries} />
 
       {stats.watchesWithResaleDataCount > 0 && (
         <div className="space-y-6">
