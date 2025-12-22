@@ -53,15 +53,16 @@ export const useWatchData = (collectionId?: string | null) => {
     try {
       const watchesQuery: any = (supabase.from('watches' as any) as any).select('*');
       
-      // Admins can see all watches across all collections
-      // Regular users only see their own watches
-      if (!isAdmin) {
-        watchesQuery.eq('user_id', user.id);
-      }
-      
-      // Filter by collection if provided (both admin and regular users)
+      // Always filter by collection_id when provided
+      // This ensures we only see watches from the selected collection
       if (collectionId) {
         watchesQuery.eq('collection_id', collectionId);
+      } else {
+        // No collection selected - only show user's own watches as fallback
+        // (This shouldn't normally happen if CollectionProvider is working correctly)
+        if (!isAdmin) {
+          watchesQuery.eq('user_id', user.id);
+        }
       }
       
       // Sort by custom sort_order, then fall back to brand and model for new watches
@@ -75,16 +76,17 @@ export const useWatchData = (collectionId?: string | null) => {
         
         // Fetch wear entries for the watches in this collection
         const watchIds = watchesResult.data.map((w: Watch) => w.id);
-        const wearEntriesQuery: any = (supabase.from('wear_entries' as any) as any)
-          .select('*')
-          .in('watch_id', watchIds);
         
-        if (!isAdmin) {
-          wearEntriesQuery.eq('user_id', user.id);
+        if (watchIds.length > 0) {
+          const wearEntriesQuery: any = (supabase.from('wear_entries' as any) as any)
+            .select('*')
+            .in('watch_id', watchIds);
+          
+          const wearEntriesResult = await wearEntriesQuery;
+          if (wearEntriesResult.data) setWearEntries(wearEntriesResult.data);
+        } else {
+          setWearEntries([]);
         }
-        
-        const wearEntriesResult = await wearEntriesQuery;
-        if (wearEntriesResult.data) setWearEntries(wearEntriesResult.data);
       } else {
         setWatches([]);
         setWearEntries([]);
