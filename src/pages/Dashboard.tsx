@@ -13,7 +13,7 @@ import { useStatsCalculations } from "@/hooks/useStatsCalculations";
 import { useCollection } from "@/contexts/CollectionContext";
 
 const Dashboard = () => {
-  const { selectedCollectionId } = useCollection();
+  const { selectedCollectionId, currentCollection } = useCollection();
   const { watches, wearEntries, loading: watchLoading, refetch } = useWatchData(selectedCollectionId);
   const { trips, loading: tripLoading } = useTripData();
   const { waterUsages, loading: waterLoading } = useWaterUsageData();
@@ -35,11 +35,20 @@ const Dashboard = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl md:text-4xl font-semibold text-textMain">
-            Dashboard
-          </h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl md:text-4xl font-semibold text-textMain">
+              Dashboard
+            </h1>
+            {currentCollection && (
+              <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
+                {currentCollection.name}
+              </span>
+            )}
+          </div>
           <p className="mt-1 text-sm text-textMuted">
-            Overview of your watch collection statistics
+            {currentCollection 
+              ? `Overview of ${currentCollection.name} statistics`
+              : 'Overview of your watch collection statistics'}
           </p>
         </div>
         <QuickAddWearDialog watches={watches} onSuccess={refetch} />
