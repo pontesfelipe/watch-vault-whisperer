@@ -195,11 +195,24 @@ const Collection = () => {
             <CollectionSwitcher />
             <div className="flex items-center gap-2">
               <div>
-                <h1 className="text-3xl md:text-4xl font-semibold text-textMain">
-                  {currentCollection?.name || "My Collection"}
-                </h1>
+                <div className="flex items-center gap-3">
+                  <h1 className="text-3xl md:text-4xl font-semibold text-textMain">
+                    {currentCollection?.name || "My Collection"}
+                  </h1>
+                  {currentCollection && (
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                      currentCollection.role === 'owner' 
+                        ? 'bg-primary/10 text-primary' 
+                        : currentCollection.role === 'editor'
+                        ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                        : 'bg-muted text-muted-foreground'
+                    }`}>
+                      {currentCollection.role === 'owner' ? 'Owner' : currentCollection.role === 'editor' ? 'Editor' : 'Viewer'}
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm text-textMuted mt-1">
-                  {watches.length} {watches.length === 1 ? "watch" : "watches"} in your collection
+                  {watches.length} {watches.length === 1 ? "watch" : "watches"} in {currentCollection?.role === 'owner' ? 'your' : 'this'} collection
                 </p>
               </div>
               {currentCollection && currentCollection.role === 'owner' && (
