@@ -51,6 +51,7 @@ interface Watch {
 export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess: () => void }) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [specRowId, setSpecRowId] = useState<string | null>(null);
   const [formValues, setFormValues] = useState({
     brand: watch.brand,
     model: watch.model,
@@ -62,6 +63,12 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
     lugToLugSize: watch.lug_to_lug_size || "",
     casebackMaterial: watch.caseback_material || "",
     movement: watch.movement || "",
+    powerReserve: "",
+    crystal: "",
+    caseMaterial: "",
+    waterResistance: "",
+    caseback: "",
+    band: "",
     hasSapphire: watch.has_sapphire,
     averageResalePrice: watch.average_resale_price?.toString() || "",
     warrantyDate: watch.warranty_date || "",
@@ -74,28 +81,75 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
   const { toast } = useToast();
 
   useEffect(() => {
-    if (open) {
-      setFormValues({
-        brand: watch.brand,
-        model: watch.model,
-        dialColor: watch.dial_color,
-        type: watch.type,
-        cost: watch.cost.toString(),
-        msrp: watch.msrp?.toString() || "",
-        caseSize: watch.case_size || "",
-        lugToLugSize: watch.lug_to_lug_size || "",
-        casebackMaterial: watch.caseback_material || "",
-        movement: watch.movement || "",
-        hasSapphire: watch.has_sapphire,
-        averageResalePrice: watch.average_resale_price?.toString() || "",
-        warrantyDate: watch.warranty_date || "",
-        warrantyCardFile: null,
-        whenBought: watch.when_bought || "",
-        rarity: (watch.rarity || "common") as any,
-        historicalSignificance: (watch.historical_significance || "regular") as any,
-        availableForTrade: watch.available_for_trade || false,
-      });
-    }
+    if (!open) return;
+
+    let cancelled = false;
+
+    setFormValues({
+      brand: watch.brand,
+      model: watch.model,
+      dialColor: watch.dial_color,
+      type: watch.type,
+      cost: watch.cost.toString(),
+      msrp: watch.msrp?.toString() || "",
+      caseSize: watch.case_size || "",
+      lugToLugSize: watch.lug_to_lug_size || "",
+      casebackMaterial: watch.caseback_material || "",
+      movement: watch.movement || "",
+      powerReserve: "",
+      crystal: "",
+      caseMaterial: "",
+      waterResistance: "",
+      caseback: "",
+      band: "",
+      hasSapphire: watch.has_sapphire,
+      averageResalePrice: watch.average_resale_price?.toString() || "",
+      warrantyDate: watch.warranty_date || "",
+      warrantyCardFile: null,
+      whenBought: watch.when_bought || "",
+      rarity: (watch.rarity || "common") as any,
+      historicalSignificance: (watch.historical_significance || "regular") as any,
+      availableForTrade: watch.available_for_trade || false,
+    });
+
+    const loadSpecs = async () => {
+      const { data, error } = await supabase
+        .from("watch_specs")
+        .select("*")
+        .eq("watch_id", watch.id)
+        .maybeSingle();
+
+      if (cancelled) return;
+
+      if (error) {
+        // Non-blocking: still allow editing watch fields even if specs fetch fails
+        console.warn("Failed to load watch_specs:", error);
+        setSpecRowId(null);
+        return;
+      }
+
+      if (!data) {
+        setSpecRowId(null);
+        return;
+      }
+
+      setSpecRowId(data.id);
+      setFormValues((prev) => ({
+        ...prev,
+        powerReserve: data.power_reserve || "",
+        crystal: data.crystal || "",
+        caseMaterial: data.case_material || "",
+        waterResistance: data.water_resistance || "",
+        caseback: data.caseback || "",
+        band: data.band || "",
+      }));
+    };
+
+    loadSpecs();
+
+    return () => {
+      cancelled = true;
+    };
   }, [open, watch]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -116,15 +170,15 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
         historicalSignificance: formValues.historicalSignificance,
       });
 
+      const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!currentUser) {
+        throw new Error("User not authenticated");
+      }
+
       // Upload warranty card if provided
       let warrantyCardUrl = watch.warranty_card_url;
       if (formValues.warrantyCardFile) {
-        // Get current user for the folder path
-        const { data: { user: currentUser } } = await supabase.auth.getUser();
-        if (!currentUser) {
-          throw new Error("User not authenticated");
-        }
-        
         const fileExt = formValues.warrantyCardFile.name.split('.').pop();
         const fileName = `${currentUser.id}/${crypto.randomUUID()}.${fileExt}`;
         const { error: uploadError } = await supabase.storage
@@ -174,6 +228,50 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
         .eq("id", watch.id);
 
       if (error) throw error;
+
+      // Keep watch_specs (the data used in the Details → Specifications tab) in sync
+      const shouldWriteSpecs = Boolean(
+        formValues.movement ||
+          formValues.caseSize ||
+          formValues.lugToLugSize ||
+          formValues.powerReserve ||
+          formValues.crystal ||
+          formValues.caseMaterial ||
+          formValues.waterResistance ||
+          formValues.caseback ||
+          formValues.band
+      );
+
+      if (shouldWriteSpecs) {
+        const specsValues = {
+          movement: formValues.movement || null,
+          case_size: formValues.caseSize || null,
+          lug_to_lug: formValues.lugToLugSize || null,
+          power_reserve: formValues.powerReserve || null,
+          crystal: formValues.crystal || null,
+          case_material: formValues.caseMaterial || null,
+          water_resistance: formValues.waterResistance || null,
+          caseback: formValues.caseback || null,
+          band: formValues.band || null,
+        };
+
+        if (specRowId) {
+          const { error: specsError } = await supabase
+            .from("watch_specs")
+            .update(specsValues)
+            .eq("id", specRowId);
+
+          if (specsError) throw specsError;
+        } else {
+          const { error: specsError } = await supabase.from("watch_specs").insert({
+            watch_id: watch.id,
+            user_id: currentUser.id,
+            ...specsValues,
+          });
+
+          if (specsError) throw specsError;
+        }
+      }
 
       toast({
         title: "Success",
@@ -454,6 +552,74 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
               value={formValues.movement}
               onChange={(e) => setFormValues({ ...formValues, movement: e.target.value })}
               placeholder="e.g., Automatic"
+              className="bg-background border-border"
+            />
+          </div>
+
+          <Separator className="my-6" />
+
+          <div className="space-y-2">
+            <Label htmlFor="powerReserve">Power Reserve - Optional</Label>
+            <Input
+              id="powerReserve"
+              value={formValues.powerReserve}
+              onChange={(e) => setFormValues({ ...formValues, powerReserve: e.target.value })}
+              placeholder="e.g., 70 hours"
+              className="bg-background border-border"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="crystal">Crystal - Optional</Label>
+            <Input
+              id="crystal"
+              value={formValues.crystal}
+              onChange={(e) => setFormValues({ ...formValues, crystal: e.target.value })}
+              placeholder="e.g., Sapphire"
+              className="bg-background border-border"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="caseMaterial">Case Material - Optional</Label>
+            <Input
+              id="caseMaterial"
+              value={formValues.caseMaterial}
+              onChange={(e) => setFormValues({ ...formValues, caseMaterial: e.target.value })}
+              placeholder="e.g., Stainless steel"
+              className="bg-background border-border"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="waterResistance">Water Resistance - Optional</Label>
+            <Input
+              id="waterResistance"
+              value={formValues.waterResistance}
+              onChange={(e) => setFormValues({ ...formValues, waterResistance: e.target.value })}
+              placeholder="e.g., 300m"
+              className="bg-background border-border"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="caseback">Caseback (Type/Notes) - Optional</Label>
+            <Input
+              id="caseback"
+              value={formValues.caseback}
+              onChange={(e) => setFormValues({ ...formValues, caseback: e.target.value })}
+              placeholder="e.g., Exhibition"
+              className="bg-background border-border"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="band">Band/Bracelet - Optional</Label>
+            <Input
+              id="band"
+              value={formValues.band}
+              onChange={(e) => setFormValues({ ...formValues, band: e.target.value })}
+              placeholder="e.g., Rubber strap"
               className="bg-background border-border"
             />
           </div>
