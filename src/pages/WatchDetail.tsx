@@ -238,7 +238,7 @@ const WatchDetail = () => {
                     <>
                       <div>
                         <p className="text-sm text-muted-foreground mb-1">Movement</p>
-                        <p className="text-lg font-medium text-foreground">{watchSpecs.movement || 'N/A'}</p>
+                        <p className="text-lg font-medium text-foreground">{watch.movement || watchSpecs?.movement || "N/A"}</p>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground mb-1">Power Reserve</p>
@@ -260,11 +260,11 @@ const WatchDetail = () => {
                     <>
                       <div>
                         <p className="text-sm text-muted-foreground mb-1">Case Size</p>
-                        <p className="text-lg font-medium text-foreground">{watchSpecs.case_size || 'N/A'}</p>
+                        <p className="text-lg font-medium text-foreground">{watch.case_size || watchSpecs?.case_size || "N/A"}</p>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground mb-1">Lug to Lug</p>
-                        <p className="text-lg font-medium text-foreground">{watchSpecs.lug_to_lug || 'N/A'}</p>
+                        <p className="text-lg font-medium text-foreground">{watch.lug_to_lug_size || watchSpecs?.lug_to_lug || "N/A"}</p>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground mb-1">Water Resistance</p>
