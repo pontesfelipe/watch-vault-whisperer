@@ -11,6 +11,8 @@ interface Watch {
   ai_image_url?: string;
   dial_color: string;
   case_size?: string;
+  lug_to_lug_size?: string;
+  caseback_material?: string;
   type: string;
   average_resale_price?: number;
   when_bought?: string;
@@ -22,6 +24,7 @@ interface Watch {
   has_sapphire?: boolean;
   warranty_date?: string;
   warranty_card_url?: string;
+  metadata_analysis_reasoning?: string;
 }
 
 interface WearEntry {
