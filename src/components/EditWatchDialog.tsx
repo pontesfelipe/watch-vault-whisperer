@@ -42,6 +42,7 @@ interface Watch {
   average_resale_price?: number;
   warranty_date?: string;
   warranty_card_url?: string;
+  when_bought?: string;
   rarity?: string;
   historical_significance?: string;
   available_for_trade?: boolean;
@@ -65,6 +66,7 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
     averageResalePrice: watch.average_resale_price?.toString() || "",
     warrantyDate: watch.warranty_date || "",
     warrantyCardFile: null as File | null,
+    whenBought: watch.when_bought || "",
     rarity: (watch.rarity || "common") as "common" | "uncommon" | "rare" | "very_rare" | "grail",
     historicalSignificance: (watch.historical_significance || "regular") as "regular" | "notable" | "historically_significant",
     availableForTrade: watch.available_for_trade || false,
@@ -88,6 +90,7 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
         averageResalePrice: watch.average_resale_price?.toString() || "",
         warrantyDate: watch.warranty_date || "",
         warrantyCardFile: null,
+        whenBought: watch.when_bought || "",
         rarity: (watch.rarity || "common") as any,
         historicalSignificance: (watch.historical_significance || "regular") as any,
         availableForTrade: watch.available_for_trade || false,
@@ -163,6 +166,7 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
           average_resale_price: data.averageResalePrice || null,
           warranty_date: data.warrantyDate || null,
           warranty_card_url: warrantyCardUrl,
+          when_bought: formValues.whenBought || null,
           rarity: data.rarity || 'common',
           historical_significance: data.historicalSignificance || 'regular',
           available_for_trade: formValues.availableForTrade,
@@ -452,6 +456,44 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
               placeholder="e.g., Automatic"
               className="bg-background border-border"
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="whenBought">When Bought - Optional</Label>
+            <Input
+              id="whenBought"
+              value={formValues.whenBought}
+              onChange={(e) => setFormValues({ ...formValues, whenBought: e.target.value })}
+              placeholder="e.g., January 2023 or 2023"
+              className="bg-background border-border"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="casebackMaterial">Caseback Material - Optional</Label>
+            <Input
+              id="casebackMaterial"
+              value={formValues.casebackMaterial}
+              onChange={(e) => setFormValues({ ...formValues, casebackMaterial: e.target.value })}
+              placeholder="e.g., Sapphire crystal, Solid steel"
+              className="bg-background border-border"
+            />
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="hasSapphire"
+              checked={formValues.hasSapphire || false}
+              onCheckedChange={(checked) =>
+                setFormValues({ ...formValues, hasSapphire: checked === true })
+              }
+            />
+            <Label
+              htmlFor="hasSapphire"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Has Sapphire Crystal
+            </Label>
           </div>
 
           <div className="flex gap-2 pt-4">

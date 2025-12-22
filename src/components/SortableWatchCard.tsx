@@ -11,6 +11,7 @@ interface SortableWatchCardProps {
     dial_color: string;
     type: string;
     cost: number;
+    msrp?: number;
     case_size?: string;
     lug_to_lug_size?: string;
     caseback_material?: string;

@@ -7,6 +7,7 @@ interface Watch {
   brand: string;
   model: string;
   cost: number;
+  msrp?: number;
   image_url?: string;
   ai_image_url?: string;
   dial_color: string;
