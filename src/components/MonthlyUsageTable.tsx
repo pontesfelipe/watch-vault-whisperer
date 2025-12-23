@@ -28,6 +28,8 @@ export interface MonthlyUsageWearEntry {
   watch_id: string;
   wear_date: string;
   days: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface MonthlyUsageTableProps {
@@ -108,6 +110,16 @@ export const MonthlyUsageTable = ({ watches, wearEntries }: MonthlyUsageTablePro
     [watchTotals]
   );
 
+  // Get the most recent wear entry date
+  const lastUpdated = useMemo(() => {
+    if (wearEntries.length === 0) return null;
+    const dates = wearEntries
+      .filter((entry) => entry.updated_at || entry.created_at)
+      .map((entry) => new Date(entry.updated_at || entry.created_at || ""));
+    if (dates.length === 0) return null;
+    return new Date(Math.max(...dates.map((d) => d.getTime())));
+  }, [wearEntries]);
+
   // Calculate max value for heatmap intensity
   const maxValue = useMemo(() => {
     let max = 0;
@@ -138,7 +150,14 @@ export const MonthlyUsageTable = ({ watches, wearEntries }: MonthlyUsageTablePro
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <CardTitle>Monthly Usage by Watch</CardTitle>
-            <CardDescription>Total days worn per watch by month</CardDescription>
+            <CardDescription>
+              Total days worn per watch by month
+              {lastUpdated && (
+                <span className="ml-2 text-muted-foreground">
+                  · Last updated {lastUpdated.toLocaleDateString()}
+                </span>
+              )}
+            </CardDescription>
           </div>
           <div className="flex flex-col sm:flex-row gap-2">
             <Select value={selectedQuarter} onValueChange={(value) => setSelectedQuarter(value as Quarter)}>
