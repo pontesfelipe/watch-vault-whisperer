@@ -15,6 +15,7 @@ import { AccessLogsTab } from "@/components/admin/AccessLogsTab";
 import { UsageMetricsTab } from "@/components/admin/UsageMetricsTab";
 import { CollectionsTab } from "@/components/admin/CollectionsTab";
 import { ExportWearLogsDialog } from "@/components/admin/ExportWearLogsDialog";
+import { ExportWatchInventoryDialog } from "@/components/admin/ExportWatchInventoryDialog";
 import { Shield, Users, UserCog, FileCheck, Calendar, RefreshCw, Moon, Sun, BookOpen, FileText, Activity, BarChart3, FolderOpen } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -78,6 +79,7 @@ export default function Admin() {
           </div>
           <div className="flex gap-2">
             <ExportWearLogsDialog />
+            <ExportWatchInventoryDialog />
             <Button onClick={handleUpdateMarketPrices} variant="outline" disabled={isUpdatingPrices}>
               <RefreshCw className={`w-4 h-4 mr-2 ${isUpdatingPrices ? 'animate-spin' : ''}`} />
               {isUpdatingPrices ? 'Updating...' : 'Update Market Prices'}
