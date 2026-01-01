@@ -131,7 +131,12 @@ export const WishlistTable = ({ items, onDelete, showAISuggested = false, showDe
         </TableBody>
       </Table>
 
-      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+      <AlertDialog
+        open={!!deleteId}
+        onOpenChange={(open) => {
+          if (!open) setDeleteId(null);
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Remove from Wishlist?</AlertDialogTitle>
