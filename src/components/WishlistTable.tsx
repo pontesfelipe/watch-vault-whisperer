@@ -40,8 +40,15 @@ export const WishlistTable = ({ items, onDelete, showAISuggested = false, showDe
   const handleDelete = async () => {
     if (!deleteId) return;
 
+    console.log("Attempting to delete wishlist item:", deleteId);
+
     try {
-      const { error } = await supabase.from("wishlist").delete().eq("id", deleteId);
+      const { error, data } = await (supabase.from('wishlist' as any) as any)
+        .delete()
+        .eq("id", deleteId)
+        .select();
+
+      console.log("Delete result:", { error, data });
 
       if (error) throw error;
 
