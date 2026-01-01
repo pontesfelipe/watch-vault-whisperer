@@ -42,14 +42,14 @@ export const MonthlyUsageTable = ({ watches, wearEntries }: MonthlyUsageTablePro
   const [selectedYear, setSelectedYear] = useState<string>(currentYear.toString());
   const [selectedQuarter, setSelectedQuarter] = useState<Quarter>("all");
 
-  // Get available years from wear entries
+  // Get available years from wear entries, always include current year
   const availableYears = useMemo(() => {
     const years = new Set<number>();
+    years.add(currentYear); // Always include current year
     wearEntries.forEach((entry) => {
       years.add(new Date(entry.wear_date).getFullYear());
     });
-    const sortedYears = Array.from(years).sort((a, b) => b - a);
-    return sortedYears.length > 0 ? sortedYears : [currentYear];
+    return Array.from(years).sort((a, b) => b - a);
   }, [wearEntries, currentYear]);
 
   const parseWearDate = (dateString: string) => {
