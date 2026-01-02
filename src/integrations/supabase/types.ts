@@ -299,7 +299,6 @@ export type Database = {
       login_history: {
         Row: {
           browser: string | null
-          city: string | null
           country: string | null
           created_at: string
           device_type: string | null
@@ -314,7 +313,6 @@ export type Database = {
         }
         Insert: {
           browser?: string | null
-          city?: string | null
           country?: string | null
           created_at?: string
           device_type?: string | null
@@ -329,7 +327,6 @@ export type Database = {
         }
         Update: {
           browser?: string | null
-          city?: string | null
           country?: string | null
           created_at?: string
           device_type?: string | null
@@ -1063,6 +1060,7 @@ export type Database = {
         Args: { _collection_id: string; _user_id: string }
         Returns: boolean
       }
+      purge_old_login_history: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "user"

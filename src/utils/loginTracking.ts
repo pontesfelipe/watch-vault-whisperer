@@ -56,9 +56,9 @@ export const recordLoginAttempt = async (
     const userAgent = navigator.userAgent;
     const { deviceType, browser, os } = parseUserAgent(userAgent);
 
-    // Get IP and location from a free API (optional, may fail)
+    // Get IP and country from a free API (optional, may fail)
+    // Note: We only store country-level location to reduce privacy impact
     let ipAddress: string | null = null;
-    let city: string | null = null;
     let country: string | null = null;
 
     try {
@@ -68,7 +68,6 @@ export const recordLoginAttempt = async (
       if (response.ok) {
         const data = await response.json();
         ipAddress = data.ip || null;
-        city = data.city || null;
         country = data.country_name || null;
       }
     } catch {
@@ -82,7 +81,6 @@ export const recordLoginAttempt = async (
       device_type: deviceType,
       browser,
       os,
-      city,
       country,
       success,
       failure_reason: failureReason || null,
