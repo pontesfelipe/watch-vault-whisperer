@@ -16,7 +16,6 @@ interface LoginEntry {
   device_type: string | null;
   browser: string | null;
   os: string | null;
-  city: string | null;
   country: string | null;
   success: boolean;
   failure_reason: string | null;
@@ -63,10 +62,8 @@ export const LoginHistoryCard = () => {
     }
   };
 
-  const formatLocation = (city: string | null, country: string | null) => {
-    if (city && country) return `${city}, ${country}`;
+  const formatLocation = (country: string | null) => {
     if (country) return country;
-    if (city) return city;
     return 'Unknown location';
   };
 
@@ -138,7 +135,7 @@ export const LoginHistoryCard = () => {
                     </div>
                     <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                       <MapPin className="h-3 w-3" />
-                      {formatLocation(entry.city, entry.country)}
+                      {formatLocation(entry.country)}
                       {entry.ip_address && (
                         <span className="ml-2">• {entry.ip_address}</span>
                       )}
