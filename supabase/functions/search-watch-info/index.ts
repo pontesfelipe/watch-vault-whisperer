@@ -1,10 +1,17 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Input validation schema
+const inputSchema = z.object({
+  brand: z.string().min(1).max(100).regex(/^[a-zA-Z0-9\s\-\.&']+$/, 'Invalid brand format'),
+  modelReference: z.string().min(1).max(200).regex(/^[a-zA-Z0-9\s\-\.\/&'()]+$/, 'Invalid model format'),
+});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -12,14 +19,19 @@ serve(async (req) => {
   }
 
   try {
-    const { brand, modelReference } = await req.json();
+    const body = await req.json();
     
-    if (!brand || !modelReference) {
+    // Validate input
+    const parseResult = inputSchema.safeParse(body);
+    if (!parseResult.success) {
+      console.error('Validation error:', parseResult.error.errors);
       return new Response(
-        JSON.stringify({ error: "Brand and model reference are required" }),
+        JSON.stringify({ error: 'Invalid input: ' + parseResult.error.errors.map(e => e.message).join(', ') }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+    
+    const { brand, modelReference } = parseResult.data;
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
