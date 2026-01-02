@@ -1,10 +1,17 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Input validation schema
+const inputSchema = z.object({
+  userEmail: z.string().email('Invalid email format').max(255, 'Email too long'),
+  newPassword: z.string().min(6, 'Password must be at least 6 characters').max(128, 'Password too long'),
+});
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -69,22 +76,18 @@ serve(async (req) => {
       );
     }
 
-    // Parse request body
-    const { userEmail, newPassword } = await req.json();
-
-    if (!userEmail || !newPassword) {
+    // Parse and validate request body
+    const body = await req.json();
+    const parseResult = inputSchema.safeParse(body);
+    if (!parseResult.success) {
+      console.error('Validation error:', parseResult.error.errors);
       return new Response(
-        JSON.stringify({ error: 'User email and new password are required' }),
+        JSON.stringify({ error: 'Invalid input: ' + parseResult.error.errors.map(e => e.message).join(', ') }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-
-    if (newPassword.length < 6) {
-      return new Response(
-        JSON.stringify({ error: 'Password must be at least 6 characters' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    
+    const { userEmail, newPassword } = parseResult.data;
 
     console.log('Admin resetting password for:', userEmail);
 

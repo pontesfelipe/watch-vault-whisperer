@@ -1,9 +1,25 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Input validation schema
+const watchSchema = z.object({
+  brand: z.string().max(100).optional(),
+  model: z.string().max(200).optional(),
+  dial_color: z.string().max(50).optional(),
+  type: z.string().max(50).optional(),
+  cost: z.number().optional(),
+}).passthrough();
+
+const inputSchema = z.object({
+  collection: z.array(watchSchema).max(500).optional(),
+  tasteDescription: z.string().max(2000).optional(),
+  focusOnGaps: z.boolean().optional(),
+});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -11,7 +27,19 @@ serve(async (req) => {
   }
 
   try {
-    const { collection, tasteDescription, focusOnGaps } = await req.json();
+    const body = await req.json();
+    
+    // Validate input
+    const parseResult = inputSchema.safeParse(body);
+    if (!parseResult.success) {
+      console.error('Validation error:', parseResult.error.errors);
+      return new Response(
+        JSON.stringify({ error: 'Invalid input: ' + parseResult.error.errors.map(e => e.message).join(', ') }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    const { collection, tasteDescription, focusOnGaps } = parseResult.data;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {

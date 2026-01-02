@@ -1,10 +1,23 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Input validation schema
+const inputSchema = z.object({
+  watchId: z.string().uuid().optional(),
+  brand: z.string().min(1).max(100).regex(/^[a-zA-Z0-9\s\-\.&']+$/, 'Invalid brand format'),
+  model: z.string().min(1).max(200).regex(/^[a-zA-Z0-9\s\-\.\/&'()]+$/, 'Invalid model format'),
+  dialColor: z.string().max(50).optional(),
+  type: z.string().max(50).optional(),
+  caseSize: z.string().max(20).optional(),
+  movement: z.string().max(100).optional(),
+  referenceImageBase64: z.string().max(15000000, 'Image too large (max 10MB)').optional(),
+});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -12,7 +25,19 @@ serve(async (req) => {
   }
 
   try {
-    const { watchId, brand, model, dialColor, type, caseSize, movement, referenceImageBase64 } = await req.json();
+    const body = await req.json();
+    
+    // Validate input
+    const parseResult = inputSchema.safeParse(body);
+    if (!parseResult.success) {
+      console.error('Validation error:', parseResult.error.errors);
+      return new Response(
+        JSON.stringify({ error: 'Invalid input: ' + parseResult.error.errors.map(e => e.message).join(', ') }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    const { watchId, brand, model, dialColor, type, caseSize, movement, referenceImageBase64 } = parseResult.data;
     
     console.log(`Generating AI image for: ${brand} ${model}`);
     

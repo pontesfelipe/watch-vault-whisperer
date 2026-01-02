@@ -1,10 +1,28 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.80.0";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Input validation schema for spreadsheet data
+const watchDataSchema = z.object({
+  brand: z.string().max(100).optional(),
+  model: z.string().max(200).optional(),
+}).passthrough();
+
+const spreadsheetSchema = z.object({
+  page1: z.array(watchDataSchema).max(1000).optional(),
+  page3: z.array(watchDataSchema).max(1000).optional(),
+  page4: z.array(watchDataSchema).max(1000).optional(),
+  page5: z.array(watchDataSchema).max(1000).optional(),
+});
+
+const inputSchema = z.object({
+  spreadsheetData: spreadsheetSchema,
+});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -12,7 +30,19 @@ serve(async (req) => {
   }
 
   try {
-    const { spreadsheetData } = await req.json();
+    const body = await req.json();
+    
+    // Validate input
+    const parseResult = inputSchema.safeParse(body);
+    if (!parseResult.success) {
+      console.error('Validation error:', parseResult.error.errors);
+      return new Response(
+        JSON.stringify({ error: 'Invalid input: spreadsheet data exceeds limits or has invalid format' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    const { spreadsheetData } = parseResult.data;
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -46,7 +76,7 @@ serve(async (req) => {
       if (deleteError) throw deleteError;
 
       // Parse wear data from spreadsheet
-      const wearData = spreadsheetData.page1;
+      const wearData = spreadsheetData.page1 || [];
       const wearEntries: any[] = [];
 
       for (const watch of wearData) {
@@ -69,7 +99,8 @@ serve(async (req) => {
 
         for (let i = 0; i < months.length; i++) {
           const monthKey = months[i];
-          const days = parseFloat(watch[monthKey] || 0);
+          const watchAny = watch as any;
+          const days = parseFloat(String(watchAny[monthKey] || 0));
           
           if (days > 0) {
             const monthNum = i + 1;
@@ -124,15 +155,16 @@ serve(async (req) => {
     // Phase 2: Update watch specifications
     try {
       console.log('Phase 2: Updating watch specifications...');
-      const specsData = spreadsheetData.page3;
+      const specsData = spreadsheetData.page3 || [];
       let updatedCount = 0;
 
       for (const spec of specsData) {
+        const specAny = spec as any;
         const { data: watchRecord } = await supabase
           .from('watches')
           .select('id')
-          .eq('brand', spec.brand)
-          .eq('model', spec.model)
+          .eq('brand', specAny.brand)
+          .eq('model', specAny.model)
           .eq('user_id', user.id)
           .single();
 
@@ -141,11 +173,11 @@ serve(async (req) => {
         const { error: updateError } = await supabase
           .from('watches')
           .update({
-            case_size: spec.caseSize,
-            lug_to_lug_size: spec.lugToLug,
-            caseback_material: spec.caseback,
-            movement: spec.movement,
-            cost: parseFloat(spec.price?.replace(/[$,]/g, '') || '0'),
+            case_size: specAny.caseSize,
+            lug_to_lug_size: specAny.lugToLug,
+            caseback_material: specAny.caseback,
+            movement: specAny.movement,
+            cost: parseFloat(String(specAny.price || '0').replace(/[$,]/g, '')),
           })
           .eq('id', watchRecord.id);
 
@@ -166,15 +198,16 @@ serve(async (req) => {
     // Phase 3: Update personal notes
     try {
       console.log('Phase 3: Updating personal notes...');
-      const notesData = spreadsheetData.page4;
+      const notesData = spreadsheetData.page4 || [];
       let updatedCount = 0;
 
       for (const note of notesData) {
+        const noteAny = note as any;
         const { data: watchRecord } = await supabase
           .from('watches')
           .select('id')
-          .eq('brand', note.brand)
-          .eq('model', note.model)
+          .eq('brand', noteAny.brand)
+          .eq('model', noteAny.model)
           .eq('user_id', user.id)
           .single();
 
@@ -183,10 +216,10 @@ serve(async (req) => {
         const { error: updateError } = await supabase
           .from('watches')
           .update({
-            why_bought: note.whyBought,
-            when_bought: note.whenBought,
-            what_i_like: note.whatILike,
-            what_i_dont_like: note.whatIDontLike,
+            why_bought: noteAny.whyBought,
+            when_bought: noteAny.whenBought,
+            what_i_like: noteAny.whatILike,
+            what_i_dont_like: noteAny.whatIDontLike,
           })
           .eq('id', watchRecord.id);
 
@@ -215,7 +248,7 @@ serve(async (req) => {
 
       if (deleteError) throw deleteError;
 
-      const wishlistData = spreadsheetData.page5;
+      const wishlistData = spreadsheetData.page5 || [];
       const wishlistEntries = wishlistData.map((item: any) => ({
         brand: item.brand,
         model: item.model,
