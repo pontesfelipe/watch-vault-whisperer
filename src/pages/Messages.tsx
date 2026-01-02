@@ -21,6 +21,7 @@ export default function Messages() {
     tradeNotifications,
     loading,
     sendFriendRequest,
+    sendFriendRequestById,
     acceptFriendRequest,
     declineFriendRequest,
     sendMessage,
@@ -145,7 +146,7 @@ export default function Messages() {
               <TradeNotificationsList
                 notifications={tradeNotifications}
                 onDismiss={dismissTradeNotification}
-                onSendFriendRequest={sendFriendRequest}
+                onSendFriendRequestById={sendFriendRequestById}
               />
               <FriendRequestsList
                 requests={friendRequests}

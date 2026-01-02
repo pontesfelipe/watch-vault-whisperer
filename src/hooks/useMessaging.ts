@@ -205,7 +205,7 @@ export const useMessaging = () => {
       return;
     }
 
-    // Fetch watch and owner info
+    // Fetch watch info only - owner info is restricted until friendship is established
     const notificationsWithDetails = await Promise.all(
       (data || []).map(async (n: any) => {
         const { data: watch } = await supabase
@@ -214,28 +214,15 @@ export const useMessaging = () => {
           .eq('id', n.trade_watch_id)
           .single();
 
-        const { data: owner } = await supabase
-          .from('profiles')
-          .select('email, username, city, state, country')
-          .eq('id', n.trade_owner_id)
-          .single();
-
-        // Build location string
-        let ownerLocation = '';
-        if (owner) {
-          const parts = [owner.city, owner.state, owner.country].filter(Boolean);
-          ownerLocation = parts.join(', ');
-        }
-
+        // Owner profile info is not accessible until they become friends
+        // This is by design for privacy - trade_owner_id is stored for friend request flow
         return {
           ...n,
           watch_brand: watch?.brand || '',
           watch_model: watch?.model || '',
           watch_dial_color: watch?.dial_color || '',
           watch_type: watch?.type || '',
-          owner_email: owner?.email || '',
-          owner_username: owner?.username || '',
-          owner_location: ownerLocation,
+          trade_owner_id: n.trade_owner_id, // Keep for friend request flow
         };
       })
     );
@@ -317,6 +304,59 @@ export const useMessaging = () => {
     }
 
     console.log('Friend request created:', data);
+    return { success: true };
+  };
+
+  // Send friend request by user ID (used for trade notifications where we don't have access to email)
+  const sendFriendRequestById = async (targetUserId: string, message?: string) => {
+    if (!user) return { error: 'Not authenticated' };
+
+    if (targetUserId === user.id) {
+      return { error: 'You cannot send a friend request to yourself' };
+    }
+
+    // Check if already friends
+    const { data: existing } = await (supabase
+      .from('friendships' as any) as any)
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('friend_id', targetUserId)
+      .single();
+
+    if (existing) {
+      return { error: 'You are already friends with this user' };
+    }
+
+    // Check if request already exists
+    const { data: existingRequest } = await (supabase
+      .from('friend_requests' as any) as any)
+      .select('id, status')
+      .eq('from_user_id', user.id)
+      .eq('to_user_id', targetUserId)
+      .single();
+
+    if (existingRequest) {
+      if (existingRequest.status === 'pending') {
+        return { error: 'Friend request already sent' };
+      }
+    }
+
+    const { data, error } = await (supabase
+      .from('friend_requests' as any) as any)
+      .insert({
+        from_user_id: user.id,
+        to_user_id: targetUserId,
+        message: message || null,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error sending friend request:', error);
+      return { error: 'Failed to send friend request: ' + error.message };
+    }
+
+    console.log('Friend request created by ID:', data);
     return { success: true };
   };
 
@@ -473,6 +513,7 @@ export const useMessaging = () => {
     tradeNotifications,
     loading,
     sendFriendRequest,
+    sendFriendRequestById,
     acceptFriendRequest,
     declineFriendRequest,
     sendMessage,

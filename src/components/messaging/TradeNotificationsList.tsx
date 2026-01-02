@@ -8,13 +8,13 @@ import { Badge } from "@/components/ui/badge";
 interface TradeNotificationsListProps {
   notifications: TradeMatchNotification[];
   onDismiss: (notificationId: string) => Promise<void>;
-  onSendFriendRequest: (email: string, message: string) => Promise<{ success?: boolean; error?: string }>;
+  onSendFriendRequestById: (userId: string, message: string) => Promise<{ success?: boolean; error?: string }>;
 }
 
 export function TradeNotificationsList({ 
   notifications, 
   onDismiss, 
-  onSendFriendRequest 
+  onSendFriendRequestById 
 }: TradeNotificationsListProps) {
   if (notifications.length === 0) {
     return null;
@@ -22,7 +22,7 @@ export function TradeNotificationsList({
 
   const handleConnect = async (notification: TradeMatchNotification) => {
     const message = `Hi! I noticed you have a ${notification.watch_brand} ${notification.watch_model} available for trade. I have this watch on my wishlist and would love to discuss a potential trade!`;
-    await onSendFriendRequest(notification.owner_email!, message);
+    await onSendFriendRequestById(notification.trade_owner_id, message);
     await onDismiss(notification.id);
   };
 
