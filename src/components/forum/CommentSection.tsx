@@ -8,7 +8,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePostComments, PostComment } from "@/hooks/useForumData";
 import { VoteButtons } from "./VoteButtons";
 import { MentionTextarea } from "./MentionTextarea";
-import { extractMentions, createMentionNotifications, formatMentionText } from "@/hooks/useMentions";
+import { MentionText } from "./MentionText";
+import { extractMentions, createMentionNotifications } from "@/hooks/useMentions";
 
 interface CommentSectionProps {
   postId: string;
@@ -145,7 +146,7 @@ export function CommentSection({ postId }: CommentSectionProps) {
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-textSoft mt-1 whitespace-pre-wrap">{formatMentionText(comment.content)}</p>
+              <MentionText content={comment.content} className="text-sm text-textSoft mt-1" />
             )}
             
             {!isEditing && (
