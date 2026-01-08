@@ -142,28 +142,34 @@ export function ProfileSettingsCard() {
             Profile Information
           </CardTitle>
           <CardDescription>
-            Update your profile details. Username will be displayed in chats instead of your real name.
+            Your username is displayed in chats and forums to protect your privacy. You can change it anytime.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="full_name">Full Name</Label>
-              <Input
-                id="full_name"
-                value={profile.full_name}
-                onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
-                placeholder="Your full name"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="username">Username (for chat)</Label>
+              <Label htmlFor="username">Username (public)</Label>
               <Input
                 id="username"
                 value={profile.username}
                 onChange={(e) => setProfile({ ...profile, username: e.target.value })}
-                placeholder="Choose a username"
+                placeholder="Your public username"
               />
+              <p className="text-xs text-muted-foreground">
+                This is shown in chats, forums, and messages
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="full_name">Full Name (private)</Label>
+              <Input
+                id="full_name"
+                value={profile.full_name}
+                onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
+                placeholder="Your real name (optional)"
+              />
+              <p className="text-xs text-muted-foreground">
+                Only visible to you in settings
+              </p>
             </div>
           </div>
         </CardContent>

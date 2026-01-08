@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MessageCircle, Trash2, ChevronDown, ChevronUp, Pencil, Pin } from "lucide-react";
@@ -10,6 +9,7 @@ import { Post, FORUM_CATEGORIES } from "@/hooks/useForumData";
 import { CommentSection } from "./CommentSection";
 import { EditPostDialog } from "./EditPostDialog";
 import { VoteButtons } from "./VoteButtons";
+import { UserAvatar } from "@/components/UserAvatar";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,8 +40,8 @@ export function PostCard({ post, onVote, onDelete, onEdit, onTogglePin }: PostCa
   const [showComments, setShowComments] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   
-  const authorName = post.author?.full_name || post.author?.email?.split('@')[0] || 'Unknown';
-  const authorInitials = authorName.slice(0, 2).toUpperCase();
+  // Use username for display (privacy), fall back to email prefix
+  const authorName = post.author?.username || post.author?.email?.split('@')[0] || 'Unknown';
   const isOwner = user?.id === post.user_id;
   const canDelete = isOwner || isAdmin;
   const canEdit = isOwner;
@@ -68,12 +68,11 @@ export function PostCard({ post, onVote, onDelete, onEdit, onTogglePin }: PostCa
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={post.author?.avatar_url || undefined} />
-                    <AvatarFallback className="bg-accentSubtle text-accent text-xs">
-                      {authorInitials}
-                    </AvatarFallback>
-                  </Avatar>
+                  <UserAvatar 
+                    username={post.author?.username} 
+                    fullName={post.author?.full_name}
+                    size="md"
+                  />
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-medium text-sm text-textMain">{authorName}</p>
