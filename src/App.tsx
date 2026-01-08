@@ -25,6 +25,7 @@ import Auth from "./pages/Auth";
 import Settings from "./pages/Settings";
 import FAQ from "./pages/FAQ";
 import About from "./pages/About";
+import Forum from "./pages/Forum";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -66,6 +67,7 @@ function AppContent() {
           <Route path="/water-usage" element={<ProtectedRoute><AppLayout><WaterUsage /></AppLayout></ProtectedRoute>} />
           <Route path="/personal-notes" element={<ProtectedRoute><AppLayout><PersonalNotes /></AppLayout></ProtectedRoute>} />
           <Route path="/messages" element={<ProtectedRoute><AppLayout><Messages /></AppLayout></ProtectedRoute>} />
+          <Route path="/forum" element={<ProtectedRoute><AppLayout><Forum /></AppLayout></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
           <Route path="/admin/wear-logs" element={<ProtectedRoute><WearLogsAdmin /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
