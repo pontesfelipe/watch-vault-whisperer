@@ -183,7 +183,15 @@ export function PostCard({ post, onVote, onDelete, onEdit, onTogglePin }: PostCa
               </div>
               {showComments && (
                 <div className="w-full border-t pt-3">
-                  <CommentSection postId={post.id} />
+                  <CommentSection 
+                    postId={post.id} 
+                    postAuthor={post.author ? {
+                      id: post.user_id,
+                      username: post.author.username,
+                      avatar_url: post.author.avatar_url,
+                      avatar_color: post.author.avatar_color,
+                    } : undefined}
+                  />
                 </div>
               )}
             </CardFooter>

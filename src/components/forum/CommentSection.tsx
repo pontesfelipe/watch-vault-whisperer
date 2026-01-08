@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
@@ -13,9 +13,15 @@ import { extractMentions, createMentionNotifications } from "@/hooks/useMentions
 
 interface CommentSectionProps {
   postId: string;
+  postAuthor?: {
+    id: string;
+    username: string | null;
+    avatar_url: string | null;
+    avatar_color: string | null;
+  };
 }
 
-export function CommentSection({ postId }: CommentSectionProps) {
+export function CommentSection({ postId, postAuthor }: CommentSectionProps) {
   const { user, isAdmin } = useAuth();
   const { comments, loading, addComment, updateComment, deleteComment, voteComment } = usePostComments(postId);
   const [newComment, setNewComment] = useState("");
@@ -24,6 +30,40 @@ export function CommentSection({ postId }: CommentSectionProps) {
   const [editContent, setEditContent] = useState("");
   const [replyContent, setReplyContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Extract unique thread participants (post author + all comment authors)
+  const threadParticipants = useMemo(() => {
+    const participantMap = new Map<string, {
+      id: string;
+      username: string | null;
+      avatar_url: string | null;
+      avatar_color: string | null;
+    }>();
+
+    // Add post author if provided
+    if (postAuthor) {
+      participantMap.set(postAuthor.id, postAuthor);
+    }
+
+    // Add all comment authors
+    comments.forEach(comment => {
+      if (comment.author && comment.user_id) {
+        participantMap.set(comment.user_id, {
+          id: comment.user_id,
+          username: comment.author.username,
+          avatar_url: comment.author.avatar_url,
+          avatar_color: comment.author.avatar_color,
+        });
+      }
+    });
+
+    // Remove current user from suggestions (can't mention yourself)
+    if (user) {
+      participantMap.delete(user.id);
+    }
+
+    return Array.from(participantMap.values());
+  }, [comments, postAuthor, user]);
 
   const handleSubmitComment = async () => {
     if (!newComment.trim() || !user) return;
@@ -193,9 +233,10 @@ export function CommentSection({ postId }: CommentSectionProps) {
                 <MentionTextarea
                   value={replyContent}
                   onChange={setReplyContent}
-                  placeholder="Write a reply... Use @ to mention users"
+                  placeholder="Write a reply... Use @ to mention thread participants"
                   className="min-h-[60px] text-sm"
                   rows={2}
+                  threadParticipants={threadParticipants}
                 />
                 <Button
                   size="sm"
@@ -228,9 +269,10 @@ export function CommentSection({ postId }: CommentSectionProps) {
           <MentionTextarea
             value={newComment}
             onChange={setNewComment}
-            placeholder="Write a comment... Use @ to mention users"
+            placeholder="Write a comment... Use @ to mention thread participants"
             className="min-h-[60px] text-sm"
             rows={2}
+            threadParticipants={threadParticipants}
           />
           <Button
             size="sm"
