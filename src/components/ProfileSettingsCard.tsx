@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, MapPin, Loader2 } from "lucide-react";
+import { User, MapPin, Loader2, Upload, X, Palette } from "lucide-react";
+import { UserAvatar, AVATAR_COLORS } from "@/components/UserAvatar";
+import { cn } from "@/lib/utils";
 
 interface ProfileData {
   full_name: string;
@@ -15,6 +17,8 @@ interface ProfileData {
   country: string;
   state: string;
   city: string;
+  avatar_url: string | null;
+  avatar_color: string | null;
 }
 
 interface PreferencesData {
@@ -25,12 +29,16 @@ export function ProfileSettingsCard() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [profile, setProfile] = useState<ProfileData>({
     full_name: "",
     username: "",
     country: "",
     state: "",
     city: "",
+    avatar_url: null,
+    avatar_color: null,
   });
   const [preferences, setPreferences] = useState<PreferencesData>({
     trade_match_scope: "global",
@@ -45,7 +53,7 @@ export function ProfileSettingsCard() {
         // Fetch profile
         const { data: profileData } = await supabase
           .from("profiles")
-          .select("full_name, username, country, state, city")
+          .select("full_name, username, country, state, city, avatar_url, avatar_color")
           .eq("id", user.id)
           .single();
 
@@ -56,6 +64,8 @@ export function ProfileSettingsCard() {
             country: profileData.country || "",
             state: profileData.state || "",
             city: profileData.city || "",
+            avatar_url: profileData.avatar_url,
+            avatar_color: profileData.avatar_color,
           });
         }
 
@@ -81,6 +91,79 @@ export function ProfileSettingsCard() {
     fetchProfile();
   }, [user]);
 
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Image must be less than 2MB");
+      return;
+    }
+
+    setUploadingAvatar(true);
+    try {
+      const fileExt = file.name.split(".").pop();
+      const filePath = `${user.id}/avatar.${fileExt}`;
+
+      // Upload to storage
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL with cache-busting
+      const { data: { publicUrl } } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(filePath);
+
+      const avatarUrlWithTimestamp = `${publicUrl}?t=${Date.now()}`;
+
+      // Update profile with new avatar URL
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ avatar_url: avatarUrlWithTimestamp })
+        .eq("id", user.id);
+
+      if (updateError) throw updateError;
+
+      setProfile({ ...profile, avatar_url: avatarUrlWithTimestamp });
+      toast.success("Avatar uploaded successfully");
+    } catch (error) {
+      console.error("Error uploading avatar:", error);
+      toast.error("Failed to upload avatar");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    if (!user) return;
+
+    try {
+      // Update profile to remove avatar URL
+      const { error } = await supabase
+        .from("profiles")
+        .update({ avatar_url: null })
+        .eq("id", user.id);
+
+      if (error) throw error;
+
+      setProfile({ ...profile, avatar_url: null });
+      toast.success("Avatar removed");
+    } catch (error) {
+      console.error("Error removing avatar:", error);
+      toast.error("Failed to remove avatar");
+    }
+  };
+
   const handleSave = async () => {
     if (!user) return;
 
@@ -95,6 +178,7 @@ export function ProfileSettingsCard() {
           country: profile.country || null,
           state: profile.state || null,
           city: profile.city || null,
+          avatar_color: profile.avatar_color,
         })
         .eq("id", user.id);
 
@@ -135,6 +219,108 @@ export function ProfileSettingsCard() {
 
   return (
     <div className="space-y-6">
+      {/* Avatar Settings Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Palette className="h-5 w-5" />
+            Avatar
+          </CardTitle>
+          <CardDescription>
+            Customize your avatar with a photo or choose a color for your initials.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Avatar Preview */}
+          <div className="flex items-center gap-4">
+            <UserAvatar
+              username={profile.username}
+              fullName={profile.full_name}
+              avatarUrl={profile.avatar_url}
+              avatarColor={profile.avatar_color}
+              size="lg"
+              className="h-16 w-16 text-xl"
+            />
+            <div className="space-y-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarUpload}
+                className="hidden"
+              />
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingAvatar}
+                >
+                  {uploadingAvatar ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Upload className="h-4 w-4 mr-2" />
+                  )}
+                  Upload Photo
+                </Button>
+                {profile.avatar_url && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleRemoveAvatar}
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    Remove
+                  </Button>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                JPG, PNG or GIF. Max 2MB.
+              </p>
+            </div>
+          </div>
+
+          {/* Color Picker */}
+          <div className="space-y-2">
+            <Label>Avatar Color (for initials)</Label>
+            <p className="text-xs text-muted-foreground mb-2">
+              This color shows when you don't have a photo, or as a fallback.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {AVATAR_COLORS.map((color) => (
+                <button
+                  key={color.value}
+                  type="button"
+                  onClick={() => setProfile({ ...profile, avatar_color: color.value })}
+                  className={cn(
+                    "w-8 h-8 rounded-full transition-all",
+                    color.value,
+                    profile.avatar_color === color.value
+                      ? "ring-2 ring-offset-2 ring-primary"
+                      : "hover:scale-110"
+                  )}
+                  title={color.name}
+                />
+              ))}
+              <button
+                type="button"
+                onClick={() => setProfile({ ...profile, avatar_color: null })}
+                className={cn(
+                  "w-8 h-8 rounded-full border-2 border-dashed border-muted-foreground/50 flex items-center justify-center text-xs text-muted-foreground transition-all",
+                  profile.avatar_color === null
+                    ? "ring-2 ring-offset-2 ring-primary"
+                    : "hover:scale-110"
+                )}
+                title="Auto (based on username)"
+              >
+                A
+              </button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Profile Information Card */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -175,6 +361,7 @@ export function ProfileSettingsCard() {
         </CardContent>
       </Card>
 
+      {/* Location Card */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
