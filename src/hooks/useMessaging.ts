@@ -87,14 +87,14 @@ export const useMessaging = () => {
       (data || []).map(async (f: any) => {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('email, full_name')
+          .select('email, full_name, username')
           .eq('id', f.friend_id)
           .single();
         
         return {
           ...f,
           friend_email: profile?.email || '',
-          friend_name: profile?.full_name || '',
+          friend_name: profile?.username || profile?.full_name || '',
         };
       })
     );
@@ -121,14 +121,14 @@ export const useMessaging = () => {
       (data || []).map(async (r: any) => {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('email, full_name')
+          .select('email, full_name, username')
           .eq('id', r.from_user_id)
           .single();
         
         return {
           ...r,
           from_user_email: profile?.email || '',
-          from_user_name: profile?.full_name || '',
+          from_user_name: profile?.username || profile?.full_name || '',
         };
       })
     );
@@ -157,7 +157,7 @@ export const useMessaging = () => {
         
         const { data: profile } = await supabase
           .from('profiles')
-          .select('email, full_name')
+          .select('email, full_name, username')
           .eq('id', otherUserId)
           .single();
 
@@ -180,7 +180,7 @@ export const useMessaging = () => {
         return {
           ...c,
           other_user_email: profile?.email || '',
-          other_user_name: profile?.full_name || '',
+          other_user_name: profile?.username || profile?.full_name || '',
           last_message: messages?.[0]?.content || '',
           unread_count: count || 0,
         };

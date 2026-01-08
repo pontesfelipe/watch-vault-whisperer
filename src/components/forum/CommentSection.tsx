@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Trash2, Reply, Send, Loader2, Pencil, X, Check } from "lucide-react";
@@ -83,8 +83,8 @@ export function CommentSection({ postId }: CommentSectionProps) {
   });
 
   const renderComment = (comment: PostComment, depth = 0) => {
-    const authorName = comment.author?.full_name || comment.author?.email?.split('@')[0] || 'Unknown';
-    const authorInitials = authorName.slice(0, 2).toUpperCase();
+    // Use username for display (privacy), fall back to email prefix
+    const authorName = comment.author?.username || comment.author?.email?.split('@')[0] || 'Unknown';
     const isOwner = user?.id === comment.user_id;
     const canDelete = isOwner || isAdmin;
     const canEdit = isOwner;
@@ -108,12 +108,11 @@ export function CommentSection({ postId }: CommentSectionProps) {
           {/* Comment content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <Avatar className="h-6 w-6">
-                <AvatarImage src={comment.author?.avatar_url || undefined} />
-                <AvatarFallback className="bg-surfaceMuted text-textMuted text-xs">
-                  {authorInitials}
-                </AvatarFallback>
-              </Avatar>
+              <UserAvatar 
+                username={comment.author?.username} 
+                fullName={comment.author?.full_name}
+                size="sm"
+              />
               <span className="font-medium text-sm text-textMain">{authorName}</span>
               <span className="text-xs text-textMuted">
                 {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
