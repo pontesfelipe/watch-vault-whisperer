@@ -30,6 +30,7 @@ export interface Post {
     full_name: string | null;
     username: string | null;
     avatar_url: string | null;
+    avatar_color: string | null;
   };
   vote_score: number;
   comments_count: number;
@@ -49,6 +50,7 @@ export interface PostComment {
     full_name: string | null;
     username: string | null;
     avatar_url: string | null;
+    avatar_color: string | null;
   };
   vote_score: number;
   user_vote: number;
@@ -91,7 +93,7 @@ export function useForumData(options: UseForumDataOptions = {}) {
       const userIds = [...new Set(postsData?.map(p => p.user_id) || [])];
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('id, email, full_name, username, avatar_url')
+        .select('id, email, full_name, username, avatar_url, avatar_color')
         .in('id', userIds);
       
       const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
@@ -316,7 +318,7 @@ export function usePostComments(postId: string) {
       const userIds = [...new Set(commentsData?.map(c => c.user_id) || [])];
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('id, email, full_name, username, avatar_url')
+        .select('id, email, full_name, username, avatar_url, avatar_color')
         .in('id', userIds);
       
       const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);

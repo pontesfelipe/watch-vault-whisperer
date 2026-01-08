@@ -111,6 +111,8 @@ export function CommentSection({ postId }: CommentSectionProps) {
               <UserAvatar 
                 username={comment.author?.username} 
                 fullName={comment.author?.full_name}
+                avatarUrl={comment.author?.avatar_url}
+                avatarColor={comment.author?.avatar_color}
                 size="sm"
               />
               <span className="font-medium text-sm text-textMain">{authorName}</span>

@@ -71,6 +71,8 @@ export function PostCard({ post, onVote, onDelete, onEdit, onTogglePin }: PostCa
                   <UserAvatar 
                     username={post.author?.username} 
                     fullName={post.author?.full_name}
+                    avatarUrl={post.author?.avatar_url}
+                    avatarColor={post.author?.avatar_color}
                     size="md"
                   />
                   <div>

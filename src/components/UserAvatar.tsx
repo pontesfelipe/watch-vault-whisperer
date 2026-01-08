@@ -1,27 +1,34 @@
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 interface UserAvatarProps {
   username?: string | null;
   fullName?: string | null;
+  avatarUrl?: string | null;
+  avatarColor?: string | null;
   size?: "sm" | "md" | "lg";
   className?: string;
 }
 
+// Available avatar colors for user selection
+export const AVATAR_COLORS = [
+  { name: "Blue", value: "bg-blue-500" },
+  { name: "Green", value: "bg-green-500" },
+  { name: "Purple", value: "bg-purple-500" },
+  { name: "Orange", value: "bg-orange-500" },
+  { name: "Pink", value: "bg-pink-500" },
+  { name: "Teal", value: "bg-teal-500" },
+  { name: "Indigo", value: "bg-indigo-500" },
+  { name: "Rose", value: "bg-rose-500" },
+  { name: "Cyan", value: "bg-cyan-500" },
+  { name: "Amber", value: "bg-amber-500" },
+  { name: "Emerald", value: "bg-emerald-500" },
+  { name: "Violet", value: "bg-violet-500" },
+];
+
 // Generate a consistent color based on the username
-function getAvatarColor(name: string): string {
-  const colors = [
-    "bg-blue-500",
-    "bg-green-500",
-    "bg-purple-500",
-    "bg-orange-500",
-    "bg-pink-500",
-    "bg-teal-500",
-    "bg-indigo-500",
-    "bg-rose-500",
-    "bg-cyan-500",
-    "bg-amber-500",
-  ];
+function getAutoAvatarColor(name: string): string {
+  const colors = AVATAR_COLORS.map(c => c.value);
   
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
@@ -55,10 +62,17 @@ function getInitials(username?: string | null, fullName?: string | null): string
   return "??";
 }
 
-export function UserAvatar({ username, fullName, size = "md", className }: UserAvatarProps) {
+export function UserAvatar({ 
+  username, 
+  fullName, 
+  avatarUrl,
+  avatarColor,
+  size = "md", 
+  className 
+}: UserAvatarProps) {
   const initials = getInitials(username, fullName);
   const displayName = username || fullName || "User";
-  const bgColor = getAvatarColor(displayName);
+  const bgColor = avatarColor || getAutoAvatarColor(displayName);
   
   const sizeClasses = {
     sm: "h-6 w-6 text-xs",
@@ -68,6 +82,7 @@ export function UserAvatar({ username, fullName, size = "md", className }: UserA
 
   return (
     <Avatar className={cn(sizeClasses[size], className)}>
+      {avatarUrl && <AvatarImage src={avatarUrl} alt={displayName} />}
       <AvatarFallback className={cn(bgColor, "text-white font-medium")}>
         {initials}
       </AvatarFallback>
