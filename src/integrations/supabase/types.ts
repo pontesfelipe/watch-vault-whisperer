@@ -592,6 +592,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_color: string | null
           avatar_url: string | null
           city: string | null
           country: string | null
@@ -604,6 +605,7 @@ export type Database = {
           username: string | null
         }
         Insert: {
+          avatar_color?: string | null
           avatar_url?: string | null
           city?: string | null
           country?: string | null
@@ -616,6 +618,7 @@ export type Database = {
           username?: string | null
         }
         Update: {
+          avatar_color?: string | null
           avatar_url?: string | null
           city?: string | null
           country?: string | null
