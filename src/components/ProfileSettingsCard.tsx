@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { User, MapPin, Loader2, Upload, X, Palette } from "lucide-react";
 import { UserAvatar, AVATAR_COLORS } from "@/components/UserAvatar";
+import { AvatarCropDialog } from "@/components/AvatarCropDialog";
 import { cn } from "@/lib/utils";
 
 interface ProfileData {
@@ -30,6 +31,8 @@ export function ProfileSettingsCard() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [cropDialogOpen, setCropDialogOpen] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [profile, setProfile] = useState<ProfileData>({
     full_name: "",
@@ -91,7 +94,7 @@ export function ProfileSettingsCard() {
     fetchProfile();
   }, [user]);
 
-  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !user) return;
 
@@ -101,21 +104,37 @@ export function ProfileSettingsCard() {
       return;
     }
 
-    // Validate file size (max 2MB)
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("Image must be less than 2MB");
+    // Validate file size (max 5MB for cropping, final will be smaller)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be less than 5MB");
       return;
     }
 
+    // Create object URL for cropping
+    const imageUrl = URL.createObjectURL(file);
+    setImageToCrop(imageUrl);
+    setCropDialogOpen(true);
+    
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleCroppedAvatar = async (croppedBlob: Blob) => {
+    if (!user) return;
+
     setUploadingAvatar(true);
     try {
-      const fileExt = file.name.split(".").pop();
-      const filePath = `${user.id}/avatar.${fileExt}`;
+      const filePath = `${user.id}/avatar.jpg`;
 
       // Upload to storage
       const { error: uploadError } = await supabase.storage
         .from("avatars")
-        .upload(filePath, file, { upsert: true });
+        .upload(filePath, croppedBlob, { 
+          upsert: true,
+          contentType: "image/jpeg"
+        });
 
       if (uploadError) throw uploadError;
 
@@ -141,6 +160,11 @@ export function ProfileSettingsCard() {
       toast.error("Failed to upload avatar");
     } finally {
       setUploadingAvatar(false);
+      // Clean up object URL
+      if (imageToCrop) {
+        URL.revokeObjectURL(imageToCrop);
+        setImageToCrop(null);
+      }
     }
   };
 
@@ -246,7 +270,7 @@ export function ProfileSettingsCard() {
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
-                onChange={handleAvatarUpload}
+                onChange={handleFileSelect}
                 className="hidden"
               />
               <div className="flex gap-2">
@@ -438,6 +462,22 @@ export function ProfileSettingsCard() {
           )}
         </Button>
       </div>
+
+      {/* Avatar Crop Dialog */}
+      {imageToCrop && (
+        <AvatarCropDialog
+          open={cropDialogOpen}
+          onOpenChange={(open) => {
+            setCropDialogOpen(open);
+            if (!open && imageToCrop) {
+              URL.revokeObjectURL(imageToCrop);
+              setImageToCrop(null);
+            }
+          }}
+          imageSrc={imageToCrop}
+          onCropComplete={handleCroppedAvatar}
+        />
+      )}
     </div>
   );
 }
