@@ -61,10 +61,10 @@ export function MentionTextarea({
     clearUsers();
   };
 
-  const insertMention = useCallback((user: { id: string; full_name: string | null; email: string }) => {
+  const insertMention = useCallback((user: { id: string; username: string | null }) => {
     if (mentionStartIndex === null) return;
     
-    const displayName = user.full_name || user.email.split("@")[0];
+    const displayName = user.username || "User";
     const mentionText = `@[${displayName}](${user.id})`;
     
     const before = value.slice(0, mentionStartIndex);
@@ -146,7 +146,7 @@ export function MentionTextarea({
       {showSuggestions && users.length > 0 && (
         <div className="absolute z-50 w-64 mt-1 bg-surface border border-border rounded-md shadow-lg overflow-hidden">
           {users.map((user, index) => {
-            const name = user.full_name || user.email.split("@")[0];
+            const name = user.username || "User";
             const initials = name.slice(0, 2).toUpperCase();
             
             return (
@@ -167,7 +167,6 @@ export function MentionTextarea({
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-textMain truncate">{name}</p>
-                  <p className="text-xs text-textMuted truncate">{user.email}</p>
                 </div>
               </button>
             );

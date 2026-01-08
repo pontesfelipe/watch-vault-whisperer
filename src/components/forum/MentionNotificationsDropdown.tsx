@@ -67,7 +67,7 @@ export function MentionNotificationsDropdown() {
           <div className="max-h-80 overflow-y-auto">
             {notifications.map((notification) => {
               const mentioner = notification.mentioned_by;
-              const name = mentioner?.full_name || mentioner?.email?.split("@")[0] || "Someone";
+              const name = mentioner?.username || "Someone";
               const initials = name.slice(0, 2).toUpperCase();
 
               return (

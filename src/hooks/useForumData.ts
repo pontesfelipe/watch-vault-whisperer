@@ -26,8 +26,6 @@ export interface Post {
   created_at: string;
   updated_at: string;
   author?: {
-    email: string;
-    full_name: string | null;
     username: string | null;
     avatar_url: string | null;
     avatar_color: string | null;
@@ -46,8 +44,6 @@ export interface PostComment {
   created_at: string;
   updated_at: string;
   author?: {
-    email: string;
-    full_name: string | null;
     username: string | null;
     avatar_url: string | null;
     avatar_color: string | null;
@@ -89,11 +85,11 @@ export function useForumData(options: UseForumDataOptions = {}) {
       
       if (postsError) throw postsError;
 
-      // Fetch profiles for authors
+      // Fetch public profiles for authors (only non-sensitive data)
       const userIds = [...new Set(postsData?.map(p => p.user_id) || [])];
       const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, email, full_name, username, avatar_url, avatar_color')
+        .from('public_profiles')
+        .select('id, username, avatar_url, avatar_color')
         .in('id', userIds);
       
       const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
@@ -317,8 +313,8 @@ export function usePostComments(postId: string) {
 
       const userIds = [...new Set(commentsData?.map(c => c.user_id) || [])];
       const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, email, full_name, username, avatar_url, avatar_color')
+        .from('public_profiles')
+        .select('id, username, avatar_url, avatar_color')
         .in('id', userIds);
       
       const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
