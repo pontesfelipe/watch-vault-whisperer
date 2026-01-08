@@ -1228,6 +1228,7 @@ export type Database = {
         Args: { _request_id: string }
         Returns: undefined
       }
+      anonymize_old_access_logs: { Args: never; Returns: undefined }
       can_use_ai_feature: {
         Args: { _feature_name: string; _user_id: string }
         Returns: boolean
