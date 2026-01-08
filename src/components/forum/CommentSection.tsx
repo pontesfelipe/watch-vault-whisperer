@@ -7,6 +7,8 @@ import { Trash2, Reply, Send, Loader2, Pencil, X, Check } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePostComments, PostComment } from "@/hooks/useForumData";
 import { VoteButtons } from "./VoteButtons";
+import { MentionTextarea } from "./MentionTextarea";
+import { extractMentions, createMentionNotifications, formatMentionText } from "@/hooks/useMentions";
 
 interface CommentSectionProps {
   postId: string;
@@ -23,20 +25,24 @@ export function CommentSection({ postId }: CommentSectionProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmitComment = async () => {
-    if (!newComment.trim()) return;
+    if (!newComment.trim() || !user) return;
     setIsSubmitting(true);
-    const success = await addComment(newComment);
-    if (success) {
+    const commentId = await addComment(newComment);
+    if (commentId) {
+      const mentions = extractMentions(newComment);
+      await createMentionNotifications(mentions, user.id, commentId, postId);
       setNewComment("");
     }
     setIsSubmitting(false);
   };
 
   const handleSubmitReply = async (parentId: string) => {
-    if (!replyContent.trim()) return;
+    if (!replyContent.trim() || !user) return;
     setIsSubmitting(true);
-    const success = await addComment(replyContent, parentId);
-    if (success) {
+    const commentId = await addComment(replyContent, parentId);
+    if (commentId) {
+      const mentions = extractMentions(replyContent);
+      await createMentionNotifications(mentions, user.id, commentId, postId);
       setReplyContent("");
       setReplyingTo(null);
     }
@@ -139,7 +145,7 @@ export function CommentSection({ postId }: CommentSectionProps) {
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-textSoft mt-1 whitespace-pre-wrap">{comment.content}</p>
+              <p className="text-sm text-textSoft mt-1 whitespace-pre-wrap">{formatMentionText(comment.content)}</p>
             )}
             
             {!isEditing && (
@@ -183,10 +189,10 @@ export function CommentSection({ postId }: CommentSectionProps) {
             
             {replyingTo === comment.id && (
               <div className="flex gap-2 mt-2">
-                <Textarea
+                <MentionTextarea
                   value={replyContent}
-                  onChange={(e) => setReplyContent(e.target.value)}
-                  placeholder="Write a reply..."
+                  onChange={setReplyContent}
+                  placeholder="Write a reply... Use @ to mention users"
                   className="min-h-[60px] text-sm"
                   rows={2}
                 />
@@ -218,10 +224,10 @@ export function CommentSection({ postId }: CommentSectionProps) {
     <div className="space-y-3">
       {user && (
         <div className="flex gap-2">
-          <Textarea
+          <MentionTextarea
             value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            placeholder="Write a comment..."
+            onChange={setNewComment}
+            placeholder="Write a comment... Use @ to mention users"
             className="min-h-[60px] text-sm"
             rows={2}
           />
