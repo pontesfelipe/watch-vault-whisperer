@@ -1,8 +1,15 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useUserSearch } from "@/hooks/useMentions";
+import { useUserSearch, useThreadUserSearch } from "@/hooks/useMentions";
 import { cn } from "@/lib/utils";
+
+interface ThreadParticipant {
+  id: string;
+  username: string | null;
+  avatar_url: string | null;
+  avatar_color: string | null;
+}
 
 interface MentionTextareaProps {
   value: string;
@@ -11,6 +18,7 @@ interface MentionTextareaProps {
   className?: string;
   rows?: number;
   disabled?: boolean;
+  threadParticipants?: ThreadParticipant[];
 }
 
 export function MentionTextarea({
@@ -20,8 +28,16 @@ export function MentionTextarea({
   className,
   rows = 2,
   disabled,
+  threadParticipants,
 }: MentionTextareaProps) {
-  const { users, searching, searchUsers, clearUsers } = useUserSearch();
+  // Use thread-specific search if participants are provided, otherwise use global search
+  const globalSearch = useUserSearch();
+  const threadSearch = useThreadUserSearch(threadParticipants || []);
+  
+  const { users, searching, searchUsers, clearUsers } = threadParticipants 
+    ? threadSearch 
+    : globalSearch;
+    
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [mentionQuery, setMentionQuery] = useState("");
@@ -174,15 +190,17 @@ export function MentionTextarea({
         </div>
       )}
       
-      {showSuggestions && searching && users.length === 0 && mentionQuery.length >= 2 && (
+      {showSuggestions && searching && users.length === 0 && mentionQuery.length >= 1 && (
         <div className="absolute z-50 w-64 mt-1 bg-surface border border-border rounded-md shadow-lg p-3">
           <p className="text-sm text-textMuted">Searching...</p>
         </div>
       )}
       
-      {showSuggestions && !searching && users.length === 0 && mentionQuery.length >= 2 && (
+      {showSuggestions && !searching && users.length === 0 && mentionQuery.length >= 1 && (
         <div className="absolute z-50 w-64 mt-1 bg-surface border border-border rounded-md shadow-lg p-3">
-          <p className="text-sm text-textMuted">No users found</p>
+          <p className="text-sm text-textMuted">
+            {threadParticipants ? "No participants found" : "No users found"}
+          </p>
         </div>
       )}
     </div>

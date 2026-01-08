@@ -53,6 +53,34 @@ export function useUserSearch() {
   return { users, searching, searchUsers, clearUsers: () => setUsers([]) };
 }
 
+// Hook to search only users who have participated in a specific thread
+export function useThreadUserSearch(threadParticipants: Profile[]) {
+  const [filteredUsers, setFilteredUsers] = useState<Profile[]>([]);
+  const [searching, setSearching] = useState(false);
+
+  const searchUsers = useCallback((query: string) => {
+    if (query.length < 1) {
+      setFilteredUsers([]);
+      return;
+    }
+
+    setSearching(true);
+    const lowerQuery = query.toLowerCase();
+    const matched = threadParticipants.filter(
+      (p) => p.username?.toLowerCase().includes(lowerQuery)
+    ).slice(0, 5);
+    setFilteredUsers(matched);
+    setSearching(false);
+  }, [threadParticipants]);
+
+  return { 
+    users: filteredUsers, 
+    searching, 
+    searchUsers, 
+    clearUsers: () => setFilteredUsers([]) 
+  };
+}
+
 export function useMentionNotifications() {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<MentionNotification[]>([]);
