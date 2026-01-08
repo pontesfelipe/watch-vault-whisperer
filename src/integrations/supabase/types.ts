@@ -373,6 +373,51 @@ export type Database = {
         }
         Relationships: []
       }
+      mention_notifications: {
+        Row: {
+          comment_id: string
+          created_at: string
+          id: string
+          is_read: boolean
+          mentioned_by_user_id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          mentioned_by_user_id: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          mentioned_by_user_id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mention_notifications_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "post_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mention_notifications_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string

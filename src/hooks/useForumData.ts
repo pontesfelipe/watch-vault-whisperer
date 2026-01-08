@@ -350,31 +350,33 @@ export function usePostComments(postId: string) {
     }
   }, [postId, user]);
 
-  const addComment = async (content: string, parentCommentId?: string) => {
+  const addComment = async (content: string, parentCommentId?: string): Promise<string | null> => {
     if (!user) {
       toast.error("You must be logged in to comment");
-      return false;
+      return null;
     }
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('post_comments')
         .insert({
           post_id: postId,
           user_id: user.id,
           content,
           parent_comment_id: parentCommentId || null
-        });
+        })
+        .select('id')
+        .single();
 
       if (error) throw error;
 
       toast.success("Comment added");
       fetchComments();
-      return true;
+      return data.id;
     } catch (error) {
       console.error("Error adding comment:", error);
       toast.error("Failed to add comment");
-      return false;
+      return null;
     }
   };
 

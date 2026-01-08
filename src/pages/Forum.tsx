@@ -3,6 +3,7 @@ import { useForumData, FORUM_CATEGORIES } from "@/hooks/useForumData";
 import { useAuth } from "@/contexts/AuthContext";
 import { CreatePostDialog } from "@/components/forum/CreatePostDialog";
 import { PostCard } from "@/components/forum/PostCard";
+import { MentionNotificationsDropdown } from "@/components/forum/MentionNotificationsDropdown";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, MessageSquare, Search } from "lucide-react";
@@ -29,7 +30,10 @@ export default function Forum() {
             Share posts, conversations, and discussions with the community
           </p>
         </div>
-        {user && <CreatePostDialog onSubmit={createPost} />}
+        <div className="flex items-center gap-2">
+          {user && <MentionNotificationsDropdown />}
+          {user && <CreatePostDialog onSubmit={createPost} />}
+        </div>
       </div>
 
       {/* Search and Filter */}
