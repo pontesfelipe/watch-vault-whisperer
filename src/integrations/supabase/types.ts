@@ -1213,6 +1213,27 @@ export type Database = {
       }
     }
     Views: {
+      public_profiles: {
+        Row: {
+          avatar_color: string | null
+          avatar_url: string | null
+          id: string | null
+          username: string | null
+        }
+        Insert: {
+          avatar_color?: string | null
+          avatar_url?: string | null
+          id?: string | null
+          username?: string | null
+        }
+        Update: {
+          avatar_color?: string | null
+          avatar_url?: string | null
+          id?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
       usage_metrics: {
         Row: {
           action: string | null
@@ -1242,6 +1263,24 @@ export type Database = {
         }[]
       }
       get_profile_id_by_email: { Args: { _email: string }; Returns: string }
+      get_public_profile: {
+        Args: { _user_id: string }
+        Returns: {
+          avatar_color: string
+          avatar_url: string
+          id: string
+          username: string
+        }[]
+      }
+      get_public_profiles: {
+        Args: { _user_ids: string[] }
+        Returns: {
+          avatar_color: string
+          avatar_url: string
+          id: string
+          username: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

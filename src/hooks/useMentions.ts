@@ -5,9 +5,9 @@ import { toast } from "sonner";
 
 interface Profile {
   id: string;
-  email: string;
-  full_name: string | null;
+  username: string | null;
   avatar_url: string | null;
+  avatar_color: string | null;
 }
 
 export interface MentionNotification {
@@ -35,9 +35,9 @@ export function useUserSearch() {
     setSearching(true);
     try {
       const { data, error } = await supabase
-        .from("profiles")
-        .select("id, email, full_name, avatar_url")
-        .or(`full_name.ilike.%${query}%,email.ilike.%${query}%`)
+        .from("public_profiles")
+        .select("id, username, avatar_url, avatar_color")
+        .or(`username.ilike.%${query}%`)
         .limit(5);
 
       if (error) throw error;
@@ -82,7 +82,7 @@ export function useMentionNotifications() {
       const postIds = [...new Set(data?.map((n) => n.post_id) || [])];
 
       const [profilesRes, postsRes] = await Promise.all([
-        supabase.from("profiles").select("id, email, full_name, avatar_url").in("id", mentionedByIds),
+        supabase.from("public_profiles").select("id, username, avatar_url, avatar_color").in("id", mentionedByIds),
         supabase.from("posts").select("id, title").in("id", postIds),
       ]);
 

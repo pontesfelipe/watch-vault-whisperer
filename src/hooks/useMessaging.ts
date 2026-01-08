@@ -82,19 +82,21 @@ export const useMessaging = () => {
       return;
     }
 
-    // Fetch profile info for each friend
+    // Fetch profile info for each friend (only non-sensitive data)
     const friendsWithProfiles = await Promise.all(
       (data || []).map(async (f: any) => {
         const { data: profile } = await supabase
-          .from('profiles')
-          .select('email, full_name, username')
+          .from('public_profiles')
+          .select('username, avatar_url, avatar_color')
           .eq('id', f.friend_id)
           .single();
         
         return {
           ...f,
-          friend_email: profile?.email || '',
-          friend_name: profile?.username || profile?.full_name || '',
+          friend_email: '', // No longer exposed for privacy
+          friend_name: profile?.username || 'User',
+          friend_avatar_url: profile?.avatar_url,
+          friend_avatar_color: profile?.avatar_color,
         };
       })
     );
@@ -116,19 +118,21 @@ export const useMessaging = () => {
       return;
     }
 
-    // Fetch profile info for each requester
+    // Fetch profile info for each requester (only non-sensitive data)
     const requestsWithProfiles = await Promise.all(
       (data || []).map(async (r: any) => {
         const { data: profile } = await supabase
-          .from('profiles')
-          .select('email, full_name, username')
+          .from('public_profiles')
+          .select('username, avatar_url, avatar_color')
           .eq('id', r.from_user_id)
           .single();
         
         return {
           ...r,
-          from_user_email: profile?.email || '',
-          from_user_name: profile?.username || profile?.full_name || '',
+          from_user_email: '', // No longer exposed for privacy
+          from_user_name: profile?.username || 'User',
+          from_user_avatar_url: profile?.avatar_url,
+          from_user_avatar_color: profile?.avatar_color,
         };
       })
     );
@@ -150,14 +154,14 @@ export const useMessaging = () => {
       return;
     }
 
-    // Fetch profile info and last message for each conversation
+    // Fetch profile info and last message for each conversation (only non-sensitive data)
     const conversationsWithDetails = await Promise.all(
       (data || []).map(async (c: any) => {
         const otherUserId = c.user1_id === user.id ? c.user2_id : c.user1_id;
         
         const { data: profile } = await supabase
-          .from('profiles')
-          .select('email, full_name, username')
+          .from('public_profiles')
+          .select('username, avatar_url, avatar_color')
           .eq('id', otherUserId)
           .single();
 
@@ -179,8 +183,10 @@ export const useMessaging = () => {
 
         return {
           ...c,
-          other_user_email: profile?.email || '',
-          other_user_name: profile?.username || profile?.full_name || '',
+          other_user_email: '', // No longer exposed for privacy
+          other_user_name: profile?.username || 'User',
+          other_user_avatar_url: profile?.avatar_url,
+          other_user_avatar_color: profile?.avatar_color,
           last_message: messages?.[0]?.content || '',
           unread_count: count || 0,
         };

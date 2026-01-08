@@ -40,8 +40,8 @@ export function PostCard({ post, onVote, onDelete, onEdit, onTogglePin }: PostCa
   const [showComments, setShowComments] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   
-  // Use username for display (privacy), fall back to email prefix
-  const authorName = post.author?.username || post.author?.email?.split('@')[0] || 'Unknown';
+  // Use username for display (privacy)
+  const authorName = post.author?.username || 'Unknown';
   const isOwner = user?.id === post.user_id;
   const canDelete = isOwner || isAdmin;
   const canEdit = isOwner;
@@ -70,7 +70,6 @@ export function PostCard({ post, onVote, onDelete, onEdit, onTogglePin }: PostCa
                 <div className="flex items-center gap-3">
                   <UserAvatar 
                     username={post.author?.username} 
-                    fullName={post.author?.full_name}
                     avatarUrl={post.author?.avatar_url}
                     avatarColor={post.author?.avatar_color}
                     size="md"

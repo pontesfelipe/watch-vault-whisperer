@@ -83,8 +83,8 @@ export function CommentSection({ postId }: CommentSectionProps) {
   });
 
   const renderComment = (comment: PostComment, depth = 0) => {
-    // Use username for display (privacy), fall back to email prefix
-    const authorName = comment.author?.username || comment.author?.email?.split('@')[0] || 'Unknown';
+    // Use username for display (privacy)
+    const authorName = comment.author?.username || 'Unknown';
     const isOwner = user?.id === comment.user_id;
     const canDelete = isOwner || isAdmin;
     const canEdit = isOwner;
@@ -110,7 +110,6 @@ export function CommentSection({ postId }: CommentSectionProps) {
             <div className="flex items-center gap-2 flex-wrap">
               <UserAvatar 
                 username={comment.author?.username} 
-                fullName={comment.author?.full_name}
                 avatarUrl={comment.author?.avatar_url}
                 avatarColor={comment.author?.avatar_color}
                 size="sm"
