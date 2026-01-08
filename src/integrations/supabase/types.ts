@@ -1281,6 +1281,15 @@ export type Database = {
           username: string
         }[]
       }
+      get_usage_metrics: {
+        Args: never
+        Returns: {
+          action: string
+          count: number
+          date: string
+          unique_users: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
