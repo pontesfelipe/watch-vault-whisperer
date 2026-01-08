@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Save } from "lucide-react";
+import { Sparkles, Save, Wand2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -15,6 +15,7 @@ interface TastePreferencesProps {
 export const TastePreferences = ({ onSuggest, isGenerating, remainingUsage }: TastePreferencesProps) => {
   const [tasteDescription, setTasteDescription] = useState("");
   const [saved, setSaved] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -75,6 +76,35 @@ export const TastePreferences = ({ onSuggest, isGenerating, remainingUsage }: Ta
     }
   };
 
+  const handleAnalyzeCollection = async () => {
+    setIsAnalyzing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("analyze-taste-profile");
+
+      if (error) throw error;
+
+      if (data?.tasteProfile) {
+        setTasteDescription(data.tasteProfile);
+        setSaved(false);
+        toast({
+          title: "Taste profile generated",
+          description: "Your collection has been analyzed. Review and save the generated profile.",
+        });
+      } else if (data?.error) {
+        throw new Error(data.error);
+      }
+    } catch (error: any) {
+      console.error("Error analyzing collection:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to analyze collection",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -83,18 +113,30 @@ export const TastePreferences = ({ onSuggest, isGenerating, remainingUsage }: Ta
           Your Watch Taste Preferences
         </CardTitle>
         <CardDescription>
-          Describe your watch preferences to get AI-powered suggestions tailored to your taste
+          Auto-generate your taste profile from your collection data or write your own description
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div className="flex justify-end">
+          <Button
+            onClick={handleAnalyzeCollection}
+            variant="outline"
+            size="sm"
+            disabled={isAnalyzing || isGenerating}
+            className="gap-2"
+          >
+            <Wand2 className={`w-4 h-4 ${isAnalyzing ? 'animate-spin' : ''}`} />
+            {isAnalyzing ? "Analyzing..." : "Auto-Generate from Collection"}
+          </Button>
+        </div>
         <Textarea
           value={tasteDescription}
           onChange={(e) => {
             setTasteDescription(e.target.value);
             setSaved(false);
           }}
-          placeholder="Example: I love classic dress watches with leather straps, prefer smaller case sizes (36-40mm), and gravitate towards blue or silver dials. I appreciate vintage-inspired designs and Swiss movements. My budget is typically in the $2,000-$10,000 range."
-          rows={5}
+          placeholder="Click 'Auto-Generate from Collection' to analyze your watches, wear logs, trips, events, and personal notes - or write your own description here."
+          rows={6}
           className="resize-none"
         />
         <div className="flex gap-2">
