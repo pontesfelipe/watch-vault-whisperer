@@ -22,6 +22,7 @@ export interface Post {
   content: string | null;
   image_url: string | null;
   category: string;
+  is_pinned: boolean;
   created_at: string;
   updated_at: string;
   author?: {
@@ -31,7 +32,7 @@ export interface Post {
   };
   vote_score: number;
   comments_count: number;
-  user_vote: number; // -1, 0, or 1
+  user_vote: number;
 }
 
 export interface PostComment {
@@ -69,6 +70,7 @@ export function useForumData(options: UseForumDataOptions = {}) {
       let query = supabase
         .from('posts')
         .select('*')
+        .order('is_pinned', { ascending: false })
         .order('created_at', { ascending: false });
       
       if (category && category !== 'all') {
@@ -97,7 +99,6 @@ export function useForumData(options: UseForumDataOptions = {}) {
         .from('post_votes')
         .select('post_id, vote_type, user_id');
       
-      // Calculate vote scores and user votes
       const voteScores = new Map<string, number>();
       const userVotes = new Map<string, number>();
       
@@ -121,6 +122,7 @@ export function useForumData(options: UseForumDataOptions = {}) {
       const enrichedPosts: Post[] = (postsData || []).map(post => ({
         ...post,
         category: post.category || 'general',
+        is_pinned: post.is_pinned || false,
         author: profileMap.get(post.user_id),
         vote_score: voteScores.get(post.id) || 0,
         comments_count: commentsCount.get(post.id) || 0,
@@ -194,8 +196,7 @@ export function useForumData(options: UseForumDataOptions = {}) {
       const { error } = await supabase
         .from('posts')
         .update({ title, content, category })
-        .eq('id', postId)
-        .eq('user_id', user.id);
+        .eq('id', postId);
 
       if (error) throw error;
 
@@ -206,6 +207,23 @@ export function useForumData(options: UseForumDataOptions = {}) {
       console.error("Error updating post:", error);
       toast.error("Failed to update post");
       return false;
+    }
+  };
+
+  const togglePinPost = async (postId: string, isPinned: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .update({ is_pinned: !isPinned })
+        .eq('id', postId);
+
+      if (error) throw error;
+
+      toast.success(isPinned ? "Post unpinned" : "Post pinned");
+      fetchPosts();
+    } catch (error) {
+      console.error("Error toggling pin:", error);
+      toast.error("Failed to update post");
     }
   };
 
@@ -236,7 +254,6 @@ export function useForumData(options: UseForumDataOptions = {}) {
       const post = posts.find(p => p.id === postId);
       if (!post) return;
 
-      // If clicking same vote, remove it
       if (post.user_vote === voteType) {
         await supabase
           .from('post_votes')
@@ -244,14 +261,12 @@ export function useForumData(options: UseForumDataOptions = {}) {
           .eq('post_id', postId)
           .eq('user_id', user.id);
       } else if (post.user_vote !== 0) {
-        // Update existing vote
         await supabase
           .from('post_votes')
           .update({ vote_type: voteType })
           .eq('post_id', postId)
           .eq('user_id', user.id);
       } else {
-        // Insert new vote
         await supabase
           .from('post_votes')
           .insert({ post_id: postId, user_id: user.id, vote_type: voteType });
@@ -273,6 +288,7 @@ export function useForumData(options: UseForumDataOptions = {}) {
     createPost,
     updatePost,
     deletePost,
+    togglePinPost,
     votePost,
     refetch: fetchPosts
   };
@@ -295,7 +311,6 @@ export function usePostComments(postId: string) {
       
       if (error) throw error;
 
-      // Fetch profiles for authors
       const userIds = [...new Set(commentsData?.map(c => c.user_id) || [])];
       const { data: profiles } = await supabase
         .from('profiles')
@@ -304,7 +319,6 @@ export function usePostComments(postId: string) {
       
       const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
 
-      // Fetch comment votes
       const commentIds = commentsData?.map(c => c.id) || [];
       const { data: votesData } = await supabase
         .from('comment_votes')
