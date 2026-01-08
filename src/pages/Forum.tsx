@@ -12,7 +12,7 @@ export default function Forum() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   
-  const { posts, loading, createPost, updatePost, deletePost, toggleLike } = useForumData({
+  const { posts, loading, createPost, updatePost, deletePost, votePost } = useForumData({
     searchQuery,
     category: selectedCategory
   });
@@ -83,7 +83,7 @@ export default function Forum() {
             <PostCard
               key={post.id}
               post={post}
-              onLike={toggleLike}
+              onVote={votePost}
               onDelete={deletePost}
               onEdit={updatePost}
             />

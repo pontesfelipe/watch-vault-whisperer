@@ -182,6 +182,38 @@ export type Database = {
         }
         Relationships: []
       }
+      comment_votes: {
+        Row: {
+          comment_id: string
+          created_at: string
+          id: string
+          user_id: string
+          vote_type: number
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+          vote_type: number
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+          vote_type?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comment_votes_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "post_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           created_at: string
@@ -445,28 +477,31 @@ export type Database = {
           },
         ]
       }
-      post_likes: {
+      post_votes: {
         Row: {
           created_at: string
           id: string
           post_id: string
           user_id: string
+          vote_type: number
         }
         Insert: {
           created_at?: string
           id?: string
           post_id: string
           user_id: string
+          vote_type: number
         }
         Update: {
           created_at?: string
           id?: string
           post_id?: string
           user_id?: string
+          vote_type?: number
         }
         Relationships: [
           {
-            foreignKeyName: "post_likes_post_id_fkey"
+            foreignKeyName: "post_votes_post_id_fkey"
             columns: ["post_id"]
             isOneToOne: false
             referencedRelation: "posts"
