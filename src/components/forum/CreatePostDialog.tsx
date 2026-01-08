@@ -4,16 +4,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Image, X } from "lucide-react";
+import { FORUM_CATEGORIES } from "@/hooks/useForumData";
 
 interface CreatePostDialogProps {
-  onSubmit: (title: string, content: string, image?: File) => Promise<boolean>;
+  onSubmit: (title: string, content: string, category: string, image?: File) => Promise<boolean>;
 }
 
 export function CreatePostDialog({ onSubmit }: CreatePostDialogProps) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [category, setCategory] = useState("general");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -44,12 +47,13 @@ export function CreatePostDialog({ onSubmit }: CreatePostDialogProps) {
     if (!title.trim()) return;
 
     setIsSubmitting(true);
-    const success = await onSubmit(title, content, imageFile || undefined);
+    const success = await onSubmit(title, content, category, imageFile || undefined);
     setIsSubmitting(false);
 
     if (success) {
       setTitle("");
       setContent("");
+      setCategory("general");
       setImageFile(null);
       setImagePreview(null);
       setOpen(false);
@@ -69,6 +73,21 @@ export function CreatePostDialog({ onSubmit }: CreatePostDialogProps) {
           <DialogTitle>Create a new post</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="category">Category</Label>
+            <Select value={category} onValueChange={setCategory}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a category" />
+              </SelectTrigger>
+              <SelectContent>
+                {FORUM_CATEGORIES.map((cat) => (
+                  <SelectItem key={cat.value} value={cat.value}>
+                    {cat.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <div className="space-y-2">
             <Label htmlFor="title">Title</Label>
             <Input

@@ -3,12 +3,25 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
+export const FORUM_CATEGORIES = [
+  { value: "general", label: "General Discussion" },
+  { value: "watches", label: "Watch Talk" },
+  { value: "buying", label: "Buying Advice" },
+  { value: "selling", label: "Selling & Trading" },
+  { value: "reviews", label: "Reviews" },
+  { value: "news", label: "News & Updates" },
+  { value: "showcase", label: "Collection Showcase" },
+] as const;
+
+export type ForumCategory = typeof FORUM_CATEGORIES[number]["value"];
+
 export interface Post {
   id: string;
   user_id: string;
   title: string;
   content: string | null;
   image_url: string | null;
+  category: string;
   created_at: string;
   updated_at: string;
   author?: {
@@ -36,20 +49,35 @@ export interface PostComment {
   };
 }
 
-export function useForumData() {
+interface UseForumDataOptions {
+  searchQuery?: string;
+  category?: string;
+}
+
+export function useForumData(options: UseForumDataOptions = {}) {
   const { user } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const { searchQuery, category } = options;
 
   const fetchPosts = useCallback(async () => {
     try {
       setLoading(true);
       
-      // Fetch posts
-      const { data: postsData, error: postsError } = await supabase
+      let query = supabase
         .from('posts')
         .select('*')
         .order('created_at', { ascending: false });
+      
+      if (category && category !== 'all') {
+        query = query.eq('category', category);
+      }
+      
+      if (searchQuery && searchQuery.trim()) {
+        query = query.or(`title.ilike.%${searchQuery}%,content.ilike.%${searchQuery}%`);
+      }
+      
+      const { data: postsData, error: postsError } = await query;
       
       if (postsError) throw postsError;
 
@@ -94,6 +122,7 @@ export function useForumData() {
 
       const enrichedPosts: Post[] = (postsData || []).map(post => ({
         ...post,
+        category: post.category || 'general',
         author: profileMap.get(post.user_id),
         likes_count: likesCount.get(post.id) || 0,
         comments_count: commentsCount.get(post.id) || 0,
@@ -107,9 +136,9 @@ export function useForumData() {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, searchQuery, category]);
 
-  const createPost = async (title: string, content: string, imageFile?: File) => {
+  const createPost = async (title: string, content: string, category: string, imageFile?: File) => {
     if (!user) {
       toast.error("You must be logged in to create a post");
       return false;
@@ -141,6 +170,7 @@ export function useForumData() {
           user_id: user.id,
           title,
           content,
+          category,
           image_url: imageUrl
         });
 
@@ -152,6 +182,31 @@ export function useForumData() {
     } catch (error) {
       console.error("Error creating post:", error);
       toast.error("Failed to create post");
+      return false;
+    }
+  };
+
+  const updatePost = async (postId: string, title: string, content: string, category: string) => {
+    if (!user) {
+      toast.error("You must be logged in to edit a post");
+      return false;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .update({ title, content, category })
+        .eq('id', postId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      toast.success("Post updated successfully");
+      fetchPosts();
+      return true;
+    } catch (error) {
+      console.error("Error updating post:", error);
+      toast.error("Failed to update post");
       return false;
     }
   };
@@ -209,6 +264,7 @@ export function useForumData() {
     posts,
     loading,
     createPost,
+    updatePost,
     deletePost,
     toggleLike,
     refetch: fetchPosts
@@ -282,6 +338,31 @@ export function usePostComments(postId: string) {
     }
   };
 
+  const updateComment = async (commentId: string, content: string) => {
+    if (!user) {
+      toast.error("You must be logged in to edit a comment");
+      return false;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('post_comments')
+        .update({ content })
+        .eq('id', commentId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      toast.success("Comment updated");
+      fetchComments();
+      return true;
+    } catch (error) {
+      console.error("Error updating comment:", error);
+      toast.error("Failed to update comment");
+      return false;
+    }
+  };
+
   const deleteComment = async (commentId: string) => {
     try {
       const { error } = await supabase
@@ -307,6 +388,7 @@ export function usePostComments(postId: string) {
     comments,
     loading,
     addComment,
+    updateComment,
     deleteComment,
     refetch: fetchComments
   };

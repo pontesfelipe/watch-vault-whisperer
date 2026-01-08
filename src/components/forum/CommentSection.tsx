@@ -3,7 +3,7 @@ import { formatDistanceToNow } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Trash2, Reply, Send, Loader2 } from "lucide-react";
+import { Trash2, Reply, Send, Loader2, Pencil, X, Check } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePostComments, PostComment } from "@/hooks/useForumData";
 
@@ -13,9 +13,11 @@ interface CommentSectionProps {
 
 export function CommentSection({ postId }: CommentSectionProps) {
   const { user, isAdmin } = useAuth();
-  const { comments, loading, addComment, deleteComment } = usePostComments(postId);
+  const { comments, loading, addComment, updateComment, deleteComment } = usePostComments(postId);
   const [newComment, setNewComment] = useState("");
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState("");
   const [replyContent, setReplyContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -40,6 +42,28 @@ export function CommentSection({ postId }: CommentSectionProps) {
     setIsSubmitting(false);
   };
 
+  const handleSaveEdit = async (commentId: string) => {
+    if (!editContent.trim()) return;
+    setIsSubmitting(true);
+    const success = await updateComment(commentId, editContent);
+    if (success) {
+      setEditingId(null);
+      setEditContent("");
+    }
+    setIsSubmitting(false);
+  };
+
+  const startEditing = (comment: PostComment) => {
+    setEditingId(comment.id);
+    setEditContent(comment.content);
+    setReplyingTo(null);
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+    setEditContent("");
+  };
+
   // Build comment tree
   const topLevelComments = comments.filter(c => !c.parent_comment_id);
   const repliesMap = new Map<string, PostComment[]>();
@@ -55,7 +79,9 @@ export function CommentSection({ postId }: CommentSectionProps) {
     const authorInitials = authorName.slice(0, 2).toUpperCase();
     const isOwner = user?.id === comment.user_id;
     const canDelete = isOwner || isAdmin;
+    const canEdit = isOwner;
     const replies = repliesMap.get(comment.id) || [];
+    const isEditing = editingId === comment.id;
 
     return (
       <div key={comment.id} className={`${depth > 0 ? 'ml-8 border-l-2 border-surfaceMuted pl-4' : ''}`}>
@@ -73,30 +99,75 @@ export function CommentSection({ postId }: CommentSectionProps) {
                 {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
               </span>
             </div>
-            <p className="text-sm text-textSoft mt-1 whitespace-pre-wrap">{comment.content}</p>
-            <div className="flex items-center gap-2 mt-2">
-              {user && depth < 2 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 text-xs text-textMuted"
-                  onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-                >
-                  <Reply className="h-3 w-3 mr-1" />
-                  Reply
-                </Button>
-              )}
-              {canDelete && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 text-xs text-textMuted hover:text-destructive"
-                  onClick={() => deleteComment(comment.id)}
-                >
-                  <Trash2 className="h-3 w-3" />
-                </Button>
-              )}
-            </div>
+            
+            {isEditing ? (
+              <div className="flex gap-2 mt-2">
+                <Textarea
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                  className="min-h-[60px] text-sm"
+                  rows={2}
+                />
+                <div className="flex flex-col gap-1">
+                  <Button
+                    size="sm"
+                    onClick={() => handleSaveEdit(comment.id)}
+                    disabled={isSubmitting || !editContent.trim()}
+                  >
+                    {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={cancelEditing}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-textSoft mt-1 whitespace-pre-wrap">{comment.content}</p>
+            )}
+            
+            {!isEditing && (
+              <div className="flex items-center gap-2 mt-2">
+                {user && depth < 2 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-xs text-textMuted"
+                    onClick={() => {
+                      setReplyingTo(replyingTo === comment.id ? null : comment.id);
+                      setEditingId(null);
+                    }}
+                  >
+                    <Reply className="h-3 w-3 mr-1" />
+                    Reply
+                  </Button>
+                )}
+                {canEdit && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-xs text-textMuted"
+                    onClick={() => startEditing(comment)}
+                  >
+                    <Pencil className="h-3 w-3" />
+                  </Button>
+                )}
+                {canDelete && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-xs text-textMuted hover:text-destructive"
+                    onClick={() => deleteComment(comment.id)}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+            )}
+            
             {replyingTo === comment.id && (
               <div className="flex gap-2 mt-2">
                 <Textarea
