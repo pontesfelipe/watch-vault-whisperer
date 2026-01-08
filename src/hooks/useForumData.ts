@@ -29,9 +29,9 @@ export interface Post {
     full_name: string | null;
     avatar_url: string | null;
   };
-  likes_count: number;
+  vote_score: number;
   comments_count: number;
-  user_has_liked: boolean;
+  user_vote: number; // -1, 0, or 1
 }
 
 export interface PostComment {
@@ -47,6 +47,8 @@ export interface PostComment {
     full_name: string | null;
     avatar_url: string | null;
   };
+  vote_score: number;
+  user_vote: number;
 }
 
 interface UseForumDataOptions {
@@ -90,25 +92,21 @@ export function useForumData(options: UseForumDataOptions = {}) {
       
       const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
 
-      // Fetch likes counts
-      const { data: likesData } = await supabase
-        .from('post_likes')
-        .select('post_id');
+      // Fetch all post votes
+      const { data: votesData } = await supabase
+        .from('post_votes')
+        .select('post_id, vote_type, user_id');
       
-      const likesCount = new Map<string, number>();
-      likesData?.forEach(l => {
-        likesCount.set(l.post_id, (likesCount.get(l.post_id) || 0) + 1);
+      // Calculate vote scores and user votes
+      const voteScores = new Map<string, number>();
+      const userVotes = new Map<string, number>();
+      
+      votesData?.forEach(v => {
+        voteScores.set(v.post_id, (voteScores.get(v.post_id) || 0) + v.vote_type);
+        if (user && v.user_id === user.id) {
+          userVotes.set(v.post_id, v.vote_type);
+        }
       });
-
-      // Fetch user's likes if logged in
-      let userLikes = new Set<string>();
-      if (user) {
-        const { data: userLikesData } = await supabase
-          .from('post_likes')
-          .select('post_id')
-          .eq('user_id', user.id);
-        userLikes = new Set(userLikesData?.map(l => l.post_id) || []);
-      }
 
       // Fetch comments counts
       const { data: commentsData } = await supabase
@@ -124,9 +122,9 @@ export function useForumData(options: UseForumDataOptions = {}) {
         ...post,
         category: post.category || 'general',
         author: profileMap.get(post.user_id),
-        likes_count: likesCount.get(post.id) || 0,
+        vote_score: voteScores.get(post.id) || 0,
         comments_count: commentsCount.get(post.id) || 0,
-        user_has_liked: userLikes.has(post.id)
+        user_vote: userVotes.get(post.id) || 0
       }));
 
       setPosts(enrichedPosts);
@@ -228,9 +226,9 @@ export function useForumData(options: UseForumDataOptions = {}) {
     }
   };
 
-  const toggleLike = async (postId: string) => {
+  const votePost = async (postId: string, voteType: 1 | -1) => {
     if (!user) {
-      toast.error("You must be logged in to like posts");
+      toast.error("You must be logged in to vote");
       return;
     }
 
@@ -238,21 +236,30 @@ export function useForumData(options: UseForumDataOptions = {}) {
       const post = posts.find(p => p.id === postId);
       if (!post) return;
 
-      if (post.user_has_liked) {
+      // If clicking same vote, remove it
+      if (post.user_vote === voteType) {
         await supabase
-          .from('post_likes')
+          .from('post_votes')
           .delete()
           .eq('post_id', postId)
           .eq('user_id', user.id);
-      } else {
+      } else if (post.user_vote !== 0) {
+        // Update existing vote
         await supabase
-          .from('post_likes')
-          .insert({ post_id: postId, user_id: user.id });
+          .from('post_votes')
+          .update({ vote_type: voteType })
+          .eq('post_id', postId)
+          .eq('user_id', user.id);
+      } else {
+        // Insert new vote
+        await supabase
+          .from('post_votes')
+          .insert({ post_id: postId, user_id: user.id, vote_type: voteType });
       }
 
       fetchPosts();
     } catch (error) {
-      console.error("Error toggling like:", error);
+      console.error("Error voting:", error);
     }
   };
 
@@ -266,7 +273,7 @@ export function useForumData(options: UseForumDataOptions = {}) {
     createPost,
     updatePost,
     deletePost,
-    toggleLike,
+    votePost,
     refetch: fetchPosts
   };
 }
@@ -297,9 +304,28 @@ export function usePostComments(postId: string) {
       
       const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
 
+      // Fetch comment votes
+      const commentIds = commentsData?.map(c => c.id) || [];
+      const { data: votesData } = await supabase
+        .from('comment_votes')
+        .select('comment_id, vote_type, user_id')
+        .in('comment_id', commentIds);
+
+      const voteScores = new Map<string, number>();
+      const userVotes = new Map<string, number>();
+      
+      votesData?.forEach(v => {
+        voteScores.set(v.comment_id, (voteScores.get(v.comment_id) || 0) + v.vote_type);
+        if (user && v.user_id === user.id) {
+          userVotes.set(v.comment_id, v.vote_type);
+        }
+      });
+
       const enrichedComments: PostComment[] = (commentsData || []).map(comment => ({
         ...comment,
-        author: profileMap.get(comment.user_id)
+        author: profileMap.get(comment.user_id),
+        vote_score: voteScores.get(comment.id) || 0,
+        user_vote: userVotes.get(comment.id) || 0
       }));
 
       setComments(enrichedComments);
@@ -308,7 +334,7 @@ export function usePostComments(postId: string) {
     } finally {
       setLoading(false);
     }
-  }, [postId]);
+  }, [postId, user]);
 
   const addComment = async (content: string, parentCommentId?: string) => {
     if (!user) {
@@ -380,6 +406,40 @@ export function usePostComments(postId: string) {
     }
   };
 
+  const voteComment = async (commentId: string, voteType: 1 | -1) => {
+    if (!user) {
+      toast.error("You must be logged in to vote");
+      return;
+    }
+
+    try {
+      const comment = comments.find(c => c.id === commentId);
+      if (!comment) return;
+
+      if (comment.user_vote === voteType) {
+        await supabase
+          .from('comment_votes')
+          .delete()
+          .eq('comment_id', commentId)
+          .eq('user_id', user.id);
+      } else if (comment.user_vote !== 0) {
+        await supabase
+          .from('comment_votes')
+          .update({ vote_type: voteType })
+          .eq('comment_id', commentId)
+          .eq('user_id', user.id);
+      } else {
+        await supabase
+          .from('comment_votes')
+          .insert({ comment_id: commentId, user_id: user.id, vote_type: voteType });
+      }
+
+      fetchComments();
+    } catch (error) {
+      console.error("Error voting:", error);
+    }
+  };
+
   useEffect(() => {
     fetchComments();
   }, [fetchComments]);
@@ -390,6 +450,7 @@ export function usePostComments(postId: string) {
     addComment,
     updateComment,
     deleteComment,
+    voteComment,
     refetch: fetchComments
   };
 }

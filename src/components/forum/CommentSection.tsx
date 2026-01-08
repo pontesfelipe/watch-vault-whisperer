@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Trash2, Reply, Send, Loader2, Pencil, X, Check } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePostComments, PostComment } from "@/hooks/useForumData";
+import { VoteButtons } from "./VoteButtons";
 
 interface CommentSectionProps {
   postId: string;
@@ -13,7 +14,7 @@ interface CommentSectionProps {
 
 export function CommentSection({ postId }: CommentSectionProps) {
   const { user, isAdmin } = useAuth();
-  const { comments, loading, addComment, updateComment, deleteComment } = usePostComments(postId);
+  const { comments, loading, addComment, updateComment, deleteComment, voteComment } = usePostComments(postId);
   const [newComment, setNewComment] = useState("");
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -84,16 +85,28 @@ export function CommentSection({ postId }: CommentSectionProps) {
     const isEditing = editingId === comment.id;
 
     return (
-      <div key={comment.id} className={`${depth > 0 ? 'ml-8 border-l-2 border-surfaceMuted pl-4' : ''}`}>
-        <div className="flex gap-3 py-2">
-          <Avatar className="h-8 w-8 flex-shrink-0">
-            <AvatarImage src={comment.author?.avatar_url || undefined} />
-            <AvatarFallback className="bg-surfaceMuted text-textMuted text-xs">
-              {authorInitials}
-            </AvatarFallback>
-          </Avatar>
+      <div key={comment.id} className={`${depth > 0 ? 'ml-6 border-l-2 border-surfaceMuted pl-4' : ''}`}>
+        <div className="flex gap-2 py-2">
+          {/* Vote buttons */}
+          <div className="flex-shrink-0">
+            <VoteButtons
+              score={comment.vote_score}
+              userVote={comment.user_vote}
+              onUpvote={() => voteComment(comment.id, 1)}
+              onDownvote={() => voteComment(comment.id, -1)}
+              size="sm"
+            />
+          </div>
+          
+          {/* Comment content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
+              <Avatar className="h-6 w-6">
+                <AvatarImage src={comment.author?.avatar_url || undefined} />
+                <AvatarFallback className="bg-surfaceMuted text-textMuted text-xs">
+                  {authorInitials}
+                </AvatarFallback>
+              </Avatar>
               <span className="font-medium text-sm text-textMain">{authorName}</span>
               <span className="text-xs text-textMuted">
                 {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
