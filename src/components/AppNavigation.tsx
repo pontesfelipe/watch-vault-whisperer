@@ -1,4 +1,4 @@
-import { Watch, Heart, Plane, Calendar, Droplets, BarChart3, LogOut, BookHeart, Shield, Settings, MessageCircle, HelpCircle, Info } from "lucide-react";
+import { Watch, Heart, Plane, Calendar, Droplets, BarChart3, LogOut, BookHeart, Shield, Settings, MessageCircle, HelpCircle, Info, MessageSquare } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -31,6 +31,7 @@ export function AppNavigation() {
     { title: "Water Usage", url: "/water-usage", icon: Droplets },
     { title: "Collection Insights", url: "/personal-notes", icon: BookHeart },
     { title: "Messages", url: "/messages", icon: MessageCircle },
+    { title: "Forum", url: "/forum", icon: MessageSquare },
     { title: "Settings", url: "/settings", icon: Settings },
     { title: "FAQ", url: "/faq", icon: HelpCircle },
     { title: "About", url: "/about", icon: Info },
