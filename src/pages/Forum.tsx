@@ -12,7 +12,7 @@ export default function Forum() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   
-  const { posts, loading, createPost, updatePost, deletePost, votePost } = useForumData({
+  const { posts, loading, createPost, updatePost, deletePost, togglePinPost, votePost } = useForumData({
     searchQuery,
     category: selectedCategory
   });
@@ -86,6 +86,7 @@ export default function Forum() {
               onVote={votePost}
               onDelete={deletePost}
               onEdit={updatePost}
+              onTogglePin={togglePinPost}
             />
           ))}
         </div>

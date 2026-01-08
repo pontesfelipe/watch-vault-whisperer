@@ -4,7 +4,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MessageCircle, Trash2, ChevronDown, ChevronUp, Pencil } from "lucide-react";
+import { MessageCircle, Trash2, ChevronDown, ChevronUp, Pencil, Pin } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Post, FORUM_CATEGORIES } from "@/hooks/useForumData";
 import { CommentSection } from "./CommentSection";
@@ -21,15 +21,21 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface PostCardProps {
   post: Post;
   onVote: (postId: string, voteType: 1 | -1) => void;
   onDelete: (postId: string) => void;
   onEdit: (postId: string, title: string, content: string, category: string) => Promise<boolean>;
+  onTogglePin: (postId: string, isPinned: boolean) => void;
 }
 
-export function PostCard({ post, onVote, onDelete, onEdit }: PostCardProps) {
+export function PostCard({ post, onVote, onDelete, onEdit, onTogglePin }: PostCardProps) {
   const { user, isAdmin } = useAuth();
   const [showComments, setShowComments] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -39,12 +45,13 @@ export function PostCard({ post, onVote, onDelete, onEdit }: PostCardProps) {
   const isOwner = user?.id === post.user_id;
   const canDelete = isOwner || isAdmin;
   const canEdit = isOwner;
+  const canPin = isAdmin;
 
   const categoryLabel = FORUM_CATEGORIES.find(c => c.value === post.category)?.label || post.category;
 
   return (
     <>
-      <Card className="overflow-hidden">
+      <Card className={`overflow-hidden ${post.is_pinned ? 'ring-2 ring-accent/50 bg-accent/5' : ''}`}>
         <div className="flex">
           {/* Vote sidebar */}
           <div className="flex-shrink-0 bg-surfaceMuted/50 p-2 flex items-start justify-center">
@@ -70,6 +77,12 @@ export function PostCard({ post, onVote, onDelete, onEdit }: PostCardProps) {
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-medium text-sm text-textMain">{authorName}</p>
+                      {post.is_pinned && (
+                        <Badge variant="default" className="text-xs gap-1 bg-accent">
+                          <Pin className="h-3 w-3" />
+                          Pinned
+                        </Badge>
+                      )}
                       <Badge variant="secondary" className="text-xs">
                         {categoryLabel}
                       </Badge>
@@ -80,6 +93,23 @@ export function PostCard({ post, onVote, onDelete, onEdit }: PostCardProps) {
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
+                  {canPin && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className={`h-8 w-8 ${post.is_pinned ? 'text-accent' : 'text-textMuted hover:text-accent'}`}
+                          onClick={() => onTogglePin(post.id, post.is_pinned)}
+                        >
+                          <Pin className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {post.is_pinned ? 'Unpin post' : 'Pin post'}
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
                   {canEdit && (
                     <Button 
                       variant="ghost" 
