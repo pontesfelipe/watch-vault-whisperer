@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { Plus, Search, RefreshCw } from "lucide-react";
+import { Search, RefreshCw, History, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SortableWatchCard } from "@/components/SortableWatchCard";
+import { PastWatchCard } from "@/components/PastWatchCard";
 import { AddWatchDialog } from "@/components/AddWatchDialog";
 import { QuickAddWearDialog } from "@/components/QuickAddWearDialog";
 import { EditCollectionDialog } from "@/components/EditCollectionDialog";
@@ -12,6 +13,7 @@ import { CollectionSwitcher } from "@/components/CollectionSwitcher";
 import { AnalyzeWatchMetadataDialog } from "@/components/AnalyzeWatchMetadataDialog";
 import { ImportSpreadsheetDialog } from "@/components/ImportSpreadsheetDialog";
 import { useWatchData } from "@/hooks/useWatchData";
+import { usePastWatchData } from "@/hooks/usePastWatchData";
 import { useStatsCalculations } from "@/hooks/useStatsCalculations";
 import { useTripData } from "@/hooks/useTripData";
 import { useWaterUsageData } from "@/hooks/useWaterUsageData";
@@ -38,6 +40,7 @@ import {
 const Collection = () => {
   const { selectedCollectionId, currentCollection, collections, collectionsLoading, refetchCollections } = useCollection();
   const { watches, wearEntries, loading, refetch } = useWatchData(selectedCollectionId);
+  const { pastWatches, wearEntries: pastWearEntries, loading: pastLoading, refetch: refetchPast } = usePastWatchData();
   const { trips } = useTripData();
   const { waterUsages } = useWaterUsageData();
   const { isAdmin } = useAuth();
@@ -45,7 +48,13 @@ const Collection = () => {
   const [selectedBrand, setSelectedBrand] = useState<string>("all");
   const [isBulkUpdating, setIsBulkUpdating] = useState(false);
   const [localWatches, setLocalWatches] = useState(watches);
+  const [showPastWatches, setShowPastWatches] = useState(false);
   const { toast } = useToast();
+
+  const handleRefetchAll = () => {
+    refetch();
+    refetchPast();
+  };
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -294,12 +303,52 @@ const Collection = () => {
                   key={watch.id}
                   watch={watch}
                   totalDays={wearEntries.filter((w) => w.watch_id === watch.id).length}
-                  onDelete={refetch}
+                  onDelete={handleRefetchAll}
                 />
               ))}
             </div>
           </SortableContext>
         </DndContext>
+      )}
+
+      {/* Past Watches Section */}
+      {pastWatches.length > 0 && (
+        <div className="mt-12 pt-8 border-t border-borderSubtle">
+          <button
+            onClick={() => setShowPastWatches(!showPastWatches)}
+            className="flex items-center gap-3 w-full text-left mb-4 group"
+          >
+            <div className="flex items-center gap-2">
+              <History className="w-5 h-5 text-textMuted" />
+              <h2 className="text-xl font-semibold text-textMain">Past Watches</h2>
+              <span className="text-sm text-textMuted">({pastWatches.length})</span>
+            </div>
+            {showPastWatches ? (
+              <ChevronUp className="w-5 h-5 text-textMuted group-hover:text-textMain transition-colors" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-textMuted group-hover:text-textMain transition-colors" />
+            )}
+          </button>
+          
+          {showPastWatches && (
+            <>
+              <p className="text-sm text-textMuted mb-4">
+                Watches you've sold or traded. Historical wear data is preserved.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {pastWatches.map((watch) => (
+                  <PastWatchCard
+                    key={watch.id}
+                    watch={watch}
+                    totalDays={pastWearEntries.filter((w) => w.watch_id === watch.id).length}
+                    onUpdate={handleRefetchAll}
+                    collectionId={selectedCollectionId || ''}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
       )}
     </div>
   );
