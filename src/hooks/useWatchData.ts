@@ -51,17 +51,20 @@ export const useWatchData = (collectionId?: string | null) => {
 
     setLoading(true);
     try {
-      const watchesQuery: any = (supabase.from('watches' as any) as any).select('*');
+      let watchesQuery: any = (supabase.from('watches' as any) as any).select('*');
+      
+      // Only show active watches (not sold/traded)
+      watchesQuery = watchesQuery.eq('status', 'active');
       
       // Always filter by collection_id when provided
       // This ensures we only see watches from the selected collection
       if (collectionId) {
-        watchesQuery.eq('collection_id', collectionId);
+        watchesQuery = watchesQuery.eq('collection_id', collectionId);
       } else {
         // No collection selected - only show user's own watches as fallback
         // (This shouldn't normally happen if CollectionProvider is working correctly)
         if (!isAdmin) {
-          watchesQuery.eq('user_id', user.id);
+          watchesQuery = watchesQuery.eq('user_id', user.id);
         }
       }
       
