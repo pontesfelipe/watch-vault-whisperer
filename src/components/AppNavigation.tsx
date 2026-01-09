@@ -1,6 +1,7 @@
-import { Watch, Heart, Plane, Calendar, Droplets, BarChart3, LogOut, BookHeart, Shield, Settings, MessageCircle, HelpCircle, Info, MessageSquare } from "lucide-react";
+import { Watch, Heart, Plane, Calendar, Droplets, BarChart3, LogOut, BookHeart, Shield, Settings, MessageCircle, HelpCircle, Info, MessageSquare, Lightbulb } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
+import { SubmitFeedbackDialog } from "@/components/SubmitFeedbackDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Sidebar,
@@ -84,6 +85,19 @@ export function AppNavigation() {
               );
             })}
           </SidebarMenu>
+          
+          {user && (
+            <div className={`mt-4 ${open ? "px-2" : "px-1"}`}>
+              <SubmitFeedbackDialog>
+                <SidebarMenuButton
+                  className={`w-full flex items-center gap-2 rounded-xl px-3 py-2 text-sm transition-colors text-textMuted hover:bg-surfaceMuted hover:text-textMain ${!open ? "justify-center" : ""}`}
+                >
+                  <Lightbulb className="h-5 w-5" />
+                  {open && <span>Feedback</span>}
+                </SidebarMenuButton>
+              </SubmitFeedbackDialog>
+            </div>
+          )}
         </SidebarGroup>
       </SidebarContent>
       {user && open && (
