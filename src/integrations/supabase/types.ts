@@ -962,6 +962,7 @@ export type Database = {
           sentiment: string | null
           sentiment_analyzed_at: string | null
           sort_order: number
+          status: string
           type: string
           updated_at: string
           user_id: string | null
@@ -998,6 +999,7 @@ export type Database = {
           sentiment?: string | null
           sentiment_analyzed_at?: string | null
           sort_order?: number
+          status?: string
           type: string
           updated_at?: string
           user_id?: string | null
@@ -1034,6 +1036,7 @@ export type Database = {
           sentiment?: string | null
           sentiment_analyzed_at?: string | null
           sort_order?: number
+          status?: string
           type?: string
           updated_at?: string
           user_id?: string | null
