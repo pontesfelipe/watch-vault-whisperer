@@ -16,16 +16,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 
 interface WatchCardProps {
   watch: {
@@ -96,7 +86,7 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
     }
   };
 
-  const handleDelete = async () => {
+  const handleFullDelete = async () => {
     try {
       // Delete related data first
       await supabase.from("wear_entries").delete().eq("watch_id", watch.id);
@@ -109,8 +99,8 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
       if (error) throw error;
 
       toast({
-        title: "Success",
-        description: "Watch and all related data removed from collection",
+        title: "Watch Deleted",
+        description: "Watch and all related data permanently removed",
       });
 
       setShowDeleteDialog(false);
@@ -119,6 +109,31 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
       toast({
         title: "Error",
         description: "Failed to delete watch",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleMarkAsSoldOrTraded = async (status: 'sold' | 'traded') => {
+    try {
+      const { error } = await supabase
+        .from("watches")
+        .update({ status, collection_id: null })
+        .eq("id", watch.id);
+
+      if (error) throw error;
+
+      toast({
+        title: status === 'sold' ? "Watch Marked as Sold" : "Watch Marked as Traded",
+        description: "Removed from collection. Historical data preserved.",
+      });
+
+      setShowDeleteDialog(false);
+      onDelete();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update watch status",
         variant: "destructive",
       });
     }
@@ -368,22 +383,55 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
             <Trash2 className="w-4 h-4" />
           </Button>
 
-          <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-            <AlertDialogContent className="bg-surface border-borderSubtle">
-              <AlertDialogHeader>
-                <AlertDialogTitle className="text-textMain">Delete Watch</AlertDialogTitle>
-                <AlertDialogDescription className="text-textSoft">
-                  Are you sure you want to remove <span className="font-semibold">{watch.brand} {watch.model}</span> from your collection? This will also delete all wear entries.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel className="border-borderSubtle">Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                  Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+            <DialogContent className="bg-surface border-borderSubtle sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle className="text-textMain">Remove Watch</DialogTitle>
+                <DialogDescription className="text-textSoft">
+                  How would you like to remove <span className="font-semibold">{watch.brand} {watch.model}</span> from your collection?
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex flex-col gap-3 pt-4">
+                <Button
+                  variant="outline"
+                  className="justify-start gap-3 h-auto py-3 border-borderSubtle hover:bg-surfaceMuted"
+                  onClick={() => handleMarkAsSoldOrTraded('sold')}
+                >
+                  <div className="flex flex-col items-start">
+                    <span className="font-medium">Mark as Sold</span>
+                    <span className="text-xs text-textMuted">Remove from collection, keep historical wear data</span>
+                  </div>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="justify-start gap-3 h-auto py-3 border-borderSubtle hover:bg-surfaceMuted"
+                  onClick={() => handleMarkAsSoldOrTraded('traded')}
+                >
+                  <div className="flex flex-col items-start">
+                    <span className="font-medium">Mark as Traded</span>
+                    <span className="text-xs text-textMuted">Remove from collection, keep historical wear data</span>
+                  </div>
+                </Button>
+                <Button
+                  variant="destructive"
+                  className="justify-start gap-3 h-auto py-3"
+                  onClick={handleFullDelete}
+                >
+                  <div className="flex flex-col items-start">
+                    <span className="font-medium">Delete Permanently</span>
+                    <span className="text-xs opacity-80">Remove watch and all related data forever</span>
+                  </div>
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="mt-2"
+                  onClick={() => setShowDeleteDialog(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     </Card>
