@@ -14,7 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 const wearSchema = z.object({
   watchId: z.string().uuid(),
   wearDate: z.string().min(1, "Date is required"),
-  fullDay: z.boolean(),
+  duration: z.enum(["1", "0.5", "0.25"]),
 });
 
 interface QuickAddWearDialogProps {
@@ -43,10 +43,10 @@ export const QuickAddWearDialog = ({ watches, onSuccess }: QuickAddWearDialogPro
       const data = wearSchema.parse({
         watchId: selectedWatchId,
         wearDate: formData.get("wearDate"),
-        fullDay: formData.get("fullDay") === "true",
+        duration: formData.get("duration") as "1" | "0.5" | "0.25",
       });
 
-      const days = data.fullDay ? 1 : 0.5;
+      const days = parseFloat(data.duration);
       
       // Fix timezone issue: ensure the date is stored as-is without timezone conversion
       const dateObj = new Date(data.wearDate + 'T00:00:00');
@@ -133,7 +133,7 @@ export const QuickAddWearDialog = ({ watches, onSuccess }: QuickAddWearDialogPro
         }
       }
       
-      // Check if entry already exists
+      // Check if entry already exists for this watch
       const { data: existing } = await supabase
         .from("wear_entries")
         .select("id")
@@ -141,6 +141,42 @@ export const QuickAddWearDialog = ({ watches, onSuccess }: QuickAddWearDialogPro
         .eq("wear_date", formattedDate)
         .eq("user_id", user?.id)
         .single();
+
+      // Check for other watches logged on the same day with full day
+      // If current entry is less than full day, we need to check and adjust existing full-day entries
+      if (days < 1) {
+        const { data: otherEntries } = await supabase
+          .from("wear_entries")
+          .select("id, watch_id, days")
+          .eq("wear_date", formattedDate)
+          .eq("user_id", user?.id)
+          .neq("watch_id", data.watchId)
+          .eq("days", 1);
+
+        if (otherEntries && otherEntries.length > 0) {
+          // Get watch names for the affected entries
+          const watchIds = otherEntries.map(e => e.watch_id);
+          const { data: watchData } = await supabase
+            .from("watches")
+            .select("id, brand, model")
+            .in("id", watchIds);
+
+          const watchNames = watchData?.map(w => `${w.brand} ${w.model}`).join(", ") || "another watch";
+
+          // Update the existing full-day entries to half-day
+          for (const entry of otherEntries) {
+            await supabase
+              .from("wear_entries")
+              .update({ days: 0.5 })
+              .eq("id", entry.id);
+          }
+
+          toast({
+            title: "Adjusted existing entry",
+            description: `${watchNames} was logged for a full day on this date. Changed to half day to accommodate this entry.`,
+          });
+        }
+      }
 
       let error;
       if (existing) {
@@ -261,12 +297,12 @@ export const QuickAddWearDialog = ({ watches, onSuccess }: QuickAddWearDialogPro
 
           <div className="space-y-2">
             <Label>Wear Duration</Label>
-            <div className="flex gap-4">
+            <div className="flex gap-4 flex-wrap">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
-                  name="fullDay"
-                  value="true"
+                  name="duration"
+                  value="1"
                   defaultChecked
                   className="w-4 h-4"
                 />
@@ -275,11 +311,20 @@ export const QuickAddWearDialog = ({ watches, onSuccess }: QuickAddWearDialogPro
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
-                  name="fullDay"
-                  value="false"
+                  name="duration"
+                  value="0.5"
                   className="w-4 h-4"
                 />
                 <span className="text-sm">Half Day</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="duration"
+                  value="0.25"
+                  className="w-4 h-4"
+                />
+                <span className="text-sm">Quarter Day</span>
               </label>
             </div>
           </div>
