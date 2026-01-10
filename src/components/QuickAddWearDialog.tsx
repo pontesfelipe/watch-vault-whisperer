@@ -136,26 +136,46 @@ export const QuickAddWearDialog = ({ watches, onSuccess }: QuickAddWearDialogPro
       // Check if entry already exists for this watch
       const { data: existing } = await supabase
         .from("wear_entries")
-        .select("id")
+        .select("id, days")
         .eq("watch_id", data.watchId)
         .eq("wear_date", formattedDate)
         .eq("user_id", user?.id)
         .single();
 
+      // Get all other entries for this date (excluding current watch)
+      const { data: otherEntries } = await supabase
+        .from("wear_entries")
+        .select("id, watch_id, days")
+        .eq("wear_date", formattedDate)
+        .eq("user_id", user?.id)
+        .neq("watch_id", data.watchId);
+
+      // Calculate total duration of other entries
+      const otherTotal = otherEntries?.reduce((sum, e) => sum + (e.days || 0), 0) || 0;
+      
+      // Calculate what the new total would be
+      const newTotal = otherTotal + days;
+
+      // Validate that total doesn't exceed 1 day
+      if (newTotal > 1) {
+        const remainingCapacity = Math.max(0, 1 - otherTotal);
+        toast({
+          title: "Cannot add wear entry",
+          description: `Total wear for this date would exceed 1 day. You have ${remainingCapacity === 0 ? 'no' : remainingCapacity} remaining capacity. Other watches are already logged for ${otherTotal} day(s).`,
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
       // Check for other watches logged on the same day with full day
       // If current entry is less than full day, we need to check and adjust existing full-day entries
-      if (days < 1) {
-        const { data: otherEntries } = await supabase
-          .from("wear_entries")
-          .select("id, watch_id, days")
-          .eq("wear_date", formattedDate)
-          .eq("user_id", user?.id)
-          .neq("watch_id", data.watchId)
-          .eq("days", 1);
-
-        if (otherEntries && otherEntries.length > 0) {
+      if (days < 1 && otherEntries && otherEntries.length > 0) {
+        const fullDayEntries = otherEntries.filter(e => e.days === 1);
+        
+        if (fullDayEntries.length > 0) {
           // Get watch names for the affected entries
-          const watchIds = otherEntries.map(e => e.watch_id);
+          const watchIds = fullDayEntries.map(e => e.watch_id);
           const { data: watchData } = await supabase
             .from("watches")
             .select("id, brand, model")
@@ -164,7 +184,7 @@ export const QuickAddWearDialog = ({ watches, onSuccess }: QuickAddWearDialogPro
           const watchNames = watchData?.map(w => `${w.brand} ${w.model}`).join(", ") || "another watch";
 
           // Update the existing full-day entries to half-day
-          for (const entry of otherEntries) {
+          for (const entry of fullDayEntries) {
             await supabase
               .from("wear_entries")
               .update({ days: 0.5 })
