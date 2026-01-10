@@ -380,7 +380,7 @@ export const EditWearEntryDialog = ({
 
           <div>
             <Label>Wear Duration</Label>
-            <div className="flex items-center gap-4 mt-2">
+            <div className="flex items-center gap-4 mt-2 flex-wrap">
               <button
                 type="button"
                 onClick={() => setDays(1)}
@@ -402,6 +402,17 @@ export const EditWearEntryDialog = ({
                 }`}
               >
                 Half Day
+              </button>
+              <button
+                type="button"
+                onClick={() => setDays(0.25)}
+                className={`px-3 py-1 rounded-full text-sm border ${
+                  days === 0.25
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-background text-foreground border-border"
+                }`}
+              >
+                Quarter Day
               </button>
             </div>
           </div>
