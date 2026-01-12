@@ -171,17 +171,17 @@ export const CollectionInsights = ({ watchCount, watches }: CollectionInsightsPr
   }
 
   return (
-    <Card className="border-borderSubtle bg-surface p-6 shadow-card">
-      <div className="flex items-start gap-4">
-        <div className="p-3 rounded-xl bg-accent/10">
+    <Card className="border-borderSubtle bg-surface p-4 sm:p-6 shadow-card">
+      <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
+        <div className="p-3 rounded-xl bg-accent/10 self-start shrink-0">
           <Sparkles className="w-6 h-6 text-accent" />
         </div>
-        <div className="flex-1">
-          <div className="flex items-center justify-between mb-2">
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-3">
             <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-textMuted">About My Collection</h3>
-            <div className="flex flex-col items-end gap-1">
+            <div className="flex items-center gap-2 sm:flex-col sm:items-end sm:gap-1">
               {remainingUsage !== null && (
-                <span className="text-xs text-textMuted">
+                <span className="text-xs text-textMuted whitespace-nowrap">
                   {remainingUsage} left this month
                 </span>
               )}
@@ -190,12 +190,12 @@ export const CollectionInsights = ({ watchCount, watches }: CollectionInsightsPr
                 disabled={isGenerating || remainingUsage === 0}
                 size="sm"
                 variant="outline"
-                className="gap-2"
+                className="gap-2 shrink-0"
               >
                 {isGenerating ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Analyzing...
+                    <span className="hidden xs:inline">Analyzing...</span>
                   </>
                 ) : (
                   <>
@@ -208,14 +208,14 @@ export const CollectionInsights = ({ watchCount, watches }: CollectionInsightsPr
           </div>
           
           {insights ? (
-            <div className="prose prose-sm max-w-none text-textMuted">
+            <div className="text-textMuted text-sm leading-relaxed break-words">
               {insights.split('\n').map((paragraph, idx) => (
-                paragraph.trim() && <p key={idx} className="mb-2">{paragraph}</p>
+                paragraph.trim() && <p key={idx} className="mb-2 last:mb-0">{paragraph}</p>
               ))}
             </div>
           ) : (
             <div className="space-y-4">
-              <p className="text-sm text-textMuted">
+              <p className="text-sm text-textMuted leading-relaxed">
                 Discover personalized insights about your collection and taste. AI will analyze your watches, 
                 brands, styles, and preferences to give you a unique perspective on your collecting journey.
               </p>
