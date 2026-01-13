@@ -1,6 +1,6 @@
 import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Info, Watch, Heart, Shield, Sparkles, Users, Globe } from "lucide-react";
+import { Info, Watch, Heart, Shield, Sparkles, Users, Globe, Footprints, ShoppingBag } from "lucide-react";
 
 export default function About() {
   return (
@@ -11,7 +11,7 @@ export default function About() {
           <div>
             <h1 className="text-3xl font-bold">About Sora Vault</h1>
             <p className="text-muted-foreground">
-              Your personal watch collection management platform
+              Your personal luxury collection management platform
             </p>
           </div>
         </div>
@@ -30,18 +30,23 @@ export default function About() {
           </CardHeader>
           <CardContent className="space-y-6">
             <p className="text-muted-foreground leading-relaxed">
-              Sora Vault is a comprehensive watch collection management platform designed for watch enthusiasts 
-              who want to catalog, track, and analyze their timepiece collections. Built with passion for 
-              horology, our platform offers a suite of tools to help you get the most out of your collection.
+              Sora Vault is a comprehensive collection management platform designed for enthusiasts 
+              who want to catalog, track, and analyze their luxury collections. Whether you collect 
+              watches, sneakers, or purses, our platform offers a suite of tools to help you get the 
+              most out of your collection.
             </p>
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="flex gap-3 p-4 rounded-lg border bg-card">
-                <Watch className="h-6 w-6 text-primary shrink-0" />
+                <div className="flex gap-1.5 shrink-0">
+                  <Watch className="h-5 w-5 text-primary" />
+                  <Footprints className="h-5 w-5 text-primary" />
+                  <ShoppingBag className="h-5 w-5 text-primary" />
+                </div>
                 <div>
-                  <h3 className="font-semibold">Collection Management</h3>
+                  <h3 className="font-semibold">Multi-Collection Support</h3>
                   <p className="text-sm text-muted-foreground">
-                    Catalog your watches with detailed specifications, photos, and personal notes.
+                    Manage watches, sneakers, and purses with specialized fields for each type.
                   </p>
                 </div>
               </div>
@@ -51,7 +56,7 @@ export default function About() {
                 <div>
                   <h3 className="font-semibold">Wear Tracking</h3>
                   <p className="text-sm text-muted-foreground">
-                    Log your wear history and discover patterns in your collection usage.
+                    Log your usage history and discover patterns in your collection usage.
                   </p>
                 </div>
               </div>
@@ -81,7 +86,7 @@ export default function About() {
                 <div>
                   <h3 className="font-semibold">Trip & Event Tracking</h3>
                   <p className="text-sm text-muted-foreground">
-                    Associate your watches with trips and special events for meaningful memories.
+                    Associate your items with trips and special events for meaningful memories.
                   </p>
                 </div>
               </div>

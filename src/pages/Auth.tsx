@@ -226,7 +226,7 @@ export default function Auth() {
             </div>
           </div>
           <p className="text-center text-textMuted max-w-md">
-            Your premium watch collection management studio. Sign in or request access to get started.
+            Your premium collection management studio for watches, sneakers, and purses. Sign in or request access to get started.
           </p>
         </div>
         
@@ -246,8 +246,8 @@ export default function Auth() {
                   {showPasswordReset 
                     ? "We'll email you a magic link that logs you in instantly"
                     : isSignUp 
-                    ? "Create an account to start tracking your watches" 
-                    : "Sign in to access your watch collection"}
+                    ? "Create an account to start tracking your collections" 
+                    : "Sign in to access your collections"}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
