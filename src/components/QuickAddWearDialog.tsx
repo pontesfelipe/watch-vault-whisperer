@@ -10,6 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCollection } from "@/contexts/CollectionContext";
+import { CollectionType, getCollectionConfig, isWatchCollection } from "@/types/collection";
 
 const wearSchema = z.object({
   watchId: z.string().uuid(),
@@ -20,9 +22,10 @@ const wearSchema = z.object({
 interface QuickAddWearDialogProps {
   watches: Array<{ id: string; brand: string; model: string }>;
   onSuccess: () => void;
+  collectionType?: CollectionType;
 }
 
-export const QuickAddWearDialog = ({ watches, onSuccess }: QuickAddWearDialogProps) => {
+export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propType }: QuickAddWearDialogProps) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedWatchId, setSelectedWatchId] = useState("");
@@ -32,6 +35,11 @@ export const QuickAddWearDialog = ({ watches, onSuccess }: QuickAddWearDialogPro
   const [tripNotes, setTripNotes] = useState("");
   const { toast } = useToast();
   const { user } = useAuth();
+  const { currentCollectionType } = useCollection();
+  
+  const collectionType = propType || currentCollectionType || 'watches';
+  const config = getCollectionConfig(collectionType);
+  const isWatch = isWatchCollection(collectionType);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -278,19 +286,19 @@ export const QuickAddWearDialog = ({ watches, onSuccess }: QuickAddWearDialogPro
       <DialogTrigger asChild>
         <Button className="gap-2">
           <Plus className="w-4 h-4" />
-          Add Wear
+          Log {config.usageNoun.charAt(0).toUpperCase() + config.usageNoun.slice(1)}
         </Button>
       </DialogTrigger>
       <DialogContent className="bg-card border-border max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-foreground">Quick Add Wear Entry</DialogTitle>
+          <DialogTitle className="text-foreground">Quick Add {config.usageNoun.charAt(0).toUpperCase() + config.usageNoun.slice(1)} Entry</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="watch">Select Watch</Label>
+            <Label htmlFor="watch">Select {config.singularLabel}</Label>
             <Select value={selectedWatchId} onValueChange={setSelectedWatchId} required>
               <SelectTrigger className="bg-background border-border">
-                <SelectValue placeholder="Choose a watch..." />
+                <SelectValue placeholder={`Choose a ${config.singularLabel.toLowerCase()}...`} />
               </SelectTrigger>
               <SelectContent className="bg-popover border-border max-h-[300px]">
                 {sortedWatches.map((watch) => (
@@ -316,7 +324,7 @@ export const QuickAddWearDialog = ({ watches, onSuccess }: QuickAddWearDialogPro
           </div>
 
           <div className="space-y-2">
-            <Label>Wear Duration</Label>
+            <Label>{config.usageNoun.charAt(0).toUpperCase() + config.usageNoun.slice(1)} Duration</Label>
             <div className="flex gap-4 flex-wrap">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -432,70 +440,75 @@ export const QuickAddWearDialog = ({ watches, onSuccess }: QuickAddWearDialogPro
               </div>
             )}
 
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="isWaterActivity"
-                checked={isWaterActivity}
-                onChange={(e) => setIsWaterActivity(e.target.checked)}
-                className="w-4 h-4"
-              />
-              <Label htmlFor="isWaterActivity" className="cursor-pointer">Link to Water Activity</Label>
-            </div>
-
-            {isWaterActivity && (
-              <div className="space-y-2 pl-6">
-                <div className="space-y-2">
-                  <Label htmlFor="waterActivityType">Activity Type</Label>
-                  <Select name="waterActivityType" defaultValue="Pool">
-                    <SelectTrigger className="bg-background border-border">
-                      <SelectValue placeholder="Select activity" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-popover border-border z-50">
-                      <SelectItem value="Pool">Pool</SelectItem>
-                      <SelectItem value="Lake">Lake</SelectItem>
-                      <SelectItem value="Beach">Beach</SelectItem>
-                      <SelectItem value="Hot Tub">Hot Tub</SelectItem>
-                      <SelectItem value="Diving">Diving</SelectItem>
-                      <SelectItem value="Water Sports">Water Sports</SelectItem>
-                      <SelectItem value="Snorkeling">Snorkeling</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="depthMeters">Depth (meters)</Label>
-                    <Input
-                      id="depthMeters"
-                      name="depthMeters"
-                      type="number"
-                      step="0.1"
-                      placeholder="e.g., 10"
-                      className="bg-background border-border"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="durationMinutes">Duration (min)</Label>
-                    <Input
-                      id="durationMinutes"
-                      name="durationMinutes"
-                      type="number"
-                      placeholder="e.g., 45"
-                      className="bg-background border-border"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="waterNotes">Notes</Label>
-                  <Input
-                    id="waterNotes"
-                    name="waterNotes"
-                    placeholder="Additional details..."
-                    className="bg-background border-border"
+            {/* Water Activity - Only show for watches */}
+            {isWatch && (
+              <>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="isWaterActivity"
+                    checked={isWaterActivity}
+                    onChange={(e) => setIsWaterActivity(e.target.checked)}
+                    className="w-4 h-4"
                   />
+                  <Label htmlFor="isWaterActivity" className="cursor-pointer">Link to Water Activity</Label>
                 </div>
-              </div>
+
+                {isWaterActivity && (
+                  <div className="space-y-2 pl-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="waterActivityType">Activity Type</Label>
+                      <Select name="waterActivityType" defaultValue="Pool">
+                        <SelectTrigger className="bg-background border-border">
+                          <SelectValue placeholder="Select activity" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-popover border-border z-50">
+                          <SelectItem value="Pool">Pool</SelectItem>
+                          <SelectItem value="Lake">Lake</SelectItem>
+                          <SelectItem value="Beach">Beach</SelectItem>
+                          <SelectItem value="Hot Tub">Hot Tub</SelectItem>
+                          <SelectItem value="Diving">Diving</SelectItem>
+                          <SelectItem value="Water Sports">Water Sports</SelectItem>
+                          <SelectItem value="Snorkeling">Snorkeling</SelectItem>
+                          <SelectItem value="Other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="depthMeters">Depth (meters)</Label>
+                        <Input
+                          id="depthMeters"
+                          name="depthMeters"
+                          type="number"
+                          step="0.1"
+                          placeholder="e.g., 10"
+                          className="bg-background border-border"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="durationMinutes">Duration (min)</Label>
+                        <Input
+                          id="durationMinutes"
+                          name="durationMinutes"
+                          type="number"
+                          placeholder="e.g., 45"
+                          className="bg-background border-border"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="waterNotes">Notes</Label>
+                      <Input
+                        id="waterNotes"
+                        name="waterNotes"
+                        placeholder="Additional details..."
+                        className="bg-background border-border"
+                      />
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
 

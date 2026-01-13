@@ -8,17 +8,19 @@ interface StatsCardProps {
   icon: LucideIcon;
   subtitle?: string;
   variant?: "default" | "compact";
-  watchId?: string;
+  itemId?: string; // Renamed from watchId to be collection-agnostic
+  watchId?: string; // Kept for backward compatibility
 }
 
-export const StatsCard = ({ title, value, icon: Icon, subtitle, variant = "default", watchId }: StatsCardProps) => {
+export const StatsCard = ({ title, value, icon: Icon, subtitle, variant = "default", itemId, watchId }: StatsCardProps) => {
   const navigate = useNavigate();
   const isCompact = variant === "compact";
-  const isClickable = !!watchId;
+  const linkId = itemId || watchId; // Use itemId first, fall back to watchId
+  const isClickable = !!linkId;
 
   const handleClick = () => {
-    if (watchId) {
-      navigate(`/watch/${watchId}`);
+    if (linkId) {
+      navigate(`/watch/${linkId}`); // Route stays the same for now
     }
   };
 

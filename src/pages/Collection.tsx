@@ -264,7 +264,7 @@ const Collection = () => {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
-            placeholder="Search watches..."
+            placeholder={`Search ${currentCollectionConfig.pluralLabel.toLowerCase()}...`}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
@@ -289,8 +289,8 @@ const Collection = () => {
         <div className="text-center py-12">
           <p className="text-muted-foreground">
             {searchQuery || selectedBrand !== "all"
-              ? "No watches match your filters"
-              : "No watches yet. Add your first watch!"}
+              ? `No ${currentCollectionConfig.pluralLabel.toLowerCase()} match your filters`
+              : `No ${currentCollectionConfig.pluralLabel.toLowerCase()} yet. Add your first ${currentCollectionConfig.singularLabel.toLowerCase()}!`}
           </p>
         </div>
       ) : (
