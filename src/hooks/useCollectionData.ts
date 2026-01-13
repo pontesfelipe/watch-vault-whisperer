@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { CollectionType } from "@/types/collection";
 
 export interface Collection {
   id: string;
   name: string;
+  collection_type: CollectionType;
   created_by: string;
   created_at: string;
   updated_at: string;
