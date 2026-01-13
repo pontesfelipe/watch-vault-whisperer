@@ -87,49 +87,52 @@ export const WishlistTable = ({ items, onDelete, showAISuggested = false, showDe
 
   return (
     <>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[80px]">Rank</TableHead>
-            <TableHead>Brand</TableHead>
-            <TableHead>Model</TableHead>
-            <TableHead>Dial Colors</TableHead>
-            <TableHead>Notes</TableHead>
-            {showDeleteButton && <TableHead className="w-[100px]">Actions</TableHead>}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {sortedItems.map((item) => (
-            <TableRow key={item.id}>
-              <TableCell>
-                <div className="flex items-center gap-1">
-                  {item.rank > 0 && item.rank <= 5 && (
-                    <Star className="w-4 h-4 fill-yellow-500 text-yellow-500" />
-                  )}
-                  <span className="font-medium">{item.rank || "-"}</span>
-                </div>
-              </TableCell>
-              <TableCell className="font-medium">{item.brand}</TableCell>
-              <TableCell>{item.model}</TableCell>
-              <TableCell>{item.dial_colors}</TableCell>
-              <TableCell className="max-w-xs truncate">
-                {item.notes || "-"}
-              </TableCell>
-              {showDeleteButton && (
-                <TableCell>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setDeleteId(item.id)}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </TableCell>
-              )}
+      <div className="table-mobile-wrapper">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[60px] sm:w-[80px]">Rank</TableHead>
+              <TableHead>Brand</TableHead>
+              <TableHead>Model</TableHead>
+              <TableHead className="hidden sm:table-cell">Dial Colors</TableHead>
+              <TableHead className="hidden md:table-cell">Notes</TableHead>
+              {showDeleteButton && <TableHead className="w-[60px] sm:w-[100px]">Actions</TableHead>}
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {sortedItems.map((item) => (
+              <TableRow key={item.id}>
+                <TableCell>
+                  <div className="flex items-center gap-1">
+                    {item.rank > 0 && item.rank <= 5 && (
+                      <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-yellow-500 text-yellow-500" />
+                    )}
+                    <span className="font-medium text-sm">{item.rank || "-"}</span>
+                  </div>
+                </TableCell>
+                <TableCell className="font-medium text-sm">{item.brand}</TableCell>
+                <TableCell className="text-sm">{item.model}</TableCell>
+                <TableCell className="hidden sm:table-cell text-sm">{item.dial_colors}</TableCell>
+                <TableCell className="hidden md:table-cell max-w-xs truncate text-sm">
+                  {item.notes || "-"}
+                </TableCell>
+                {showDeleteButton && (
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 sm:h-9 sm:w-9 p-0"
+                      onClick={() => setDeleteId(item.id)}
+                    >
+                      <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    </Button>
+                  </TableCell>
+                )}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
 
       <AlertDialog
         open={!!deleteId}
