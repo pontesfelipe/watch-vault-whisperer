@@ -6,12 +6,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { SortableWatchCard } from "@/components/SortableWatchCard";
 import { PastWatchCard } from "@/components/PastWatchCard";
 import { AddWatchDialog } from "@/components/AddWatchDialog";
+import { AddItemDialog } from "@/components/AddItemDialog";
 import { QuickAddWearDialog } from "@/components/QuickAddWearDialog";
 import { EditCollectionDialog } from "@/components/EditCollectionDialog";
 import { CreateFirstCollectionDialog } from "@/components/CreateFirstCollectionDialog";
 import { CollectionSwitcher } from "@/components/CollectionSwitcher";
 import { AnalyzeWatchMetadataDialog } from "@/components/AnalyzeWatchMetadataDialog";
 import { ImportSpreadsheetDialog } from "@/components/ImportSpreadsheetDialog";
+import { ItemTypeIcon } from "@/components/ItemTypeIcon";
 import { useWatchData } from "@/hooks/useWatchData";
 import { usePastWatchData } from "@/hooks/usePastWatchData";
 import { useStatsCalculations } from "@/hooks/useStatsCalculations";
@@ -38,7 +40,7 @@ import {
 } from "@dnd-kit/sortable";
 
 const Collection = () => {
-  const { selectedCollectionId, currentCollection, collections, collectionsLoading, refetchCollections } = useCollection();
+  const { selectedCollectionId, currentCollection, currentCollectionType, currentCollectionConfig, collections, collectionsLoading, refetchCollections } = useCollection();
   const { watches, wearEntries, loading, refetch } = useWatchData(selectedCollectionId);
   const { pastWatches, wearEntries: pastWearEntries, loading: pastLoading, refetch: refetchPast } = usePastWatchData();
   const { trips } = useTripData();
@@ -220,10 +222,10 @@ const Collection = () => {
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-textMuted mt-1">
-                  {watches.length} {watches.length === 1 ? "watch" : "watches"} in {currentCollection?.role === 'owner' ? 'your' : 'this'} collection
-                </p>
-              </div>
+              <p className="text-sm text-textMuted mt-1">
+                {watches.length} {watches.length === 1 ? currentCollectionConfig.singularLabel.toLowerCase() : currentCollectionConfig.pluralLabel.toLowerCase()} in {currentCollection?.role === 'owner' ? 'your' : 'this'} collection
+              </p>
+            </div>
               {currentCollection && currentCollection.role === 'owner' && (
                 <EditCollectionDialog 
                   collectionId={currentCollection.id}
@@ -233,10 +235,14 @@ const Collection = () => {
               )}
             </div>
           </div>
-          <div className="flex gap-2">
-            <QuickAddWearDialog watches={watches} onSuccess={refetch} />
+        <div className="flex gap-2">
+          {currentCollectionType === 'watches' && <QuickAddWearDialog watches={watches} onSuccess={refetch} />}
+          {currentCollectionType === 'watches' ? (
             <AddWatchDialog onSuccess={refetch} />
-          </div>
+          ) : (
+            <AddItemDialog onSuccess={refetch} />
+          )}
+        </div>
         </div>
         <div className="flex flex-wrap gap-2 justify-end">
           {isAdmin && <ImportSpreadsheetDialog />}

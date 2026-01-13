@@ -160,6 +160,7 @@ export type Database = {
       }
       collections: {
         Row: {
+          collection_type: Database["public"]["Enums"]["collection_type"]
           created_at: string
           created_by: string
           id: string
@@ -167,6 +168,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          collection_type?: Database["public"]["Enums"]["collection_type"]
           created_at?: string
           created_by: string
           id?: string
@@ -174,6 +176,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          collection_type?: Database["public"]["Enums"]["collection_type"]
           created_at?: string
           created_by?: string
           id?: string
@@ -671,6 +674,74 @@ export type Database = {
         }
         Relationships: []
       }
+      purse_specs: {
+        Row: {
+          authenticity_card_included: boolean | null
+          authenticity_verified: boolean | null
+          box_included: boolean | null
+          closure_type: string | null
+          color: string | null
+          created_at: string
+          dust_bag_included: boolean | null
+          hardware_color: string | null
+          id: string
+          item_id: string
+          material: string | null
+          pattern: string | null
+          serial_number: string | null
+          size_category: string | null
+          strap_type: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          authenticity_card_included?: boolean | null
+          authenticity_verified?: boolean | null
+          box_included?: boolean | null
+          closure_type?: string | null
+          color?: string | null
+          created_at?: string
+          dust_bag_included?: boolean | null
+          hardware_color?: string | null
+          id?: string
+          item_id: string
+          material?: string | null
+          pattern?: string | null
+          serial_number?: string | null
+          size_category?: string | null
+          strap_type?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          authenticity_card_included?: boolean | null
+          authenticity_verified?: boolean | null
+          box_included?: boolean | null
+          closure_type?: string | null
+          color?: string | null
+          created_at?: string
+          dust_bag_included?: boolean | null
+          hardware_color?: string | null
+          id?: string
+          item_id?: string
+          material?: string | null
+          pattern?: string | null
+          serial_number?: string | null
+          size_category?: string | null
+          strap_type?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purse_specs_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "watches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       registration_requests: {
         Row: {
           accepted_privacy: boolean
@@ -709,6 +780,74 @@ export type Database = {
           terms_version?: string | null
         }
         Relationships: []
+      }
+      sneaker_specs: {
+        Row: {
+          box_included: boolean | null
+          collaboration: string | null
+          colorway: string | null
+          condition: string | null
+          created_at: string
+          id: string
+          item_id: string
+          limited_edition: boolean | null
+          og_all: boolean | null
+          release_date: string | null
+          shoe_size: string | null
+          silhouette: string | null
+          size_type: string | null
+          sku: string | null
+          style_code: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          box_included?: boolean | null
+          collaboration?: string | null
+          colorway?: string | null
+          condition?: string | null
+          created_at?: string
+          id?: string
+          item_id: string
+          limited_edition?: boolean | null
+          og_all?: boolean | null
+          release_date?: string | null
+          shoe_size?: string | null
+          silhouette?: string | null
+          size_type?: string | null
+          sku?: string | null
+          style_code?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          box_included?: boolean | null
+          collaboration?: string | null
+          colorway?: string | null
+          condition?: string | null
+          created_at?: string
+          id?: string
+          item_id?: string
+          limited_edition?: boolean | null
+          og_all?: boolean | null
+          release_date?: string | null
+          shoe_size?: string | null
+          silhouette?: string | null
+          size_type?: string | null
+          sku?: string | null
+          style_code?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sneaker_specs_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "watches"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       terms_acceptances: {
         Row: {
@@ -1349,6 +1488,7 @@ export type Database = {
     Enums: {
       app_role: "admin" | "user"
       collection_role: "owner" | "editor" | "viewer"
+      collection_type: "watches" | "sneakers" | "purses"
       friend_request_status: "pending" | "accepted" | "declined"
       watch_historical_significance:
         | "regular"
@@ -1484,6 +1624,7 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "user"],
       collection_role: ["owner", "editor", "viewer"],
+      collection_type: ["watches", "sneakers", "purses"],
       friend_request_status: ["pending", "accepted", "declined"],
       watch_historical_significance: [
         "regular",
