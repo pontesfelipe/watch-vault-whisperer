@@ -6,6 +6,7 @@ import { DepreciationCard } from "@/components/DepreciationCard";
 import { DepreciationChart } from "@/components/DepreciationChart";
 import { CollectionInsights } from "@/components/CollectionInsights";
 import { MonthlyUsageTable } from "@/components/MonthlyUsageTable";
+import { CollectionSwitcher } from "@/components/CollectionSwitcher";
 import { useWatchData } from "@/hooks/useWatchData";
 import { useTripData } from "@/hooks/useTripData";
 import { useWaterUsageData } from "@/hooks/useWaterUsageData";
@@ -53,11 +54,6 @@ const Dashboard = () => {
             <h1 className="text-3xl md:text-4xl font-semibold text-textMain">
               Dashboard
             </h1>
-            {currentCollection && (
-              <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
-                {currentCollection.name}
-              </span>
-            )}
           </div>
           <p className="mt-1 text-sm text-textMuted">
             {currentCollection 
@@ -65,7 +61,10 @@ const Dashboard = () => {
               : `Overview of your ${config.pluralLabel.toLowerCase()} collection statistics`}
           </p>
         </div>
-        <QuickAddWearDialog watches={watches} onSuccess={refetch} collectionType={currentCollectionType} />
+        <div className="flex items-center gap-3">
+          <CollectionSwitcher />
+          <QuickAddWearDialog watches={watches} onSuccess={refetch} collectionType={currentCollectionType} />
+        </div>
       </div>
 
       <CollectionInsights watchCount={stats.totalWatches} watches={watches} />
