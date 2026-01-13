@@ -25,6 +25,7 @@ import { TwoFactorAuthCard } from "@/components/TwoFactorAuthCard";
 import { SessionManagementCard } from "@/components/SessionManagementCard";
 import { LoginHistoryCard } from "@/components/LoginHistoryCard";
 import { AccountLinkingCard } from "@/components/AccountLinkingCard";
+import { DefaultCollectionCard } from "@/components/DefaultCollectionCard";
 
 const Settings = () => {
   const { user, signOut } = useAuth();
@@ -203,6 +204,8 @@ const Settings = () => {
           )}
 
           <ProfileSettingsCard />
+
+          <DefaultCollectionCard />
 
           <AccountLinkingCard />
 

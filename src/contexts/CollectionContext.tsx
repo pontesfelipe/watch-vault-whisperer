@@ -19,31 +19,30 @@ export const CollectionProvider = ({ children }: { children: ReactNode }) => {
   const { collections, loading, refetch } = useCollectionData();
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
 
-  // Auto-select user's own collection when data loads (always prioritize owned)
+  // Auto-select collection when data loads based on user preference
   useEffect(() => {
-    if (!loading && collections.length > 0) {
-      // Always prioritize the user's owned collection on page load
-      const ownedCollection = collections.find(c => c.role === 'owner');
+    if (!loading && collections.length > 0 && !selectedCollectionId) {
+      const collectionIds = collections.map(c => c.id);
       
-      if (ownedCollection && (!selectedCollectionId || selectedCollectionId !== ownedCollection.id)) {
-        // Check if there's a saved ID and it's not the owned collection
-        const savedId = localStorage.getItem('selectedCollectionId');
-        const collectionIds = collections.map(c => c.id);
-        
-        // Only use saved ID if user explicitly selected it before (not on first load)
-        if (selectedCollectionId && savedId && collectionIds.includes(savedId)) {
-          // User has already made a selection in this session, respect it
-          return;
-        }
-        
-        // Default to owned collection
-        setSelectedCollectionId(ownedCollection.id);
-      } else if (!ownedCollection && !selectedCollectionId) {
-        // No owned collection, fall back to first available
-        setSelectedCollectionId(collections[0].id);
+      // Check for user's default collection preference first
+      const defaultCollectionId = localStorage.getItem('defaultCollectionId');
+      if (defaultCollectionId && collectionIds.includes(defaultCollectionId)) {
+        setSelectedCollectionId(defaultCollectionId);
+        return;
       }
+      
+      // Check for last selected collection
+      const savedId = localStorage.getItem('selectedCollectionId');
+      if (savedId && collectionIds.includes(savedId)) {
+        setSelectedCollectionId(savedId);
+        return;
+      }
+      
+      // Fall back to owned collection or first available
+      const ownedCollection = collections.find(c => c.role === 'owner');
+      setSelectedCollectionId(ownedCollection?.id || collections[0].id);
     }
-  }, [collections, loading]);
+  }, [collections, loading, selectedCollectionId]);
 
   // Persist selection
   useEffect(() => {
