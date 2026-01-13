@@ -1,12 +1,15 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreVertical, DollarSign, Eye, TrendingUp, Edit2, Trash2, ArrowUpDown, Box, CheckCircle, Sparkles } from "lucide-react";
+import { MoreVertical, DollarSign, TrendingUp, Edit2, Trash2, ArrowUpDown, CheckCircle, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { CollectionType, getCollectionConfig, SNEAKER_CONDITIONS, PURSE_SIZES } from "@/types/collection";
 import { ItemTypeIcon } from "./ItemTypeIcon";
 import { formatCurrency } from "@/utils/format";
+import watchHero from "@/assets/watch-hero.jpg";
+import sneakerHero from "@/assets/sneaker-hero.jpg";
+import purseHero from "@/assets/purse-hero.jpg";
 
 interface DynamicItemCardProps {
   item: any;
@@ -55,7 +58,7 @@ export const DynamicItemCard = ({
         const specs = item.specs;
         if (!specs) return null;
         return (
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1.5">
             {specs.shoe_size && (
               <Badge variant="outline" className="text-xs">
                 Size {specs.shoe_size} {specs.size_type}
@@ -78,7 +81,7 @@ export const DynamicItemCard = ({
         const purseSpecs = item.specs;
         if (!purseSpecs) return null;
         return (
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1.5">
             {purseSpecs.size_category && (
               <Badge variant="outline" className="text-xs">
                 {PURSE_SIZES[purseSpecs.size_category]?.label || purseSpecs.size_category}
@@ -100,7 +103,7 @@ export const DynamicItemCard = ({
       case 'watches':
       default:
         return (
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1.5">
             {item.movement && (
               <Badge variant="outline" className="text-xs">
                 {item.movement}
@@ -112,7 +115,7 @@ export const DynamicItemCard = ({
               </Badge>
             )}
             {item.rarity && item.rarity !== 'common' && (
-              <Badge className="text-xs bg-primary/10 text-primary border-primary/30">
+              <Badge className="text-xs bg-accent/10 text-accent border-accent/30">
                 {item.rarity.replace('_', ' ')}
               </Badge>
             )}
@@ -131,35 +134,50 @@ export const DynamicItemCard = ({
 
   const { cost, resalePrice, appreciation } = getPriceMetrics();
 
+  // Get placeholder image based on collection type
+  const getPlaceholderImage = () => {
+    switch (collectionType) {
+      case 'sneakers': return sneakerHero;
+      case 'purses': return purseHero;
+      case 'watches':
+      default: return watchHero;
+    }
+  };
+
+  const imageUrl = item.ai_image_url || getPlaceholderImage();
+
   return (
     <Card 
-      className="group hover:shadow-lg transition-all duration-200 cursor-pointer overflow-hidden"
+      className="group hover:shadow-luxury transition-all duration-300 cursor-pointer overflow-hidden border-0 shadow-card"
       onClick={handleCardClick}
     >
-      {/* Image placeholder */}
-      {item.ai_image_url && (
-        <div className="aspect-square overflow-hidden bg-muted">
-          <img 
-            src={item.ai_image_url} 
-            alt={`${item.brand} ${item.model}`}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        </div>
-      )}
-      
-      <CardHeader className="pb-2">
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <ItemTypeIcon type={collectionType} size="sm" className="text-muted-foreground flex-shrink-0" />
-              <h3 className="font-semibold text-sm truncate">{item.brand}</h3>
+      {/* Image with gradient overlay */}
+      <div className="relative aspect-square overflow-hidden bg-muted">
+        <img 
+          src={imageUrl} 
+          alt={`${item.brand} ${item.model}`}
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
+        
+        {/* Brand/Model overlay on image */}
+        <div className="absolute bottom-0 left-0 right-0 p-4">
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-background/80 backdrop-blur-sm">
+              <ItemTypeIcon type={collectionType} size="sm" className="text-accent" />
             </div>
-            <p className="text-muted-foreground text-xs truncate">{item.model}</p>
+            <div className="min-w-0">
+              <h3 className="font-bold text-sm text-foreground truncate drop-shadow-sm">{item.brand}</h3>
+              <p className="text-xs text-foreground/80 truncate drop-shadow-sm">{item.model}</p>
+            </div>
           </div>
-          
+        </div>
+        
+        {/* Actions dropdown */}
+        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Button variant="secondary" size="icon" className="h-8 w-8 backdrop-blur-sm bg-background/80 shadow-md">
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -185,13 +203,23 @@ export const DynamicItemCard = ({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      </CardHeader>
+        
+        {/* Trade badge on image */}
+        {item.available_for_trade && (
+          <div className="absolute top-2 left-2">
+            <Badge className="text-xs bg-accent/90 text-accent-foreground backdrop-blur-sm">
+              <ArrowUpDown className="w-3 h-3 mr-1" />
+              Trade
+            </Badge>
+          </div>
+        )}
+      </div>
       
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-3 p-4">
         {/* Primary color/colorway */}
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">{config.primaryColorLabel}:</span>
-          <Badge variant="outline" className="text-xs">
+          <Badge variant="outline" className="text-xs font-medium">
             {getPrimaryColorDisplay()}
           </Badge>
         </div>
@@ -200,33 +228,25 @@ export const DynamicItemCard = ({
         {getSecondaryInfo()}
         
         {/* Price and metrics */}
-        <div className="flex items-center justify-between pt-2 border-t border-border">
-          <div className="flex items-center gap-1">
-            <DollarSign className="w-3 h-3 text-muted-foreground" />
-            <span className="text-sm font-medium">{formatCurrency(cost)}</span>
+        <div className="flex items-center justify-between pt-3 border-t border-border">
+          <div className="flex items-center gap-1.5">
+            <DollarSign className="w-4 h-4 text-muted-foreground" />
+            <span className="text-sm font-bold">{formatCurrency(cost)}</span>
           </div>
           
           {appreciation && (
-            <div className={`flex items-center gap-1 text-xs ${parseFloat(appreciation) >= 0 ? 'text-green-600' : 'text-red-500'}`}>
-              <TrendingUp className="w-3 h-3" />
+            <div className={`flex items-center gap-1 text-xs font-semibold ${parseFloat(appreciation) >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+              <TrendingUp className="w-3.5 h-3.5" />
               <span>{appreciation}%</span>
             </div>
           )}
           
           {collectionType === 'watches' && totalWearDays > 0 && (
-            <Badge variant="secondary" className="text-xs">
-              {totalWearDays} day{totalWearDays !== 1 ? 's' : ''} worn
+            <Badge variant="secondary" className="text-xs font-medium">
+              {totalWearDays} day{totalWearDays !== 1 ? 's' : ''}
             </Badge>
           )}
         </div>
-        
-        {/* Trade badge */}
-        {item.available_for_trade && (
-          <Badge variant="outline" className="text-xs w-full justify-center bg-primary/5">
-            <ArrowUpDown className="w-3 h-3 mr-1" />
-            Available for Trade
-          </Badge>
-        )}
       </CardContent>
     </Card>
   );

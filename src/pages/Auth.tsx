@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import { Watch, Footprints, ShoppingBag } from "lucide-react";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { RegistrationRequestForm } from "@/components/RegistrationRequestForm";
@@ -16,6 +17,7 @@ import { PrivacyDialog } from "@/components/PrivacyDialog";
 import { TermsDialog } from "@/components/TermsDialog";
 import { MfaVerification } from "@/components/MfaVerification";
 import { recordLoginAttempt } from "@/utils/loginTracking";
+import heroImage from "@/assets/hero-collection.jpg";
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -213,22 +215,94 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-accent/10 p-4">
-      <div className="w-full max-w-2xl">
-        <div className="flex flex-col items-center mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent/15 text-xl font-bold text-accent shadow-lg shadow-accent/20">
-              SV
+    <div className="min-h-screen flex">
+      {/* Left side - Hero Image */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+        <img 
+          src={heroImage} 
+          alt="Luxury collection" 
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-background/20" />
+        
+        {/* Hero Content */}
+        <div className="relative z-10 flex flex-col justify-end p-12 pb-16">
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent/20 backdrop-blur-sm text-lg font-bold text-accent shadow-lg">
+                SV
+              </div>
+              <h1 className="text-3xl font-bold tracking-tight text-foreground">Sora Vault</h1>
             </div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-3xl font-bold tracking-tight text-textMain">Sora Vault</h1>
-              <BetaBadge />
+            
+            <p className="text-xl text-foreground/80 max-w-md leading-relaxed">
+              The premier platform for managing your luxury collections with precision and elegance.
+            </p>
+            
+            <div className="flex gap-4 pt-4">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-foreground/10 backdrop-blur-sm">
+                <Watch className="h-4 w-4 text-accent" />
+                <span className="text-sm text-foreground/90">Watches</span>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-foreground/10 backdrop-blur-sm">
+                <Footprints className="h-4 w-4 text-accent" />
+                <span className="text-sm text-foreground/90">Sneakers</span>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-foreground/10 backdrop-blur-sm">
+                <ShoppingBag className="h-4 w-4 text-accent" />
+                <span className="text-sm text-foreground/90">Purses</span>
+              </div>
             </div>
           </div>
-          <p className="text-center text-textMuted max-w-md">
-            Your premium collection management studio for watches, sneakers, and purses. Sign in or request access to get started.
-          </p>
         </div>
+      </div>
+
+      {/* Right side - Auth Form */}
+      <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-background via-background to-accent/5 p-4 lg:p-8">
+        <div className="w-full max-w-md">
+          {/* Mobile header */}
+          <div className="flex flex-col items-center mb-8 lg:hidden">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent/15 text-xl font-bold text-accent shadow-lg shadow-accent/20">
+                SV
+              </div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-3xl font-bold tracking-tight text-textMain">Sora Vault</h1>
+                <BetaBadge />
+              </div>
+            </div>
+            <p className="text-center text-textMuted max-w-md text-sm">
+              Your premium collection management studio
+            </p>
+            
+            {/* Mobile collection type badges */}
+            <div className="flex gap-2 mt-4">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/10">
+                <Watch className="h-3.5 w-3.5 text-accent" />
+                <span className="text-xs text-foreground/80">Watches</span>
+              </div>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/10">
+                <Footprints className="h-3.5 w-3.5 text-accent" />
+                <span className="text-xs text-foreground/80">Sneakers</span>
+              </div>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/10">
+                <ShoppingBag className="h-3.5 w-3.5 text-accent" />
+                <span className="text-xs text-foreground/80">Purses</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Desktop header */}
+          <div className="hidden lg:block mb-8">
+            <div className="flex items-center gap-2 mb-2">
+              <h2 className="text-2xl font-bold text-foreground">Welcome back</h2>
+              <BetaBadge />
+            </div>
+            <p className="text-muted-foreground">
+              Sign in to access your collections
+            </p>
+          </div>
         
         <Tabs defaultValue="signin" className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-6">
@@ -484,6 +558,7 @@ export default function Auth() {
 
         <TermsDialog open={termsOpen} onOpenChange={setTermsOpen} />
         <PrivacyDialog open={privacyOpen} onOpenChange={setPrivacyOpen} />
+        </div>
       </div>
     </div>
   );
