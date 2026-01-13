@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Watch, Footprints, ShoppingBag } from "lucide-react";
 
 interface SplashScreenProps {
   onComplete?: () => void;
@@ -38,25 +39,26 @@ export const SplashScreen = ({ onComplete, minDuration = 1500 }: SplashScreenPro
       </div>
 
       {/* Content */}
-      <div className="relative flex flex-col items-center gap-6">
+      <div className="relative flex flex-col items-center gap-8">
         {/* Logo */}
         <div className="relative">
           <div 
-            className="flex h-24 w-24 items-center justify-center rounded-3xl bg-accent/15 text-4xl font-bold text-accent shadow-2xl shadow-accent/30 animate-scale-in"
+            className="flex h-28 w-28 items-center justify-center rounded-3xl bg-accent/15 text-5xl font-bold text-accent shadow-2xl shadow-accent/30 animate-scale-in"
             style={{ animationDuration: '0.6s' }}
           >
             SV
           </div>
           {/* Decorative ring */}
-          <div className="absolute -inset-3 rounded-[2rem] border border-accent/20 animate-pulse" />
+          <div className="absolute -inset-4 rounded-[2.5rem] border-2 border-accent/20 animate-pulse" />
+          <div className="absolute -inset-8 rounded-[3rem] border border-accent/10 animate-pulse" style={{ animationDelay: '0.2s' }} />
         </div>
 
         {/* Brand name */}
         <div 
-          className="flex flex-col items-center gap-1 animate-fade-in"
+          className="flex flex-col items-center gap-2 animate-fade-in"
           style={{ animationDelay: '0.3s', animationFillMode: 'backwards' }}
         >
-          <h1 className="text-3xl font-bold tracking-tight text-textMain">
+          <h1 className="text-4xl font-bold tracking-tight text-textMain">
             Sora Vault
           </h1>
           <p className="text-sm text-textMuted tracking-widest uppercase">
@@ -64,15 +66,40 @@ export const SplashScreen = ({ onComplete, minDuration = 1500 }: SplashScreenPro
           </p>
         </div>
 
+        {/* Collection type icons */}
+        <div 
+          className="flex items-center gap-6 animate-fade-in"
+          style={{ animationDelay: '0.5s', animationFillMode: 'backwards' }}
+        >
+          <div className="flex flex-col items-center gap-2 group">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 transition-all group-hover:bg-accent/20">
+              <Watch className="h-6 w-6 text-accent" />
+            </div>
+            <span className="text-xs text-textMuted">Watches</span>
+          </div>
+          <div className="flex flex-col items-center gap-2 group">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 transition-all group-hover:bg-accent/20">
+              <Footprints className="h-6 w-6 text-accent" />
+            </div>
+            <span className="text-xs text-textMuted">Sneakers</span>
+          </div>
+          <div className="flex flex-col items-center gap-2 group">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 transition-all group-hover:bg-accent/20">
+              <ShoppingBag className="h-6 w-6 text-accent" />
+            </div>
+            <span className="text-xs text-textMuted">Purses</span>
+          </div>
+        </div>
+
         {/* Loading indicator */}
         <div 
           className="flex items-center gap-2 mt-4 animate-fade-in"
-          style={{ animationDelay: '0.6s', animationFillMode: 'backwards' }}
+          style={{ animationDelay: '0.7s', animationFillMode: 'backwards' }}
         >
-          <div className="flex gap-1">
-            <span className="w-2 h-2 rounded-full bg-accent animate-bounce" style={{ animationDelay: '0ms' }} />
-            <span className="w-2 h-2 rounded-full bg-accent animate-bounce" style={{ animationDelay: '150ms' }} />
-            <span className="w-2 h-2 rounded-full bg-accent animate-bounce" style={{ animationDelay: '300ms' }} />
+          <div className="flex gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-accent animate-bounce" style={{ animationDelay: '0ms' }} />
+            <span className="w-2.5 h-2.5 rounded-full bg-accent animate-bounce" style={{ animationDelay: '150ms' }} />
+            <span className="w-2.5 h-2.5 rounded-full bg-accent animate-bounce" style={{ animationDelay: '300ms' }} />
           </div>
         </div>
       </div>
@@ -80,7 +107,7 @@ export const SplashScreen = ({ onComplete, minDuration = 1500 }: SplashScreenPro
       {/* Footer */}
       <div 
         className="absolute bottom-8 text-xs text-textMuted/50 animate-fade-in"
-        style={{ animationDelay: '0.8s', animationFillMode: 'backwards' }}
+        style={{ animationDelay: '0.9s', animationFillMode: 'backwards' }}
       >
         Premium Collection Management
       </div>
