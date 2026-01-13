@@ -60,7 +60,7 @@ export const SplashScreen = ({ onComplete, minDuration = 1500 }: SplashScreenPro
             Sora Vault
           </h1>
           <p className="text-sm text-textMuted tracking-widest uppercase">
-            Watch Collection Studio
+            Luxury Collection Studio
           </p>
         </div>
 
@@ -82,7 +82,7 @@ export const SplashScreen = ({ onComplete, minDuration = 1500 }: SplashScreenPro
         className="absolute bottom-8 text-xs text-textMuted/50 animate-fade-in"
         style={{ animationDelay: '0.8s', animationFillMode: 'backwards' }}
       >
-        Premium Watch Management
+        Premium Collection Management
       </div>
     </div>
   );

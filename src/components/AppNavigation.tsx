@@ -57,7 +57,7 @@ export function AppNavigation() {
                   Sora Vault
                 </div>
                 <div className="text-xs text-textMuted">
-                  Watch collection studio
+                  Luxury collection studio
                 </div>
               </div>
             )}

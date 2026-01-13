@@ -73,20 +73,22 @@ export function DocumentationTab() {
                       <ul className="space-y-1 text-muted-foreground text-xs">
                         <li>• profiles - User profile data</li>
                         <li>• user_roles - Role assignments</li>
-                        <li>• collections - Watch collections</li>
+                        <li>• collections - Multi-type collections</li>
                         <li>• user_collections - Collection access</li>
-                        <li>• watches - Watch entries</li>
-                        <li>• watch_specs - Detailed specs</li>
+                        <li>• watches - Item entries (all types)</li>
+                        <li>• watch_specs - Watch specifications</li>
+                        <li>• sneaker_specs - Sneaker specifications</li>
+                        <li>• purse_specs - Purse specifications</li>
                       </ul>
                     </div>
                     <div className="p-3 border rounded-lg">
                       <h4 className="font-medium mb-2">Activity Tables</h4>
                       <ul className="space-y-1 text-muted-foreground text-xs">
-                        <li>• wear_entries - Wear log</li>
+                        <li>• wear_entries - Usage log</li>
                         <li>• trips - Trip records</li>
                         <li>• events - Event records</li>
                         <li>• water_usage - Water activities</li>
-                        <li>• wishlist - Wanted watches</li>
+                        <li>• wishlist - Wanted items</li>
                       </ul>
                     </div>
                     <div className="p-3 border rounded-lg">
@@ -114,21 +116,48 @@ export function DocumentationTab() {
               </section>
 
               <section>
+                <h3 className="text-lg font-semibold mb-3">Collection Types</h3>
+                <div className="grid gap-3 text-sm">
+                  <div className="p-3 border rounded-lg">
+                    <h4 className="font-medium mb-2">Watches</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Full watch specifications including movement, case material, crystal, water resistance, 
+                      power reserve, and lug-to-lug measurements.
+                    </p>
+                  </div>
+                  <div className="p-3 border rounded-lg">
+                    <h4 className="font-medium mb-2">Sneakers</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Sneaker-specific fields: colorway, size (US/UK/EU/CM), SKU, style code, condition 
+                      (deadstock/VNDS/used/worn), collaboration, release date, and silhouette.
+                    </p>
+                  </div>
+                  <div className="p-3 border rounded-lg">
+                    <h4 className="font-medium mb-2">Purses</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Purse-specific fields: material, hardware color, size category, closure type, 
+                      strap type, authenticity verification, serial number, and included accessories.
+                    </p>
+                  </div>
+                </div>
+              </section>
+
+              <section>
                 <h3 className="text-lg font-semibold mb-3">Edge Functions</h3>
                 <div className="grid gap-2 text-sm">
                   {[
                     { name: "analyze-collection", desc: "AI analysis of collection" },
                     { name: "analyze-sentiment", desc: "Sentiment analysis for notes" },
-                    { name: "analyze-watch-metadata", desc: "Extract watch metadata" },
+                    { name: "analyze-watch-metadata", desc: "Extract item metadata" },
                     { name: "check-user-access", desc: "Verify user permissions" },
                     { name: "delete-user", desc: "Complete user deletion" },
-                    { name: "extract-warranty-info", desc: "OCR warranty cards" },
+                    { name: "extract-warranty-info", desc: "OCR warranty/auth cards" },
                     { name: "fetch-watch-price", desc: "Get market prices" },
                     { name: "generate-watch-image", desc: "AI image generation" },
                     { name: "identify-watch-from-photo", desc: "Photo identification" },
                     { name: "import-spreadsheet-data", desc: "Bulk data import" },
-                    { name: "search-watch-info", desc: "Search watch database" },
-                    { name: "suggest-watches", desc: "AI watch suggestions" },
+                    { name: "search-watch-info", desc: "Search item database" },
+                    { name: "suggest-watches", desc: "AI item suggestions" },
                     { name: "update-all-watch-prices", desc: "Batch price update" },
                   ].map((fn) => (
                     <div key={fn.name} className="flex justify-between p-2 border rounded">
@@ -151,6 +180,7 @@ export function DocumentationTab() {
 ├── contexts/           # React contexts
 ├── hooks/              # Custom hooks
 ├── pages/              # Route components
+├── types/              # TypeScript types (collection.ts)
 ├── integrations/       # External integrations
 └── utils/              # Helper functions`}
                 </pre>

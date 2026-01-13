@@ -30,7 +30,7 @@ export const PrivacyDialog = ({ open, onOpenChange }: PrivacyDialogProps) => {
               <h3 className="font-semibold mb-2">2. Information We Collect</h3>
               <ul className="list-disc list-inside text-muted-foreground space-y-1">
                 <li>Account information (email, password)</li>
-                <li>Watch collection data, images, notes, and preferences</li>
+                <li>Collection data (watches, sneakers, purses), images, notes, and preferences</li>
                 <li>Activity logs (wear entries, trips, events, water usage)</li>
                 <li>Usage analytics</li>
                 <li>AI preference data</li>
@@ -43,7 +43,7 @@ export const PrivacyDialog = ({ open, onOpenChange }: PrivacyDialogProps) => {
                 Information is used solely to operate and improve the Application, including:
               </p>
               <ul className="list-disc list-inside text-muted-foreground space-y-1">
-                <li>Displaying and analyzing your watch collection</li>
+                <li>Displaying and analyzing your collections</li>
                 <li>Generating AI‑based recommendations</li>
                 <li>Providing usage, financial, and trend reports</li>
               </ul>
