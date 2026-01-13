@@ -13,10 +13,12 @@ import { useCollection } from "@/contexts/CollectionContext";
 import { useCollectionData } from "@/hooks/useCollectionData";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
-import { CreateFirstCollectionDialog } from "./CreateFirstCollectionDialog";
+import { CreateCollectionTypeDialog } from "./CreateCollectionTypeDialog";
+import { ItemTypeIcon } from "./ItemTypeIcon";
+import { getCollectionConfig } from "@/types/collection";
 
 export const CollectionSwitcher = () => {
-  const { selectedCollectionId, setSelectedCollectionId, currentCollection } = useCollection();
+  const { selectedCollectionId, setSelectedCollectionId, currentCollection, currentCollectionType } = useCollection();
   const { collections, refetch } = useCollectionData();
   const { isAdmin } = useAuth();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -48,6 +50,7 @@ export const CollectionSwitcher = () => {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" className="gap-2">
+            <ItemTypeIcon type={currentCollectionType} size="sm" />
             {currentCollection?.name || "Select Collection"}
             {currentCollection && (
               <Badge variant={getRoleBadgeVariant(currentCollection.role || 'viewer')} className="gap-1">
@@ -57,33 +60,38 @@ export const CollectionSwitcher = () => {
             )}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-64">
+        <DropdownMenuContent align="end" className="w-72">
           <DropdownMenuLabel>My Collections</DropdownMenuLabel>
           <DropdownMenuSeparator />
           
-          {collections.map((collection) => (
-            <DropdownMenuItem
-              key={collection.id}
-              onClick={() => setSelectedCollectionId(collection.id)}
-              className="flex items-center justify-between cursor-pointer"
-            >
-              <div className="flex items-center gap-2 min-w-0 flex-1">
-                {collection.id === selectedCollectionId && <Check className="w-4 h-4 flex-shrink-0" />}
-                <div className="flex flex-col min-w-0">
-                  <span className="truncate">{collection.name}</span>
-                  {isAdmin && (collection.ownerName || collection.ownerEmail) && (
+          {collections.map((collection) => {
+            const config = getCollectionConfig(collection.collection_type);
+            return (
+              <DropdownMenuItem
+                key={collection.id}
+                onClick={() => setSelectedCollectionId(collection.id)}
+                className="flex items-center justify-between cursor-pointer"
+              >
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  {collection.id === selectedCollectionId && <Check className="w-4 h-4 flex-shrink-0" />}
+                  <ItemTypeIcon type={collection.collection_type} size="sm" className="flex-shrink-0" />
+                  <div className="flex flex-col min-w-0">
+                    <span className="truncate">{collection.name}</span>
                     <span className="text-xs text-muted-foreground truncate">
-                      by {collection.ownerName || collection.ownerEmail}
+                      {config.label}
+                      {isAdmin && (collection.ownerName || collection.ownerEmail) && (
+                        <> • by {collection.ownerName || collection.ownerEmail}</>
+                      )}
                     </span>
-                  )}
+                  </div>
                 </div>
-              </div>
-              <Badge variant={getRoleBadgeVariant(collection.role || 'viewer')} className="gap-1 flex-shrink-0 ml-2">
-                {getRoleIcon(collection.role)}
-                {collection.role}
-              </Badge>
-            </DropdownMenuItem>
-          ))}
+                <Badge variant={getRoleBadgeVariant(collection.role || 'viewer')} className="gap-1 flex-shrink-0 ml-2">
+                  {getRoleIcon(collection.role)}
+                  {collection.role}
+                </Badge>
+              </DropdownMenuItem>
+            );
+          })}
 
           {canCreateCollection && (
             <>
@@ -110,7 +118,7 @@ export const CollectionSwitcher = () => {
       </DropdownMenu>
 
       {showCreateDialog && (
-        <CreateFirstCollectionDialog
+        <CreateCollectionTypeDialog
           onSuccess={() => {
             setShowCreateDialog(false);
             refetch();

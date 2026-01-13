@@ -1,10 +1,13 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useCollectionData, Collection } from '@/hooks/useCollectionData';
+import { CollectionType, CollectionTypeConfig, getCollectionConfig } from '@/types/collection';
 
 interface CollectionContextType {
   selectedCollectionId: string | null;
   setSelectedCollectionId: (id: string) => void;
   currentCollection: Collection | undefined;
+  currentCollectionType: CollectionType;
+  currentCollectionConfig: CollectionTypeConfig;
   collections: Collection[];
   collectionsLoading: boolean;
   refetchCollections: () => Promise<void>;
@@ -50,12 +53,16 @@ export const CollectionProvider = ({ children }: { children: ReactNode }) => {
   }, [selectedCollectionId]);
 
   const currentCollection = collections.find(c => c.id === selectedCollectionId);
+  const currentCollectionType: CollectionType = currentCollection?.collection_type || 'watches';
+  const currentCollectionConfig = getCollectionConfig(currentCollectionType);
 
   return (
     <CollectionContext.Provider value={{ 
       selectedCollectionId, 
       setSelectedCollectionId,
       currentCollection,
+      currentCollectionType,
+      currentCollectionConfig,
       collections,
       collectionsLoading: loading,
       refetchCollections: refetch

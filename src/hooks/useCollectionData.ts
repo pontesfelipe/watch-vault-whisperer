@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { CollectionType } from "@/types/collection";
 
 export interface Collection {
   id: string;
   name: string;
+  collection_type: CollectionType;
   created_by: string;
   created_at: string;
   updated_at: string;
@@ -65,12 +67,13 @@ export const useCollectionData = () => {
       
       const collectionsWithRoles = collectionsArr.map((collection: any) => ({
         ...collection,
+        collection_type: (collection.collection_type || 'watches') as CollectionType,
         role: userCollectionsArr.find((uc: any) => uc.collection_id === collection.id)?.role as 'owner' | 'editor' | 'viewer',
         ownerName: ownerProfiles[collection.created_by]?.full_name || undefined,
         ownerEmail: ownerProfiles[collection.created_by]?.email || undefined,
       }));
 
-      setCollections(collectionsWithRoles as any);
+      setCollections(collectionsWithRoles as Collection[]);
     } catch (error: any) {
       console.error("Error fetching collections:", error);
       toast.error("Failed to load collections");
