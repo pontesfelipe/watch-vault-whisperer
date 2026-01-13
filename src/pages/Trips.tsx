@@ -35,7 +35,7 @@ const Trips = () => {
             Travel History
           </h1>
           <p className="text-sm text-textMuted mt-1">
-            Track where your watches have traveled
+            Track where your collection has traveled
           </p>
         </div>
         <QuickAddWearDialog 

@@ -29,7 +29,7 @@ const Events = () => {
             Special Events
           </h1>
           <p className="text-sm text-textMuted mt-1">
-            Remember significant moments with your watches
+            Remember significant moments with your collection
           </p>
         </div>
         <QuickAddWearDialog 

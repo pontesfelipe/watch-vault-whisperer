@@ -116,6 +116,15 @@ export interface CollectionTypeConfig {
   typeLabel: string;
   typeOptions: string[];
   defaultTypeOption: string;
+  // Usage tracking terminology
+  usageVerb: string; // "wore", "wore", "carried"
+  usageVerbPast: string; // "worn", "worn", "carried"
+  usageNoun: string; // "wear", "wear", "use"
+  usageNounPlural: string; // "wears", "wears", "uses"
+  // Feature flags
+  supportsWaterTracking: boolean;
+  supportsMovement: boolean;
+  supportsWarranty: boolean;
 }
 
 // Collection type configurations
@@ -133,6 +142,13 @@ export const COLLECTION_CONFIGS: Record<CollectionType, CollectionTypeConfig> = 
     typeLabel: 'Type',
     typeOptions: ['Diver', 'Dress', 'Field', 'Pilot', 'Racing', 'Sport', 'Tool', 'Casual'],
     defaultTypeOption: 'Sport',
+    usageVerb: 'wore',
+    usageVerbPast: 'worn',
+    usageNoun: 'wear',
+    usageNounPlural: 'wears',
+    supportsWaterTracking: true,
+    supportsMovement: true,
+    supportsWarranty: true,
   },
   sneakers: {
     type: 'sneakers',
@@ -147,6 +163,13 @@ export const COLLECTION_CONFIGS: Record<CollectionType, CollectionTypeConfig> = 
     typeLabel: 'Silhouette',
     typeOptions: ['Running', 'Basketball', 'Skateboarding', 'Lifestyle', 'Training', 'Retro', 'Limited'],
     defaultTypeOption: 'Lifestyle',
+    usageVerb: 'wore',
+    usageVerbPast: 'worn',
+    usageNoun: 'wear',
+    usageNounPlural: 'wears',
+    supportsWaterTracking: false,
+    supportsMovement: false,
+    supportsWarranty: false,
   },
   purses: {
     type: 'purses',
@@ -161,6 +184,13 @@ export const COLLECTION_CONFIGS: Record<CollectionType, CollectionTypeConfig> = 
     typeLabel: 'Style',
     typeOptions: ['Tote', 'Crossbody', 'Shoulder', 'Clutch', 'Backpack', 'Satchel', 'Hobo'],
     defaultTypeOption: 'Crossbody',
+    usageVerb: 'carried',
+    usageVerbPast: 'carried',
+    usageNoun: 'use',
+    usageNounPlural: 'uses',
+    supportsWaterTracking: false,
+    supportsMovement: false,
+    supportsWarranty: true,
   },
 };
 

@@ -5,10 +5,12 @@ import { Sparkles, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAllowedUserCheck } from "@/hooks/useAllowedUserCheck";
+import { useCollection } from "@/contexts/CollectionContext";
+import { getItemLabel } from "@/types/collection";
 
 interface CollectionInsightsProps {
-  watchCount: number;
-  watches: any[];
+  watchCount: number; // Kept as watchCount for backward compatibility, but represents itemCount
+  watches: any[]; // Kept as watches for backward compatibility, but represents items
 }
 
 export const CollectionInsights = ({ watchCount, watches }: CollectionInsightsProps) => {
@@ -18,6 +20,9 @@ export const CollectionInsights = ({ watchCount, watches }: CollectionInsightsPr
   const [remainingUsage, setRemainingUsage] = useState<number | null>(null);
   const { toast } = useToast();
   const { isAllowed } = useAllowedUserCheck();
+  const { currentCollectionType } = useCollection();
+  
+  const itemLabel = currentCollectionType ? getItemLabel(currentCollectionType, watchCount !== 1) : 'items';
 
   useEffect(() => {
     if (isAllowed) {
@@ -151,6 +156,9 @@ export const CollectionInsights = ({ watchCount, watches }: CollectionInsightsPr
   };
 
   if (watchCount < 3) {
+    const remaining = 3 - watchCount;
+    const remainingLabel = currentCollectionType ? getItemLabel(currentCollectionType, remaining !== 1) : 'items';
+    
     return (
       <Card className="border-borderSubtle bg-surface p-6 shadow-card">
         <div className="flex items-start gap-4">
@@ -161,7 +169,7 @@ export const CollectionInsights = ({ watchCount, watches }: CollectionInsightsPr
             <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-textMuted mb-2">About My Collection</h3>
             <p className="text-textMuted text-sm leading-relaxed">
               I don't know you much yet, but soon I'll be able to tell you more about your collection and taste.
-              Add at least {3 - watchCount} more {3 - watchCount === 1 ? "watch" : "watches"} to unlock AI-powered 
+              Add at least {remaining} more {remainingLabel.toLowerCase()} to unlock AI-powered 
               insights about your preferences and collecting patterns.
             </p>
           </div>
@@ -216,7 +224,7 @@ export const CollectionInsights = ({ watchCount, watches }: CollectionInsightsPr
           ) : (
             <div className="space-y-4">
               <p className="text-sm text-textMuted leading-relaxed">
-                Discover personalized insights about your collection and taste. AI will analyze your watches, 
+                Discover personalized insights about your collection and taste. AI will analyze your {itemLabel.toLowerCase()}, 
                 brands, styles, and preferences to give you a unique perspective on your collecting journey.
               </p>
               <Button
