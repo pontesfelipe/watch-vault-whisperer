@@ -155,4 +155,72 @@
   .shadow-luxury {
     box-shadow: var(--shadow-luxury);
   }
+
+  /* Touch target optimization - minimum 44x44px for accessibility */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+  }
+
+  .touch-target-sm {
+    @apply min-h-[36px] min-w-[36px] flex items-center justify-center;
+  }
+
+  /* Button touch improvements */
+  .btn-mobile {
+    @apply h-11 px-4 text-sm sm:text-base;
+  }
+
+  /* Responsive spacing utilities */
+  .section-spacing {
+    @apply py-4 sm:py-6 md:py-8;
+  }
+
+  .card-spacing {
+    @apply p-3 sm:p-4 md:p-6;
+  }
+
+  .content-spacing {
+    @apply space-y-3 sm:space-y-4 md:space-y-6;
+  }
+
+  /* Container constraints */
+  .container-mobile {
+    @apply max-w-full sm:max-w-2xl md:max-w-4xl lg:max-w-6xl mx-auto px-3 sm:px-4 md:px-6;
+  }
+
+  /* Image and media optimization */
+  .img-responsive {
+    @apply w-full h-auto;
+  }
+
+  .video-responsive {
+    @apply aspect-video w-full;
+  }
+
+  /* Avatar sizes */
+  .avatar-mobile {
+    @apply h-8 w-8 sm:h-10 sm:w-10;
+  }
+}
+
+/* Table mobile responsiveness */
+@layer components {
+  .table-mobile-wrapper {
+    @apply w-full overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0;
+  }
+
+  .table-mobile-wrapper > table {
+    @apply min-w-[640px];
+  }
+}
+
+/* Accessibility - respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

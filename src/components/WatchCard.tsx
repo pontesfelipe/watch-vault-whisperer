@@ -199,22 +199,22 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
     <Card className="group relative overflow-hidden border-borderSubtle bg-surface hover:shadow-luxury transition-all duration-300">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       
-      <div className="relative p-5">
+      <div className="relative p-3 sm:p-4 md:p-5">
         
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <WatchIcon className="w-5 h-5 text-primary" />
-              <h3 className="font-semibold text-[17px] text-textMain">{watch.brand}</h3>
+        <div className="flex items-start justify-between mb-3 sm:mb-4 gap-2">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
+              <WatchIcon className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
+              <h3 className="font-semibold text-sm sm:text-[17px] text-textMain truncate">{watch.brand}</h3>
             </div>
-            <p className="text-sm text-textSoft">{watch.model}</p>
+            <p className="text-xs sm:text-sm text-textSoft truncate">{watch.model}</p>
           </div>
-          <Badge variant="secondary" className="text-xs font-medium">
+          <Badge variant="secondary" className="text-[10px] sm:text-xs font-medium flex-shrink-0">
             {watch.type}
           </Badge>
         </div>
 
-        <div className="space-y-3 mb-4">
+        <div className="space-y-2 sm:space-y-3 mb-3 sm:mb-4">
           <div className="flex items-center justify-between text-sm">
             <span className="text-textMuted">Dial Color</span>
             <span className="font-medium text-textMain">{watch.dial_color}</span>
@@ -352,24 +352,25 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
             </div>
           )}
           
-          <div className="flex items-center justify-between pt-3 border-t border-borderSubtle">
-            <div className="flex items-center gap-2 text-textMuted">
-              <Calendar className="w-4 h-4" />
-              <span className="text-sm">Days Worn</span>
+          <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-borderSubtle">
+            <div className="flex items-center gap-1.5 sm:gap-2 text-textMuted">
+              <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="text-xs sm:text-sm">Days Worn</span>
             </div>
-            <span className="text-2xl font-bold text-primary">{totalDays}</span>
+            <span className="text-xl sm:text-2xl font-bold text-primary">{totalDays}</span>
           </div>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-1.5 sm:gap-2">
           <Button
             variant="outline"
             size="sm"
-            className="flex-1 gap-2 border-borderSubtle hover:bg-surfaceMuted"
+            className="flex-1 gap-1.5 sm:gap-2 border-borderSubtle hover:bg-surfaceMuted text-xs sm:text-sm h-9 sm:h-10"
             onClick={() => navigate(`/watch/${watch.id}`)}
           >
-            <Eye className="w-4 h-4" />
-            Details
+            <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span className="hidden xs:inline">Details</span>
+            <span className="xs:hidden">View</span>
           </Button>
 
           <EditWatchDialog watch={watch} onSuccess={onDelete} />
@@ -377,10 +378,10 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
           <Button
             variant="outline" 
             size="sm" 
-            className="gap-2 border-borderSubtle hover:bg-destructive hover:text-destructive-foreground hover:border-destructive"
+            className="gap-1.5 sm:gap-2 border-borderSubtle hover:bg-destructive hover:text-destructive-foreground hover:border-destructive h-9 sm:h-10 px-2 sm:px-3"
             onClick={handleDeleteClick}
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </Button>
 
           <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

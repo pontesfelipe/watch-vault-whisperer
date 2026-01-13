@@ -155,11 +155,11 @@ export const UsageChart = ({ watches, wearEntries, onDataChange }: UsageChartPro
     .sort((a, b) => a.costPerUse - b.costPerUse);
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
         {/* Seasonal Trends */}
-        <Card className="border-border bg-card p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-4">Seasonal Trends</h3>
+        <Card className="border-border bg-card p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4">Seasonal Trends</h3>
           <div className="space-y-6">
             {(Object.entries(seasonalData) as [Season, typeof seasonalData[Season]][])
               .sort((a, b) => b[1].days - a[1].days)
@@ -258,12 +258,12 @@ export const UsageChart = ({ watches, wearEntries, onDataChange }: UsageChartPro
         </Card>
 
         {/* Top Cost Per Use */}
-        <Card className="border-border bg-card p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                <DollarSign className="w-5 h-5 text-primary" />
-                Best Value
+        <Card className="border-border bg-card p-4 sm:p-6">
+          <div className="flex items-center justify-between mb-3 sm:mb-4 gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+              <h3 className="text-base sm:text-lg font-semibold text-foreground flex items-center gap-1.5 sm:gap-2 truncate">
+                <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
+                <span className="truncate">Best Value</span>
               </h3>
               <Button
                 variant="ghost"
@@ -313,11 +313,11 @@ export const UsageChart = ({ watches, wearEntries, onDataChange }: UsageChartPro
         </Card>
 
         {/* Worst Cost Per Use */}
-        <Card className="border-border bg-card p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-              <DollarSign className="w-5 h-5 text-destructive" />
-              Needs More Wear
+        <Card className="border-border bg-card p-4 sm:p-6 md:col-span-2 lg:col-span-1">
+          <div className="flex items-center justify-between mb-3 sm:mb-4 gap-2">
+            <h3 className="text-base sm:text-lg font-semibold text-foreground flex items-center gap-1.5 sm:gap-2 truncate">
+              <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-destructive flex-shrink-0" />
+              <span className="truncate">Needs More Wear</span>
             </h3>
             {watchCostPerUse.length > 5 && (
               <button

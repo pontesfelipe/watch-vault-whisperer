@@ -294,21 +294,21 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Watch className="w-6 h-6 text-primary" />
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 md:py-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Watch className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <h1 className="text-3xl font-bold text-foreground">Watch Collection</h1>
+                  <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground truncate">Watch Collection</h1>
                   <BetaBadge />
                 </div>
-                <p className="text-sm text-muted-foreground">Track and manage your timepieces</p>
+                <p className="text-xs sm:text-sm text-muted-foreground truncate">Track and manage your timepieces</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <Button
                 variant={isVerified ? "default" : "outline"}
                 size="sm"
@@ -317,17 +317,18 @@ const Index = () => {
                     requestVerification(() => {});
                   }
                 }}
-                className="gap-2"
+                className="gap-1.5 sm:gap-2 h-9 sm:h-10 text-xs sm:text-sm"
               >
                 {isVerified ? (
                   <>
-                    <Unlock className="w-4 h-4" />
-                    Unlocked
+                    <Unlock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <span className="hidden xs:inline">Unlocked</span>
                   </>
                 ) : (
                   <>
-                    <Lock className="w-4 h-4" />
-                    Unlock All
+                    <Lock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <span className="hidden xs:inline">Unlock All</span>
+                    <span className="xs:hidden">Unlock</span>
                   </>
                 )}
               </Button>
@@ -337,11 +338,11 @@ const Index = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8">
         {/* Stats Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
           <StatsCard
-            title="Total Watches"
+            title="Total"
             value={totalWatches}
             icon={Watch}
             subtitle="in collection"
@@ -386,42 +387,42 @@ const Index = () => {
 
         {/* Usage Chart */}
         {watches.length > 0 && (
-          <div className="mb-8">
+          <div className="mb-4 sm:mb-6 md:mb-8">
             <UsageChart watches={watches} wearEntries={wearEntries} onDataChange={fetchData} />
           </div>
         )}
 
         {/* Main Content Tabs */}
-        <Tabs defaultValue="collection" className="space-y-6">
-          <TabsList className="bg-card border border-border grid grid-cols-5 w-full max-w-2xl mx-auto">
-            <TabsTrigger value="collection">Collection</TabsTrigger>
-            <TabsTrigger value="wishlist">Wishlist</TabsTrigger>
-            <TabsTrigger value="trips">Trips</TabsTrigger>
-            <TabsTrigger value="events">Events</TabsTrigger>
-            <TabsTrigger value="water">Water Usage</TabsTrigger>
+        <Tabs defaultValue="collection" className="space-y-4 sm:space-y-6">
+          <TabsList className="bg-card border border-border grid grid-cols-5 w-full max-w-2xl mx-auto h-auto p-1">
+            <TabsTrigger value="collection" className="text-xs sm:text-sm py-2 px-1 sm:px-3">Collection</TabsTrigger>
+            <TabsTrigger value="wishlist" className="text-xs sm:text-sm py-2 px-1 sm:px-3">Wishlist</TabsTrigger>
+            <TabsTrigger value="trips" className="text-xs sm:text-sm py-2 px-1 sm:px-3">Trips</TabsTrigger>
+            <TabsTrigger value="events" className="text-xs sm:text-sm py-2 px-1 sm:px-3">Events</TabsTrigger>
+            <TabsTrigger value="water" className="text-xs sm:text-sm py-2 px-1 sm:px-3">Water</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="collection" className="space-y-6">
+          <TabsContent value="collection" className="space-y-4 sm:space-y-6">
             {watches.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground mb-4">No watches in your collection yet.</p>
-                <p className="text-sm text-muted-foreground">Click "Add Watch" to get started!</p>
+              <div className="text-center py-8 sm:py-12">
+                <p className="text-muted-foreground mb-4 text-sm sm:text-base">No watches in your collection yet.</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Click "Add Watch" to get started!</p>
               </div>
             ) : (
               <>
                 {/* Search and Filter */}
-                <div className="flex gap-4">
+                <div className="flex flex-col xs:flex-row gap-2 sm:gap-4">
                   <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
                     <Input
                       placeholder="Search by brand, model, or type..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10 bg-card border-border"
+                      className="pl-9 sm:pl-10 bg-card border-border h-10 sm:h-11 text-sm"
                     />
                   </div>
                   <Select value={selectedBrand} onValueChange={setSelectedBrand}>
-                    <SelectTrigger className="w-[200px] bg-card border-border">
+                    <SelectTrigger className="w-full xs:w-[160px] sm:w-[200px] bg-card border-border h-10 sm:h-11 text-sm">
                       <SelectValue placeholder="Filter by brand" />
                     </SelectTrigger>
                     <SelectContent className="bg-card border-border z-50">
@@ -436,7 +437,7 @@ const Index = () => {
                 </div>
 
                 {/* Watch Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
                   {filteredWatches.map((watch) => (
                     <WatchCard
                       key={watch.id}
@@ -448,18 +449,20 @@ const Index = () => {
                 </div>
 
                 {filteredWatches.length === 0 && (
-                  <div className="text-center py-12">
-                    <p className="text-muted-foreground">No watches found matching your search.</p>
+                  <div className="text-center py-8 sm:py-12">
+                    <p className="text-muted-foreground text-sm sm:text-base">No watches found matching your search.</p>
                   </div>
                 )}
               </>
             )}
           </TabsContent>
 
-          <TabsContent value="wishlist" className="space-y-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-semibold text-foreground">Your Wishlist</h2>
-              <Button onClick={() => setShowAddWishlist(true)}>Add to Wishlist</Button>
+          <TabsContent value="wishlist" className="space-y-4 sm:space-y-6">
+            <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-2 sm:gap-4 mb-4">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-foreground">Your Wishlist</h2>
+              <Button onClick={() => setShowAddWishlist(true)} size="sm" className="w-full xs:w-auto h-9 sm:h-10 text-sm">
+                Add to Wishlist
+              </Button>
             </div>
             
             <TastePreferences 
@@ -467,9 +470,9 @@ const Index = () => {
               isGenerating={generatingSuggestions}
             />
 
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <div>
-                <h3 className="text-xl font-semibold mb-4">Your Wishlist</h3>
+                <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Your Wishlist</h3>
                 <WishlistTable 
                   items={wishlist} 
                   onDelete={fetchData}
@@ -520,21 +523,21 @@ const Index = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="trips" className="space-y-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-semibold text-foreground">Travel History</h2>
-              <Button onClick={() => setShowAddTrip(true)}>Add Trip</Button>
+          <TabsContent value="trips" className="space-y-4 sm:space-y-6">
+            <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-foreground">Travel History</h2>
+              <Button onClick={() => setShowAddTrip(true)} size="sm" className="w-full xs:w-auto h-9 sm:h-10 text-sm">Add Trip</Button>
             </div>
             {topTripWatch && (
-              <div className="bg-card border border-border rounded-lg p-4 mb-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">#1 Trip Watch</p>
-                    <h3 className="text-lg font-semibold text-foreground">{topTripWatch[0]}</h3>
+              <div className="bg-card border border-border rounded-lg p-3 sm:p-4 mb-3 sm:mb-4">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">#1 Trip Watch</p>
+                    <h3 className="text-base sm:text-lg font-semibold text-foreground truncate">{topTripWatch[0]}</h3>
                   </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-primary">{topTripWatch[1]}</p>
-                    <p className="text-xs text-muted-foreground">days worn</p>
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-xl sm:text-2xl font-bold text-primary">{topTripWatch[1]}</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground">days worn</p>
                   </div>
                 </div>
               </div>
@@ -548,10 +551,10 @@ const Index = () => {
             />
           </TabsContent>
 
-          <TabsContent value="events" className="space-y-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-semibold text-foreground">Special Events</h2>
-              <Button onClick={() => setShowAddEvent(true)}>Add Event</Button>
+          <TabsContent value="events" className="space-y-4 sm:space-y-6">
+            <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-foreground">Special Events</h2>
+              <Button onClick={() => setShowAddEvent(true)} size="sm" className="w-full xs:w-auto h-9 sm:h-10 text-sm">Add Event</Button>
             </div>
             <TripTimeline trips={events} type="event" watches={watches} onUpdate={fetchData} />
             <AddEventDialog 
@@ -562,21 +565,21 @@ const Index = () => {
             />
           </TabsContent>
 
-          <TabsContent value="water" className="space-y-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-semibold text-foreground">Water Usage Tracking</h2>
-              <Button onClick={() => setShowAddWaterUsage(true)}>Add Water Usage</Button>
+          <TabsContent value="water" className="space-y-4 sm:space-y-6">
+            <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-foreground">Water Usage Tracking</h2>
+              <Button onClick={() => setShowAddWaterUsage(true)} size="sm" className="w-full xs:w-auto h-9 sm:h-10 text-sm">Add Water Usage</Button>
             </div>
             {topWaterWatch && (
-              <div className="bg-card border border-border rounded-lg p-4 mb-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">#1 Water Usage Watch</p>
-                    <h3 className="text-lg font-semibold text-foreground">{topWaterWatch.brand} {topWaterWatch.model}</h3>
+              <div className="bg-card border border-border rounded-lg p-3 sm:p-4 mb-3 sm:mb-4">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">#1 Water Usage Watch</p>
+                    <h3 className="text-base sm:text-lg font-semibold text-foreground truncate">{topWaterWatch.brand} {topWaterWatch.model}</h3>
                   </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-primary">{waterWatchCounts.get(topWaterWatch.id)}</p>
-                    <p className="text-xs text-muted-foreground">activities</p>
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-xl sm:text-2xl font-bold text-primary">{waterWatchCounts.get(topWaterWatch.id)}</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground">activities</p>
                   </div>
                 </div>
               </div>
