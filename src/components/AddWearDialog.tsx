@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, MapPin, Flag, Droplets } from "lucide-react";
+import { Calendar, MapPin, Flag, Droplets, Dumbbell } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
@@ -26,9 +26,11 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
   const [isTrip, setIsTrip] = useState(false);
   const [isEvent, setIsEvent] = useState(false);
   const [isWaterActivity, setIsWaterActivity] = useState(false);
+  const [isSport, setIsSport] = useState(false);
   const [tripLocation, setTripLocation] = useState("");
   const [tripNotes, setTripNotes] = useState("");
   const [eventLocation, setEventLocation] = useState("");
+  const [sportLocation, setSportLocation] = useState("");
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -58,6 +60,7 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
       let tripId = null;
       let eventId = null;
       let waterUsageId = null;
+      let sportId = null;
 
       // Create trip if marked
       if (isTrip) {
@@ -125,6 +128,28 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
         
         if (waterError) throw waterError;
         waterUsageId = waterData.id;
+      }
+
+      // Create sport if marked
+      if (isSport) {
+        const sportType = formData.get("sportType") as string;
+        const sportDuration = formData.get("sportDuration") ? parseInt(formData.get("sportDuration") as string) : null;
+        const sportNotes = formData.get("sportNotes") as string || null;
+        
+        const { data: sportData, error: sportError } = await (supabase.from("sports" as any) as any)
+          .insert({
+            activity_date: formattedDate,
+            sport_type: sportType,
+            location: sportLocation || null,
+            duration_minutes: sportDuration,
+            notes: sportNotes,
+            user_id: user?.id,
+          })
+          .select()
+          .single();
+        
+        if (sportError) throw sportError;
+        sportId = sportData.id;
       }
       
       // Check if entry already exists for this watch
@@ -203,7 +228,8 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
             trip_id: tripId,
             event_id: eventId,
             water_usage_id: waterUsageId,
-          })
+            sport_id: sportId,
+          } as any)
           .eq("id", existing.id);
         error = result.error;
       } else {
@@ -216,8 +242,9 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
           trip_id: tripId,
           event_id: eventId,
           water_usage_id: waterUsageId,
+          sport_id: sportId,
           user_id: user?.id,
-        });
+        } as any);
         error = result.error;
       }
 
@@ -232,6 +259,8 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
       setIsTrip(false);
       setIsEvent(false);
       setIsWaterActivity(false);
+      setIsSport(false);
+      setSportLocation("");
       onSuccess();
       (e.target as HTMLFormElement).reset();
     } catch (error) {
@@ -473,8 +502,83 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
                         placeholder="30"
                         className="bg-background"
                       />
-                    </div>
+            </div>
+
+            {/* Sport Activity Checkbox and Fields */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="isSport"
+                  checked={isSport}
+                  onCheckedChange={(checked) => setIsSport(checked as boolean)}
+                />
+                <Label htmlFor="isSport" className="flex items-center gap-2 cursor-pointer font-normal">
+                  <Dumbbell className="w-4 h-4 text-primary" />
+                  This wear was during a sport activity
+                </Label>
+              </div>
+              {isSport && (
+                <div className="ml-6 space-y-3 p-3 bg-muted/50 rounded-md">
+                  <div>
+                    <Label htmlFor="sportType" className="text-sm">Sport Type</Label>
+                    <Select name="sportType" defaultValue="Running">
+                      <SelectTrigger className="bg-background">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background z-50">
+                        <SelectItem value="Running">Running</SelectItem>
+                        <SelectItem value="Cycling">Cycling</SelectItem>
+                        <SelectItem value="Hiking">Hiking</SelectItem>
+                        <SelectItem value="Golf">Golf</SelectItem>
+                        <SelectItem value="Tennis">Tennis</SelectItem>
+                        <SelectItem value="Basketball">Basketball</SelectItem>
+                        <SelectItem value="Soccer">Soccer</SelectItem>
+                        <SelectItem value="Gym">Gym</SelectItem>
+                        <SelectItem value="Yoga">Yoga</SelectItem>
+                        <SelectItem value="CrossFit">CrossFit</SelectItem>
+                        <SelectItem value="Skiing">Skiing</SelectItem>
+                        <SelectItem value="Snowboarding">Snowboarding</SelectItem>
+                        <SelectItem value="Surfing">Surfing</SelectItem>
+                        <SelectItem value="Climbing">Climbing</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
+                  <div>
+                    <Label htmlFor="sportLocation" className="text-sm">Location (Optional)</Label>
+                    <Input
+                      id="sportLocation"
+                      value={sportLocation}
+                      onChange={(e) => setSportLocation(e.target.value)}
+                      placeholder="e.g., Central Park, Local Gym"
+                      className="bg-background"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="sportDuration" className="text-sm">Duration (minutes)</Label>
+                    <Input
+                      id="sportDuration"
+                      name="sportDuration"
+                      type="number"
+                      min="1"
+                      placeholder="60"
+                      className="bg-background"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="sportNotes" className="text-sm">Sport Notes (Optional)</Label>
+                    <Textarea
+                      id="sportNotes"
+                      name="sportNotes"
+                      placeholder="Additional details..."
+                      className="bg-background resize-none"
+                      rows={2}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
                   <div>
                     <Label htmlFor="waterNotes" className="text-sm">Water Activity Notes</Label>
                     <Textarea

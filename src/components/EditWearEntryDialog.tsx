@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { Trash2, MapPin, Flag, Droplets } from "lucide-react";
+import { Trash2, MapPin, Flag, Droplets, Dumbbell } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 import {
@@ -33,6 +33,7 @@ interface WearEntry {
   trip_id?: string | null;
   event_id?: string | null;
   water_usage_id?: string | null;
+  sport_id?: string | null;
 }
 
 interface EditWearEntryDialogProps {
@@ -63,6 +64,7 @@ export const EditWearEntryDialog = ({
   const [isTrip, setIsTrip] = useState(false);
   const [isEvent, setIsEvent] = useState(false);
   const [isWaterActivity, setIsWaterActivity] = useState(false);
+  const [isSport, setIsSport] = useState(false);
   
   // Trip fields
   const [tripLocation, setTripLocation] = useState("");
@@ -76,6 +78,12 @@ export const EditWearEntryDialog = ({
   // Water activity fields
   const [waterActivityType, setWaterActivityType] = useState("Lake");
   const [waterNotes, setWaterNotes] = useState("");
+
+  // Sport fields
+  const [sportType, setSportType] = useState("Running");
+  const [sportLocation, setSportLocation] = useState("");
+  const [sportDuration, setSportDuration] = useState<number | null>(null);
+  const [sportNotes, setSportNotes] = useState("");
 
   // Load entry data when dialog opens
   useEffect(() => {
@@ -145,6 +153,28 @@ export const EditWearEntryDialog = ({
         setWaterActivityType("Lake");
         setWaterNotes("");
       }
+
+      // Load sport data if exists
+      if (entry.sport_id) {
+        const { data: sportData } = await (supabase.from("sports" as any) as any)
+          .select("*")
+          .eq("id", entry.sport_id)
+          .single();
+        
+        if (sportData) {
+          setIsSport(true);
+          setSportType(sportData.sport_type);
+          setSportLocation(sportData.location || "");
+          setSportDuration(sportData.duration_minutes);
+          setSportNotes(sportData.notes || "");
+        }
+      } else {
+        setIsSport(false);
+        setSportType("Running");
+        setSportLocation("");
+        setSportDuration(null);
+        setSportNotes("");
+      }
     };
     
     if (open) {
@@ -168,6 +198,7 @@ export const EditWearEntryDialog = ({
       let tripId = entry.trip_id;
       let eventId = entry.event_id;
       let waterUsageId = entry.water_usage_id;
+      let sportId = entry.sport_id;
       
       // Handle Trip
       if (isTrip) {
@@ -279,6 +310,42 @@ export const EditWearEntryDialog = ({
         await supabase.from("water_usage").delete().eq("id", waterUsageId);
         waterUsageId = null;
       }
+
+      // Handle Sport
+      if (isSport) {
+        if (sportId) {
+          // Update existing sport
+          await (supabase.from("sports" as any) as any)
+            .update({
+              sport_type: sportType,
+              activity_date: formattedDate,
+              location: sportLocation || null,
+              duration_minutes: sportDuration,
+              notes: sportNotes || null,
+            })
+            .eq("id", sportId);
+        } else {
+          // Create new sport
+          const { data: sportData, error: sportError } = await (supabase.from("sports" as any) as any)
+            .insert({
+              sport_type: sportType,
+              activity_date: formattedDate,
+              location: sportLocation || null,
+              duration_minutes: sportDuration,
+              notes: sportNotes || null,
+              user_id: user?.id,
+            })
+            .select()
+            .single();
+          
+          if (sportError) throw sportError;
+          sportId = sportData.id;
+        }
+      } else if (sportId) {
+        // Delete sport if unchecked
+        await (supabase.from("sports" as any) as any).delete().eq("id", sportId);
+        sportId = null;
+      }
       
       // Update wear entry
       const { error } = await supabase
@@ -290,7 +357,8 @@ export const EditWearEntryDialog = ({
           trip_id: tripId,
           event_id: eventId,
           water_usage_id: waterUsageId,
-        })
+          sport_id: sportId,
+        } as any)
         .eq("id", entry.id);
 
       if (error) throw error;
@@ -328,6 +396,9 @@ export const EditWearEntryDialog = ({
       }
       if (entry.water_usage_id) {
         await supabase.from("water_usage").delete().eq("id", entry.water_usage_id);
+      }
+      if (entry.sport_id) {
+        await (supabase.from("sports" as any) as any).delete().eq("id", entry.sport_id);
       }
       
       // Delete wear entry
@@ -563,6 +634,80 @@ export const EditWearEntryDialog = ({
             )}
           </div>
 
+          {/* Sport Activity Section */}
+          <div className="space-y-3">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="sport"
+                checked={isSport}
+                onCheckedChange={(checked) => setIsSport(!!checked)}
+              />
+              <label htmlFor="sport" className="text-sm font-medium flex items-center gap-2 cursor-pointer">
+                <Dumbbell className="w-4 h-4" />
+                Link to Sport Activity
+              </label>
+            </div>
+            
+            {isSport && (
+              <div className="ml-6 space-y-3 bg-muted/30 p-4 rounded-lg">
+                <div>
+                  <Label>Sport Type</Label>
+                  <Select value={sportType} onValueChange={setSportType}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Running">Running</SelectItem>
+                      <SelectItem value="Cycling">Cycling</SelectItem>
+                      <SelectItem value="Hiking">Hiking</SelectItem>
+                      <SelectItem value="Golf">Golf</SelectItem>
+                      <SelectItem value="Tennis">Tennis</SelectItem>
+                      <SelectItem value="Basketball">Basketball</SelectItem>
+                      <SelectItem value="Soccer">Soccer</SelectItem>
+                      <SelectItem value="Gym">Gym</SelectItem>
+                      <SelectItem value="Yoga">Yoga</SelectItem>
+                      <SelectItem value="CrossFit">CrossFit</SelectItem>
+                      <SelectItem value="Skiing">Skiing</SelectItem>
+                      <SelectItem value="Snowboarding">Snowboarding</SelectItem>
+                      <SelectItem value="Surfing">Surfing</SelectItem>
+                      <SelectItem value="Climbing">Climbing</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Location (Optional)</Label>
+                  <Input
+                    value={sportLocation}
+                    onChange={(e) => setSportLocation(e.target.value)}
+                    placeholder="e.g., Central Park, Local Gym"
+                    className="bg-background"
+                  />
+                </div>
+                <div>
+                  <Label>Duration (minutes)</Label>
+                  <Input
+                    type="number"
+                    value={sportDuration || ""}
+                    onChange={(e) => setSportDuration(e.target.value ? parseInt(e.target.value) : null)}
+                    placeholder="e.g., 60"
+                    className="bg-background"
+                    min="1"
+                  />
+                </div>
+                <div>
+                  <Label>Sport Notes (Optional)</Label>
+                  <Textarea
+                    value={sportNotes}
+                    onChange={(e) => setSportNotes(e.target.value)}
+                    placeholder="Additional details about the sport activity..."
+                    rows={2}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="flex gap-2 pt-4">
             <Button onClick={handleSave} disabled={loading}>
               {loading ? "Saving..." : "Save Changes"}
@@ -581,7 +726,7 @@ export const EditWearEntryDialog = ({
                 <AlertDialogHeader>
                   <AlertDialogTitle>Delete Entry</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Are you sure you want to delete this wear entry? This will also delete any associated trip, event, or water activity records.
+                    Are you sure you want to delete this wear entry? This will also delete any associated trip, event, water activity, or sport records.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
