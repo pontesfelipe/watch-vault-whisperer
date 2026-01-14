@@ -849,6 +849,42 @@ export type Database = {
           },
         ]
       }
+      sports: {
+        Row: {
+          activity_date: string
+          created_at: string
+          duration_minutes: number | null
+          id: string
+          location: string | null
+          notes: string | null
+          sport_type: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          activity_date: string
+          created_at?: string
+          duration_minutes?: number | null
+          id?: string
+          location?: string | null
+          notes?: string | null
+          sport_type: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          activity_date?: string
+          created_at?: string
+          duration_minutes?: number | null
+          id?: string
+          location?: string | null
+          notes?: string | null
+          sport_type?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       terms_acceptances: {
         Row: {
           accepted_at: string
@@ -1289,6 +1325,7 @@ export type Database = {
           event_id: string | null
           id: string
           notes: string | null
+          sport_id: string | null
           trip_id: string | null
           updated_at: string
           user_id: string | null
@@ -1302,6 +1339,7 @@ export type Database = {
           event_id?: string | null
           id?: string
           notes?: string | null
+          sport_id?: string | null
           trip_id?: string | null
           updated_at?: string
           user_id?: string | null
@@ -1315,6 +1353,7 @@ export type Database = {
           event_id?: string | null
           id?: string
           notes?: string | null
+          sport_id?: string | null
           trip_id?: string | null
           updated_at?: string
           user_id?: string | null
@@ -1328,6 +1367,13 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wear_entries_sport_id_fkey"
+            columns: ["sport_id"]
+            isOneToOne: false
+            referencedRelation: "sports"
             referencedColumns: ["id"]
           },
           {

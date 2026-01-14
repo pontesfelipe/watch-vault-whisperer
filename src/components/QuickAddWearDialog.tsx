@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, Plus } from "lucide-react";
+import { Calendar, Plus, Dumbbell } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
@@ -32,7 +32,9 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
   const [isTrip, setIsTrip] = useState(false);
   const [isEvent, setIsEvent] = useState(false);
   const [isWaterActivity, setIsWaterActivity] = useState(false);
+  const [isSport, setIsSport] = useState(false);
   const [tripNotes, setTripNotes] = useState("");
+  const [sportLocation, setSportLocation] = useState("");
   const { toast } = useToast();
   const { user } = useAuth();
   const { currentCollectionType } = useCollection();
@@ -66,6 +68,7 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
       let tripId = null;
       let eventId = null;
       let waterUsageId = null;
+      let sportId = null;
 
       // Create trip if checkbox is checked
       if (isTrip) {
@@ -138,6 +141,30 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
 
           if (waterError) throw waterError;
           waterUsageId = waterData.id;
+        }
+      }
+
+      // Create sport if checkbox is checked
+      if (isSport) {
+        const sportType = formData.get("sportType") as string;
+        const sportDuration = formData.get("sportDuration") as string;
+        const sportNotes = formData.get("sportNotes") as string;
+
+        if (sportType) {
+          const { data: sportData, error: sportError } = await (supabase.from("sports" as any) as any)
+            .insert({
+              activity_date: formattedDate,
+              sport_type: sportType,
+              location: sportLocation || null,
+              duration_minutes: sportDuration ? parseInt(sportDuration) : null,
+              notes: sportNotes || null,
+              user_id: user?.id,
+            })
+            .select()
+            .single();
+
+          if (sportError) throw sportError;
+          sportId = sportData.id;
         }
       }
       
@@ -216,7 +243,8 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
             trip_id: tripId,
             event_id: eventId,
             water_usage_id: waterUsageId,
-          })
+            sport_id: sportId,
+          } as any)
           .eq("id", existing.id);
         error = result.error;
       } else {
@@ -228,8 +256,9 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
           trip_id: tripId,
           event_id: eventId,
           water_usage_id: waterUsageId,
+          sport_id: sportId,
           user_id: user?.id,
-        });
+        } as any);
         error = result.error;
       }
 
@@ -245,6 +274,8 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
       setIsTrip(false);
       setIsEvent(false);
       setIsWaterActivity(false);
+      setIsSport(false);
+      setSportLocation("");
       onSuccess();
       (e.target as HTMLFormElement).reset();
     } catch (error) {
@@ -509,6 +540,81 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
                   </div>
                 )}
               </>
+            )}
+
+            {/* Sport Activity */}
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="isSport"
+                checked={isSport}
+                onChange={(e) => setIsSport(e.target.checked)}
+                className="w-4 h-4"
+              />
+              <Label htmlFor="isSport" className="cursor-pointer flex items-center gap-2">
+                <Dumbbell className="w-4 h-4" />
+                Link to Sport Activity
+              </Label>
+            </div>
+
+            {isSport && (
+              <div className="space-y-2 pl-6">
+                <div className="space-y-2">
+                  <Label htmlFor="sportType">Sport Type</Label>
+                  <Select name="sportType" defaultValue="Running">
+                    <SelectTrigger className="bg-background border-border">
+                      <SelectValue placeholder="Select sport" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover border-border z-50">
+                      <SelectItem value="Running">Running</SelectItem>
+                      <SelectItem value="Cycling">Cycling</SelectItem>
+                      <SelectItem value="Hiking">Hiking</SelectItem>
+                      <SelectItem value="Golf">Golf</SelectItem>
+                      <SelectItem value="Tennis">Tennis</SelectItem>
+                      <SelectItem value="Basketball">Basketball</SelectItem>
+                      <SelectItem value="Soccer">Soccer</SelectItem>
+                      <SelectItem value="Gym">Gym</SelectItem>
+                      <SelectItem value="Yoga">Yoga</SelectItem>
+                      <SelectItem value="CrossFit">CrossFit</SelectItem>
+                      <SelectItem value="Skiing">Skiing</SelectItem>
+                      <SelectItem value="Snowboarding">Snowboarding</SelectItem>
+                      <SelectItem value="Surfing">Surfing</SelectItem>
+                      <SelectItem value="Climbing">Climbing</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="sportLocation">Location (Optional)</Label>
+                  <Input
+                    id="sportLocation"
+                    value={sportLocation}
+                    onChange={(e) => setSportLocation(e.target.value)}
+                    placeholder="e.g., Central Park, Local Gym"
+                    className="bg-background border-border"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="sportDuration">Duration (minutes)</Label>
+                  <Input
+                    id="sportDuration"
+                    name="sportDuration"
+                    type="number"
+                    min="1"
+                    placeholder="e.g., 60"
+                    className="bg-background border-border"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="sportNotes">Notes (Optional)</Label>
+                  <Input
+                    id="sportNotes"
+                    name="sportNotes"
+                    placeholder="Additional details..."
+                    className="bg-background border-border"
+                  />
+                </div>
+              </div>
             )}
           </div>
 
