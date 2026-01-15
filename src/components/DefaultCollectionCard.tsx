@@ -7,31 +7,82 @@ import { ItemTypeIcon } from "@/components/ItemTypeIcon";
 import { getCollectionConfig } from "@/types/collection";
 import { Loader2, FolderOpen } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const DefaultCollectionCard = () => {
   const { collections, collectionsLoading } = useCollection();
+  const { user } = useAuth();
   const [defaultCollectionId, setDefaultCollectionId] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem('defaultCollectionId');
-    if (saved) {
-      setDefaultCollectionId(saved);
-    }
-  }, []);
+    const loadDefaultCollection = async () => {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
 
-  const handleChange = (value: string) => {
-    setDefaultCollectionId(value);
-    if (value === "auto") {
-      localStorage.removeItem('defaultCollectionId');
-      toast.success("Default collection set to automatic (your owned collection)");
-    } else {
-      localStorage.setItem('defaultCollectionId', value);
-      const collection = collections.find(c => c.id === value);
-      toast.success(`Default collection set to "${collection?.name}"`);
+      try {
+        const { data, error } = await supabase
+          .from('user_preferences')
+          .select('default_collection_id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        if (data?.default_collection_id) {
+          setDefaultCollectionId(data.default_collection_id);
+        }
+      } catch (error) {
+        console.error('Error loading default collection:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDefaultCollection();
+  }, [user]);
+
+  const handleChange = async (value: string) => {
+    if (!user) return;
+    
+    setSaving(true);
+    const newValue = value === "auto" ? null : value;
+    
+    try {
+      // Upsert user preferences
+      const { error } = await supabase
+        .from('user_preferences')
+        .upsert({
+          user_id: user.id,
+          default_collection_id: newValue,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
+        });
+
+      if (error) throw error;
+
+      setDefaultCollectionId(value === "auto" ? "" : value);
+      
+      if (value === "auto") {
+        toast.success("Default collection set to automatic (your owned collection)");
+      } else {
+        const collection = collections.find(c => c.id === value);
+        toast.success(`Default collection set to "${collection?.name}"`);
+      }
+    } catch (error) {
+      console.error('Error saving default collection:', error);
+      toast.error("Failed to save default collection preference");
+    } finally {
+      setSaving(false);
     }
   };
 
-  if (collectionsLoading) {
+  if (collectionsLoading || loading) {
     return (
       <Card>
         <CardHeader>
@@ -61,9 +112,16 @@ export const DefaultCollectionCard = () => {
       <CardContent>
         <div className="space-y-2">
           <Label htmlFor="defaultCollection">Default Collection</Label>
-          <Select value={defaultCollectionId || "auto"} onValueChange={handleChange}>
+          <Select value={defaultCollectionId || "auto"} onValueChange={handleChange} disabled={saving}>
             <SelectTrigger id="defaultCollection">
-              <SelectValue placeholder="Select default collection" />
+              {saving ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Saving...</span>
+                </div>
+              ) : (
+                <SelectValue placeholder="Select default collection" />
+              )}
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="auto">
@@ -86,7 +144,7 @@ export const DefaultCollectionCard = () => {
             </SelectContent>
           </Select>
           <p className="text-sm text-muted-foreground mt-2">
-            This preference is saved locally and persists even after logging out.
+            This preference is synced across all your devices.
           </p>
         </div>
       </CardContent>
