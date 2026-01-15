@@ -1,6 +1,8 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useCollectionData, Collection } from '@/hooks/useCollectionData';
 import { CollectionType, CollectionTypeConfig, getCollectionConfig } from '@/types/collection';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface CollectionContextType {
   selectedCollectionId: string | null;
@@ -17,14 +19,46 @@ const CollectionContext = createContext<CollectionContextType | undefined>(undef
 
 export const CollectionProvider = ({ children }: { children: ReactNode }) => {
   const { collections, loading, refetch } = useCollectionData();
+  const { user } = useAuth();
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
+  const [preferencesLoaded, setPreferencesLoaded] = useState(false);
+
+  // Load user's default collection preference from database
+  useEffect(() => {
+    const loadDefaultPreference = async () => {
+      if (!user) {
+        setPreferencesLoaded(true);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('user_preferences')
+          .select('default_collection_id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (!error && data?.default_collection_id) {
+          localStorage.setItem('defaultCollectionId', data.default_collection_id);
+        } else {
+          localStorage.removeItem('defaultCollectionId');
+        }
+      } catch (error) {
+        console.error('Error loading default collection preference:', error);
+      } finally {
+        setPreferencesLoaded(true);
+      }
+    };
+
+    loadDefaultPreference();
+  }, [user]);
 
   // Auto-select collection when data loads based on user preference
   useEffect(() => {
-    if (!loading && collections.length > 0 && !selectedCollectionId) {
+    if (!loading && preferencesLoaded && collections.length > 0 && !selectedCollectionId) {
       const collectionIds = collections.map(c => c.id);
       
-      // Check for user's default collection preference first
+      // Check for user's default collection preference first (now synced from DB)
       const defaultCollectionId = localStorage.getItem('defaultCollectionId');
       if (defaultCollectionId && collectionIds.includes(defaultCollectionId)) {
         setSelectedCollectionId(defaultCollectionId);
@@ -42,7 +76,7 @@ export const CollectionProvider = ({ children }: { children: ReactNode }) => {
       const ownedCollection = collections.find(c => c.role === 'owner');
       setSelectedCollectionId(ownedCollection?.id || collections[0].id);
     }
-  }, [collections, loading, selectedCollectionId]);
+  }, [collections, loading, preferencesLoaded, selectedCollectionId]);
 
   // Persist selection
   useEffect(() => {

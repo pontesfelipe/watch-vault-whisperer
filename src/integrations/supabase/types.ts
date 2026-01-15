@@ -1042,6 +1042,7 @@ export type Database = {
       user_preferences: {
         Row: {
           created_at: string
+          default_collection_id: string | null
           id: string
           taste_description: string | null
           trade_match_scope: string | null
@@ -1050,6 +1051,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          default_collection_id?: string | null
           id?: string
           taste_description?: string | null
           trade_match_scope?: string | null
@@ -1058,13 +1060,22 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          default_collection_id?: string | null
           id?: string
           taste_description?: string | null
           trade_match_scope?: string | null
           updated_at?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_preferences_default_collection_id_fkey"
+            columns: ["default_collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
