@@ -7,6 +7,7 @@ import { DepreciationChart } from "@/components/DepreciationChart";
 import { CollectionInsights } from "@/components/CollectionInsights";
 import { MonthlyUsageTable } from "@/components/MonthlyUsageTable";
 import { CollectionSwitcher } from "@/components/CollectionSwitcher";
+import { SportStatsSection } from "@/components/SportStatsSection";
 import { useWatchData } from "@/hooks/useWatchData";
 import { useTripData } from "@/hooks/useTripData";
 import { useWaterUsageData } from "@/hooks/useWaterUsageData";
@@ -146,7 +147,10 @@ const Dashboard = () => {
 
       <UsageChart watches={watches} wearEntries={wearEntries} />
 
-      <MonthlyUsageTable watches={watches} wearEntries={wearEntries} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <MonthlyUsageTable watches={watches} wearEntries={wearEntries} />
+        <SportStatsSection />
+      </div>
 
       {stats.watchesWithResaleDataCount > 0 && (
         <div className="space-y-6">
