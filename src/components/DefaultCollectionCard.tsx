@@ -53,20 +53,48 @@ export const DefaultCollectionCard = () => {
     const newValue = value === "auto" ? null : value;
     
     try {
-      // Upsert user preferences
-      const { error } = await supabase
+      // First check if user preferences record exists
+      const { data: existingPref, error: checkError } = await supabase
         .from('user_preferences')
-        .upsert({
-          user_id: user.id,
-          default_collection_id: newValue,
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'user_id'
-        });
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (checkError) throw checkError;
+
+      let error;
+      if (existingPref) {
+        // Update existing record
+        const { error: updateError } = await supabase
+          .from('user_preferences')
+          .update({
+            default_collection_id: newValue,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', user.id);
+        error = updateError;
+      } else {
+        // Insert new record
+        const { error: insertError } = await supabase
+          .from('user_preferences')
+          .insert({
+            user_id: user.id,
+            default_collection_id: newValue,
+            updated_at: new Date().toISOString()
+          });
+        error = insertError;
+      }
 
       if (error) throw error;
 
       setDefaultCollectionId(value === "auto" ? "" : value);
+      
+      // Also update localStorage for immediate effect
+      if (newValue) {
+        localStorage.setItem('defaultCollectionId', newValue);
+      } else {
+        localStorage.removeItem('defaultCollectionId');
+      }
       
       if (value === "auto") {
         toast.success("Default collection set to automatic (your owned collection)");
