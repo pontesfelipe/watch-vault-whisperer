@@ -7,7 +7,7 @@ import { DepreciationChart } from "@/components/DepreciationChart";
 import { CollectionInsights } from "@/components/CollectionInsights";
 import { MonthlyUsageTable } from "@/components/MonthlyUsageTable";
 import { CollectionSwitcher } from "@/components/CollectionSwitcher";
-import { SportStatsSection } from "@/components/SportStatsSection";
+
 import { useWatchData } from "@/hooks/useWatchData";
 import { useTripData } from "@/hooks/useTripData";
 import { useWaterUsageData } from "@/hooks/useWaterUsageData";
@@ -49,7 +49,26 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      {/* Mobile layout */}
+      <div className="flex flex-col md:hidden">
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-semibold text-textMain">Dashboard</h1>
+            <p className="mt-1 text-sm text-textMuted">
+              {currentCollection 
+                ? `Overview of ${currentCollection.name} statistics`
+                : `Overview of your ${config.pluralLabel.toLowerCase()} collection statistics`}
+            </p>
+          </div>
+          <CollectionSwitcher />
+        </div>
+        <div className="mt-4 flex justify-center">
+          <QuickAddWearDialog watches={watches} onSuccess={refetch} collectionType={currentCollectionType} />
+        </div>
+      </div>
+
+      {/* Desktop layout */}
+      <div className="hidden md:flex justify-between items-center">
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-3xl md:text-4xl font-semibold text-textMain">
@@ -147,10 +166,7 @@ const Dashboard = () => {
 
       <UsageChart watches={watches} wearEntries={wearEntries} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <MonthlyUsageTable watches={watches} wearEntries={wearEntries} />
-        <SportStatsSection />
-      </div>
+      <MonthlyUsageTable watches={watches} wearEntries={wearEntries} />
 
       {stats.watchesWithResaleDataCount > 0 && (
         <div className="space-y-6">
