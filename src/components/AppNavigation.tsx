@@ -1,4 +1,4 @@
-import { Watch, Heart, Plane, Calendar, Droplets, BarChart3, LogOut, BookHeart, Shield, Settings, MessageCircle, HelpCircle, Info, MessageSquare, Lightbulb } from "lucide-react";
+import { Watch, Heart, Plane, Calendar, Droplets, BarChart3, LogOut, BookHeart, Shield, Settings, MessageCircle, HelpCircle, Info, MessageSquare, Lightbulb, Dumbbell } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { SubmitFeedbackDialog } from "@/components/SubmitFeedbackDialog";
@@ -29,6 +29,7 @@ export function AppNavigation() {
     { title: "Wishlist", url: "/wishlist", icon: Heart },
     { title: "Trips", url: "/trips", icon: Plane },
     { title: "Events", url: "/events", icon: Calendar },
+    { title: "Sports", url: "/sports", icon: Dumbbell },
     { title: "Water Usage", url: "/water-usage", icon: Droplets },
     { title: "Collection Insights", url: "/personal-notes", icon: BookHeart },
     { title: "Messages", url: "/messages", icon: MessageCircle },

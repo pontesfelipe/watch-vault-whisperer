@@ -15,6 +15,7 @@ import Collection from "./pages/Collection";
 import Wishlist from "./pages/Wishlist";
 import Trips from "./pages/Trips";
 import Events from "./pages/Events";
+import Sports from "./pages/Sports";
 import WaterUsage from "./pages/WaterUsage";
 import PersonalNotes from "./pages/PersonalNotes";
 import Messages from "./pages/Messages";
@@ -64,6 +65,7 @@ function AppContent() {
           <Route path="/wishlist" element={<ProtectedRoute><AppLayout><Wishlist /></AppLayout></ProtectedRoute>} />
           <Route path="/trips" element={<ProtectedRoute><AppLayout><Trips /></AppLayout></ProtectedRoute>} />
           <Route path="/events" element={<ProtectedRoute><AppLayout><Events /></AppLayout></ProtectedRoute>} />
+          <Route path="/sports" element={<ProtectedRoute><AppLayout><Sports /></AppLayout></ProtectedRoute>} />
           <Route path="/water-usage" element={<ProtectedRoute><AppLayout><WaterUsage /></AppLayout></ProtectedRoute>} />
           <Route path="/personal-notes" element={<ProtectedRoute><AppLayout><PersonalNotes /></AppLayout></ProtectedRoute>} />
           <Route path="/messages" element={<ProtectedRoute><AppLayout><Messages /></AppLayout></ProtectedRoute>} />
