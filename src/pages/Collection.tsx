@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SortableWatchCard } from "@/components/SortableWatchCard";
 import { PastWatchCard } from "@/components/PastWatchCard";
+import { PastWatchesStats } from "@/components/PastWatchesStats";
 import { AddWatchDialog } from "@/components/AddWatchDialog";
 import { AddItemDialog } from "@/components/AddItemDialog";
 import { QuickAddWearDialog } from "@/components/QuickAddWearDialog";
@@ -341,6 +342,7 @@ const Collection = () => {
               <p className="text-sm text-textMuted mb-4">
                 Watches you've sold or traded. Historical wear data is preserved.
               </p>
+              <PastWatchesStats pastWatches={pastWatches} wearEntries={pastWearEntries} />
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {pastWatches.map((watch) => (
                   <PastWatchCard
