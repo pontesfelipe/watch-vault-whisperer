@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { useCollectionData, Collection } from '@/hooks/useCollectionData';
 import { CollectionType, CollectionTypeConfig, getCollectionConfig } from '@/types/collection';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,9 +23,60 @@ export const CollectionProvider = ({ children }: { children: ReactNode }) => {
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
   const [preferencesLoaded, setPreferencesLoaded] = useState(false);
 
-  // Load user's default collection preference from database
+  const saveLastSelectedCollection = useCallback(
+    async (collectionId: string) => {
+      if (!user) return;
+
+      try {
+        // First check if user preferences record exists
+        const { data: existingPref, error: checkError } = await supabase
+          .from('user_preferences')
+          .select('id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (checkError) throw checkError;
+
+        let error;
+        if (existingPref) {
+          // Update existing record
+          const { error: updateError } = await supabase
+            .from('user_preferences')
+            .update({
+              last_selected_collection_id: collectionId,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('user_id', user.id);
+          error = updateError;
+        } else {
+          // Insert new record
+          const { error: insertError } = await supabase
+            .from('user_preferences')
+            .insert({
+              user_id: user.id,
+              last_selected_collection_id: collectionId,
+              updated_at: new Date().toISOString(),
+            });
+          error = insertError;
+        }
+
+        if (error) throw error;
+      } catch (error) {
+        console.error('Error saving last selected collection:', error);
+      }
+    },
+    [user]
+  );
+
+  // Verification routine: whenever the user changes (logout/login), re-run selection logic
   useEffect(() => {
-    const loadDefaultPreference = async () => {
+    setSelectedCollectionId(null);
+    setPreferencesLoaded(false);
+  }, [user?.id]);
+
+  // Load user's preferences from database (cross-device persistence)
+  useEffect(() => {
+    const loadPreferences = async () => {
       if (!user) {
         setPreferencesLoaded(true);
         return;
@@ -34,72 +85,91 @@ export const CollectionProvider = ({ children }: { children: ReactNode }) => {
       try {
         const { data, error } = await supabase
           .from('user_preferences')
-          .select('default_collection_id')
+          .select('default_collection_id, last_selected_collection_id')
           .eq('user_id', user.id)
           .maybeSingle();
 
-        if (!error && data?.default_collection_id) {
-          localStorage.setItem('defaultCollectionId', data.default_collection_id);
-        } else {
-          localStorage.removeItem('defaultCollectionId');
+        if (!error) {
+          if (data?.default_collection_id) {
+            localStorage.setItem('defaultCollectionId', data.default_collection_id);
+          } else {
+            localStorage.removeItem('defaultCollectionId');
+          }
+
+          if (data?.last_selected_collection_id) {
+            localStorage.setItem('lastSelectedCollectionId', data.last_selected_collection_id);
+          } else {
+            localStorage.removeItem('lastSelectedCollectionId');
+          }
         }
       } catch (error) {
-        console.error('Error loading default collection preference:', error);
+        console.error('Error loading collection preferences:', error);
       } finally {
         setPreferencesLoaded(true);
       }
     };
 
-    loadDefaultPreference();
+    loadPreferences();
   }, [user]);
 
   // Auto-select collection when data loads based on user preference
   useEffect(() => {
     if (!loading && preferencesLoaded && collections.length > 0 && !selectedCollectionId) {
-      const collectionIds = collections.map(c => c.id);
-      
-      // Check for user's default collection preference first (now synced from DB)
+      const collectionIds = collections.map((c) => c.id);
+
+      // 1) Cross-device last selected collection
+      const lastSelectedCollectionId = localStorage.getItem('lastSelectedCollectionId');
+      if (lastSelectedCollectionId && collectionIds.includes(lastSelectedCollectionId)) {
+        setSelectedCollectionId(lastSelectedCollectionId);
+        return;
+      }
+
+      // 2) User default collection preference
       const defaultCollectionId = localStorage.getItem('defaultCollectionId');
       if (defaultCollectionId && collectionIds.includes(defaultCollectionId)) {
         setSelectedCollectionId(defaultCollectionId);
         return;
       }
-      
-      // Check for last selected collection
+
+      // 3) Same-device last selected collection
       const savedId = localStorage.getItem('selectedCollectionId');
       if (savedId && collectionIds.includes(savedId)) {
         setSelectedCollectionId(savedId);
         return;
       }
-      
-      // Fall back to owned collection or first available
-      const ownedCollection = collections.find(c => c.role === 'owner');
+
+      // 4) Fall back to owned collection or first available
+      const ownedCollection = collections.find((c) => c.role === 'owner');
       setSelectedCollectionId(ownedCollection?.id || collections[0].id);
     }
   }, [collections, loading, preferencesLoaded, selectedCollectionId]);
 
-  // Persist selection
+  // Persist selection (same-device + cross-device)
   useEffect(() => {
     if (selectedCollectionId) {
       localStorage.setItem('selectedCollectionId', selectedCollectionId);
+      localStorage.setItem('lastSelectedCollectionId', selectedCollectionId);
+      void saveLastSelectedCollection(selectedCollectionId);
     }
-  }, [selectedCollectionId]);
+  }, [selectedCollectionId, saveLastSelectedCollection]);
 
-  const currentCollection = collections.find(c => c.id === selectedCollectionId);
+  const currentCollection = collections.find((c) => c.id === selectedCollectionId);
   const currentCollectionType: CollectionType = currentCollection?.collection_type || 'watches';
   const currentCollectionConfig = getCollectionConfig(currentCollectionType);
 
   return (
-    <CollectionContext.Provider value={{ 
-      selectedCollectionId, 
-      setSelectedCollectionId,
-      currentCollection,
-      currentCollectionType,
-      currentCollectionConfig,
-      collections,
-      collectionsLoading: loading,
-      refetchCollections: refetch
-    }}>
+    <CollectionContext.Provider
+      value={{
+        selectedCollectionId,
+        setSelectedCollectionId,
+        currentCollection,
+        currentCollectionType,
+        currentCollectionConfig,
+        collections,
+        collectionsLoading: loading,
+        refetchCollections: refetch,
+      }}
+    >
       {children}
     </CollectionContext.Provider>
   );

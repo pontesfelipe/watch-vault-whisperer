@@ -1044,6 +1044,7 @@ export type Database = {
           created_at: string
           default_collection_id: string | null
           id: string
+          last_selected_collection_id: string | null
           taste_description: string | null
           trade_match_scope: string | null
           updated_at: string
@@ -1053,6 +1054,7 @@ export type Database = {
           created_at?: string
           default_collection_id?: string | null
           id?: string
+          last_selected_collection_id?: string | null
           taste_description?: string | null
           trade_match_scope?: string | null
           updated_at?: string
@@ -1062,6 +1064,7 @@ export type Database = {
           created_at?: string
           default_collection_id?: string | null
           id?: string
+          last_selected_collection_id?: string | null
           taste_description?: string | null
           trade_match_scope?: string | null
           updated_at?: string
@@ -1071,6 +1074,13 @@ export type Database = {
           {
             foreignKeyName: "user_preferences_default_collection_id_fkey"
             columns: ["default_collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_preferences_last_selected_collection_id_fkey"
+            columns: ["last_selected_collection_id"]
             isOneToOne: false
             referencedRelation: "collections"
             referencedColumns: ["id"]
