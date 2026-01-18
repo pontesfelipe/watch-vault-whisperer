@@ -10,30 +10,37 @@ import { useWatchData } from "@/hooks/useWatchData";
 import { useCollection } from "@/contexts/CollectionContext";
 import { differenceInDays, format } from "date-fns";
 import { useNavigate } from "react-router-dom";
+import { getCollectionConfig, CollectionType } from "@/types/collection";
 
 export const WarrantyNotifications = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
-  const { selectedCollectionId } = useCollection();
+  const { selectedCollectionId, currentCollectionType, currentCollectionConfig } = useCollection();
   const { watches } = useWatchData(selectedCollectionId);
+  const config = currentCollectionConfig;
 
-  // Filter watches with warranty expiring within 30 days
-  const expiringWatches = watches.filter(watch => {
-    if (!watch.warranty_date) return false;
+  // Only show warranty notifications for collection types that support warranties
+  if (!config.supportsWarranty) {
+    return null;
+  }
+
+  // Filter items with warranty expiring within 30 days
+  const expiringItems = watches.filter(item => {
+    if (!item.warranty_date) return false;
     
-    const warrantyDate = new Date(watch.warranty_date);
+    const warrantyDate = new Date(item.warranty_date);
     const today = new Date();
     const daysUntilExpiry = differenceInDays(warrantyDate, today);
     
-    // Show watches expiring within 30 days (but not already expired)
+    // Show items expiring within 30 days (but not already expired)
     return daysUntilExpiry >= 0 && daysUntilExpiry <= 30;
-  }).map(watch => ({
-    ...watch,
-    warrantyDate: new Date(watch.warranty_date!),
-    daysRemaining: differenceInDays(new Date(watch.warranty_date!), new Date())
+  }).map(item => ({
+    ...item,
+    warrantyDate: new Date(item.warranty_date!),
+    daysRemaining: differenceInDays(new Date(item.warranty_date!), new Date())
   })).sort((a, b) => a.daysRemaining - b.daysRemaining);
 
-  const notificationCount = expiringWatches.length;
+  const notificationCount = expiringItems.length;
 
   const handleViewInsights = () => {
     setOpen(false);
@@ -43,6 +50,9 @@ export const WarrantyNotifications = () => {
   if (notificationCount === 0) {
     return null;
   }
+
+  const singularLabel = config.singularLabel.toLowerCase();
+  const pluralLabel = config.pluralLabel.toLowerCase();
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -65,36 +75,36 @@ export const WarrantyNotifications = () => {
         <div className="border-b border-borderSubtle p-4">
           <h3 className="font-semibold text-textMain">Warranty Expiring Soon</h3>
           <p className="text-xs text-textMuted mt-1">
-            {notificationCount} {notificationCount === 1 ? 'watch' : 'watches'} with warranty expiring within 30 days
+            {notificationCount} {notificationCount === 1 ? singularLabel : pluralLabel} with warranty expiring within 30 days
           </p>
         </div>
         <div className="max-h-[300px] overflow-y-auto">
-          {expiringWatches.map((watch) => (
+          {expiringItems.map((item) => (
             <div
-              key={watch.id}
+              key={item.id}
               className="border-b border-borderSubtle p-4 hover:bg-surfaceMuted transition-colors cursor-pointer"
               onClick={handleViewInsights}
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm text-textMain truncate">
-                    {watch.brand} {watch.model}
+                    {item.brand} {item.model}
                   </p>
                   <p className="text-xs text-textMuted mt-1">
-                    Expires: {format(watch.warrantyDate, 'MMM d, yyyy')}
+                    Expires: {format(item.warrantyDate, 'MMM d, yyyy')}
                   </p>
                 </div>
                 <div className="flex flex-col items-end">
                   <span className={`text-xs font-semibold ${
-                    watch.daysRemaining <= 7 ? 'text-danger' : 
-                    watch.daysRemaining <= 14 ? 'text-yellow-600' : 
+                    item.daysRemaining <= 7 ? 'text-danger' : 
+                    item.daysRemaining <= 14 ? 'text-yellow-600' : 
                     'text-yellow-500'
                   }`}>
-                    {watch.daysRemaining} days
+                    {item.daysRemaining} days
                   </span>
                   <div className={`mt-1 w-2 h-2 rounded-full ${
-                    watch.daysRemaining <= 7 ? 'bg-danger' : 
-                    watch.daysRemaining <= 14 ? 'bg-yellow-600' : 
+                    item.daysRemaining <= 7 ? 'bg-danger' : 
+                    item.daysRemaining <= 14 ? 'bg-yellow-600' : 
                     'bg-yellow-500'
                   }`} />
                 </div>

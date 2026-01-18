@@ -1,7 +1,9 @@
 import { Card } from "@/components/ui/card";
-import { TrendingUp, DollarSign, Calendar, Watch } from "lucide-react";
+import { TrendingUp, DollarSign, Calendar } from "lucide-react";
+import { useCollection } from "@/contexts/CollectionContext";
+import { ItemTypeIcon } from "@/components/ItemTypeIcon";
 
-interface PastWatch {
+interface PastItem {
   id: string;
   brand: string;
   model: string;
@@ -20,36 +22,39 @@ interface WearEntry {
 }
 
 interface PastWatchesStatsProps {
-  pastWatches: PastWatch[];
+  pastWatches: PastItem[];
   wearEntries: WearEntry[];
 }
 
 export const PastWatchesStats = ({ pastWatches, wearEntries }: PastWatchesStatsProps) => {
-  const totalPastWatches = pastWatches.length;
+  const { currentCollectionConfig, currentCollectionType } = useCollection();
+  const itemLabel = currentCollectionConfig.singularLabel.toLowerCase();
+  
+  const totalPastItems = pastWatches.length;
   const soldCount = pastWatches.filter(w => w.status === 'sold').length;
   const tradedCount = pastWatches.filter(w => w.status === 'traded').length;
   
   const totalValue = pastWatches.reduce((sum, w) => sum + (w.cost || 0), 0);
   const totalWearDays = wearEntries.length;
   
-  const avgDaysPerWatch = totalPastWatches > 0 
-    ? Math.round(totalWearDays / totalPastWatches) 
+  const avgDaysPerItem = totalPastItems > 0 
+    ? Math.round(totalWearDays / totalPastItems) 
     : 0;
 
-  // Find most worn past watch
-  const wearCountByWatch = wearEntries.reduce((acc, entry) => {
+  // Find most worn/used past item
+  const wearCountByItem = wearEntries.reduce((acc, entry) => {
     acc[entry.watch_id] = (acc[entry.watch_id] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
-  const mostWornId = Object.entries(wearCountByWatch)
+  const mostUsedId = Object.entries(wearCountByItem)
     .sort(([, a], [, b]) => b - a)[0]?.[0];
   
-  const mostWornWatch = pastWatches.find(w => w.id === mostWornId);
-  const mostWornDays = mostWornId ? wearCountByWatch[mostWornId] : 0;
+  const mostUsedItem = pastWatches.find(w => w.id === mostUsedId);
+  const mostUsedDays = mostUsedId ? wearCountByItem[mostUsedId] : 0;
 
   // Calculate average ownership duration
-  const watchesWithDates = pastWatches.filter(w => w.when_bought);
+  const itemsWithDates = pastWatches.filter(w => w.when_bought);
   
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -63,10 +68,10 @@ export const PastWatchesStats = ({ pastWatches, wearEntries }: PastWatchesStatsP
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
       <Card className="p-4 bg-surfaceMuted/50 border-borderSubtle">
         <div className="flex items-center gap-2 mb-2">
-          <Watch className="w-4 h-4 text-textMuted" />
+          <ItemTypeIcon type={currentCollectionType} className="w-4 h-4 text-textMuted" />
           <span className="text-xs text-textMuted">Total</span>
         </div>
-        <p className="text-2xl font-bold text-textMain">{totalPastWatches}</p>
+        <p className="text-2xl font-bold text-textMain">{totalPastItems}</p>
         <p className="text-xs text-textMuted mt-1">
           {soldCount} sold · {tradedCount} traded
         </p>
@@ -79,33 +84,33 @@ export const PastWatchesStats = ({ pastWatches, wearEntries }: PastWatchesStatsP
         </div>
         <p className="text-2xl font-bold text-textMain">{formatCurrency(totalValue)}</p>
         <p className="text-xs text-textMuted mt-1">
-          Avg: {formatCurrency(totalPastWatches > 0 ? totalValue / totalPastWatches : 0)}
+          Avg: {formatCurrency(totalPastItems > 0 ? totalValue / totalPastItems : 0)}
         </p>
       </Card>
 
       <Card className="p-4 bg-surfaceMuted/50 border-borderSubtle">
         <div className="flex items-center gap-2 mb-2">
           <Calendar className="w-4 h-4 text-textMuted" />
-          <span className="text-xs text-textMuted">Wear Days</span>
+          <span className="text-xs text-textMuted">{currentCollectionConfig.usageNoun.charAt(0).toUpperCase() + currentCollectionConfig.usageNoun.slice(1)} Days</span>
         </div>
         <p className="text-2xl font-bold text-textMain">{totalWearDays}</p>
         <p className="text-xs text-textMuted mt-1">
-          Avg: {avgDaysPerWatch} days/watch
+          Avg: {avgDaysPerItem} days/{itemLabel}
         </p>
       </Card>
 
       <Card className="p-4 bg-surfaceMuted/50 border-borderSubtle">
         <div className="flex items-center gap-2 mb-2">
           <TrendingUp className="w-4 h-4 text-textMuted" />
-          <span className="text-xs text-textMuted">Most Worn</span>
+          <span className="text-xs text-textMuted">Most {currentCollectionConfig.usageVerbPast.charAt(0).toUpperCase() + currentCollectionConfig.usageVerbPast.slice(1)}</span>
         </div>
-        {mostWornWatch ? (
+        {mostUsedItem ? (
           <>
             <p className="text-sm font-bold text-textMain truncate">
-              {mostWornWatch.brand}
+              {mostUsedItem.brand}
             </p>
             <p className="text-xs text-textMuted mt-1 truncate">
-              {mostWornWatch.model} · {mostWornDays} days
+              {mostUsedItem.model} · {mostUsedDays} days
             </p>
           </>
         ) : (
