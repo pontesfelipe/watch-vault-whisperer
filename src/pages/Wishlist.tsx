@@ -421,8 +421,8 @@ const Wishlist = () => {
             <div className="flex-1">
               <h2 className="text-xl font-semibold mb-2 text-foreground">Collection Gap Analysis</h2>
               <p className="text-muted-foreground text-sm leading-relaxed">
-                Add at least {3 - watchCount} more {3 - watchCount === 1 ? "watch" : "watches"} to your collection 
-                to unlock AI-powered gap analysis. I'll help you identify what types of watches would complement 
+                Add at least {3 - watchCount} more {3 - watchCount === 1 ? "item" : "items"} to your collection 
+                to unlock AI-powered gap analysis. I'll help you identify what would complement 
                 and complete your collection.
               </p>
             </div>

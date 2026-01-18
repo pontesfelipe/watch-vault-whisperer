@@ -318,7 +318,7 @@ const Collection = () => {
         </DndContext>
       )}
 
-      {/* Past Watches Section */}
+      {/* Past Items Section */}
       {pastWatches.length > 0 && (
         <div className="mt-12 pt-8 border-t border-borderSubtle">
           <button
@@ -327,7 +327,7 @@ const Collection = () => {
           >
             <div className="flex items-center gap-2">
               <History className="w-5 h-5 text-textMuted" />
-              <h2 className="text-xl font-semibold text-textMain">Past Watches</h2>
+              <h2 className="text-xl font-semibold text-textMain">Past {currentCollectionConfig.pluralLabel}</h2>
               <span className="text-sm text-textMuted">({pastWatches.length})</span>
             </div>
             {showPastWatches ? (
@@ -340,7 +340,7 @@ const Collection = () => {
           {showPastWatches && (
             <>
               <p className="text-sm text-textMuted mb-4">
-                Watches you've sold or traded. Historical wear data is preserved.
+                {currentCollectionConfig.pluralLabel} you've sold or traded. Historical {currentCollectionConfig.usageNoun} data is preserved.
               </p>
               <PastWatchesStats pastWatches={pastWatches} wearEntries={pastWearEntries} />
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">

@@ -9,6 +9,8 @@ import { useState, useEffect } from "react";
 import { usePasscode } from "@/contexts/PasscodeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { EditWatchDialog } from "@/components/EditWatchDialog";
+import { useCollection } from "@/contexts/CollectionContext";
+import { ItemTypeIcon } from "@/components/ItemTypeIcon";
 import {
   Dialog,
   DialogContent,
@@ -50,6 +52,8 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
   const { toast } = useToast();
   const { isAdmin } = useAuth();
   const { requestVerification, isVerified } = usePasscode();
+  const { currentCollectionConfig, currentCollectionType } = useCollection();
+  const singularLabel = currentCollectionConfig.singularLabel;
   const [showCost, setShowCost] = useState(isAdmin);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isFetchingPrice, setIsFetchingPrice] = useState(false);
@@ -99,8 +103,8 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
       if (error) throw error;
 
       toast({
-        title: "Watch Deleted",
-        description: "Watch and all related data permanently removed",
+        title: `${singularLabel} Deleted`,
+        description: `${singularLabel} and all related data permanently removed`,
       });
 
       setShowDeleteDialog(false);
@@ -108,7 +112,7 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to delete watch",
+        description: `Failed to delete ${singularLabel.toLowerCase()}`,
         variant: "destructive",
       });
     }
@@ -124,7 +128,7 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
       if (error) throw error;
 
       toast({
-        title: status === 'sold' ? "Watch Marked as Sold" : "Watch Marked as Traded",
+        title: status === 'sold' ? `${singularLabel} Marked as Sold` : `${singularLabel} Marked as Traded`,
         description: "Removed from collection. Historical data preserved.",
       });
 
@@ -133,7 +137,7 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to update watch status",
+        description: `Failed to update ${singularLabel.toLowerCase()} status`,
         variant: "destructive",
       });
     }
@@ -204,7 +208,7 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
         <div className="flex items-start justify-between mb-3 sm:mb-4 gap-2">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
-              <WatchIcon className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
+              <ItemTypeIcon type={currentCollectionType} className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
               <h3 className="font-semibold text-sm sm:text-[17px] text-textMain truncate">{watch.brand}</h3>
             </div>
             <p className="text-xs sm:text-sm text-textSoft truncate">{watch.model}</p>
@@ -216,7 +220,7 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
 
         <div className="space-y-2 sm:space-y-3 mb-3 sm:mb-4">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-textMuted">Dial Color</span>
+            <span className="text-textMuted">{currentCollectionConfig.primaryColorLabel}</span>
             <span className="font-medium text-textMain">{watch.dial_color}</span>
           </div>
 
@@ -387,7 +391,7 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
           <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
             <DialogContent className="bg-surface border-borderSubtle sm:max-w-md">
               <DialogHeader>
-                <DialogTitle className="text-textMain">Remove Watch</DialogTitle>
+                <DialogTitle className="text-textMain">Remove {singularLabel}</DialogTitle>
                 <DialogDescription className="text-textSoft">
                   How would you like to remove <span className="font-semibold">{watch.brand} {watch.model}</span> from your collection?
                 </DialogDescription>

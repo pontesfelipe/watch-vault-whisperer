@@ -4,8 +4,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { DollarSign, TrendingUp, Calendar, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 import { formatPurchaseDateForDisplay, parsePurchaseDate } from "@/lib/date";
+import { useCollection } from "@/contexts/CollectionContext";
 
-interface Watch {
+interface Item {
   id: string;
   brand: string;
   model: string;
@@ -15,61 +16,64 @@ interface Watch {
 }
 
 interface SpendingAnalyticsTabProps {
-  watches: Watch[];
+  watches: Item[];
 }
 
 export function SpendingAnalyticsTab({ watches }: SpendingAnalyticsTabProps) {
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
+  const { currentCollectionConfig } = useCollection();
+  const itemLabel = currentCollectionConfig.singularLabel.toLowerCase();
+  const itemsLabel = currentCollectionConfig.pluralLabel.toLowerCase();
 
   // Calculate total spending
-  const totalSpent = watches.reduce((sum, watch) => sum + watch.cost, 0);
+  const totalSpent = watches.reduce((sum, item) => sum + item.cost, 0);
   
   // Calculate average price
   const averagePrice = watches.length > 0 ? totalSpent / watches.length : 0;
   
-  // Group watches by year
-  const watchesByYear = watches.reduce((acc, watch) => {
-    const parsed = parsePurchaseDate(watch.when_bought, watch.created_at);
+  // Group items by year
+  const itemsByYear = watches.reduce((acc, item) => {
+    const parsed = parsePurchaseDate(item.when_bought, item.created_at);
     const year = parsed.date.getFullYear();
 
     if (!acc[year]) {
       acc[year] = [];
     }
-    acc[year].push(watch);
+    acc[year].push(item);
     return acc;
-  }, {} as Record<number, Watch[]>);
+  }, {} as Record<number, Item[]>);
   
   // Calculate spending by year
-  const yearlyData = Object.entries(watchesByYear)
+  const yearlyData = Object.entries(itemsByYear)
     .sort(([a], [b]) => Number(a) - Number(b))
-    .map(([year, yearWatches]) => ({
+    .map(([year, yearItems]) => ({
       year: Number(year),
-      count: yearWatches.length,
-      total: yearWatches.reduce((sum, w) => sum + w.cost, 0),
-      watches: yearWatches,
+      count: yearItems.length,
+      total: yearItems.reduce((sum, w) => sum + w.cost, 0),
+      items: yearItems,
     }));
 
   // Calculate monthly breakdown for selected year
   const getMonthlyBreakdown = (year: number) => {
-    const yearWatches = watchesByYear[year] || [];
-    const monthlyData = yearWatches.reduce((acc, watch) => {
-      const parsed = parsePurchaseDate(watch.when_bought, watch.created_at);
+    const yearItems = itemsByYear[year] || [];
+    const monthlyData = yearItems.reduce((acc, item) => {
+      const parsed = parsePurchaseDate(item.when_bought, item.created_at);
       const month = parsed.date.getMonth(); // 0-11
       
       if (!acc[month]) {
         acc[month] = [];
       }
-      acc[month].push(watch);
+      acc[month].push(item);
       return acc;
-    }, {} as Record<number, Watch[]>);
+    }, {} as Record<number, Item[]>);
     
     return Object.entries(monthlyData)
       .sort(([a], [b]) => Number(a) - Number(b))
-      .map(([month, watches]) => ({
+      .map(([month, monthItems]) => ({
         month: Number(month),
         monthName: format(new Date(year, Number(month), 1), "MMMM"),
-        watches,
-        total: watches.reduce((sum, w) => sum + w.cost, 0),
+        items: monthItems,
+        total: monthItems.reduce((sum, w) => sum + w.cost, 0),
       }));
   };
 
@@ -85,7 +89,7 @@ export function SpendingAnalyticsTab({ watches }: SpendingAnalyticsTabProps) {
           <CardContent>
             <div className="text-2xl font-bold">${totalSpent.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
-              Across {watches.length} watches
+              Across {watches.length} {itemsLabel}
             </p>
           </CardContent>
         </Card>
@@ -98,7 +102,7 @@ export function SpendingAnalyticsTab({ watches }: SpendingAnalyticsTabProps) {
           <CardContent>
             <div className="text-2xl font-bold">${averagePrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
             <p className="text-xs text-muted-foreground">
-              Per watch
+              Per {itemLabel}
             </p>
           </CardContent>
         </Card>
@@ -111,7 +115,7 @@ export function SpendingAnalyticsTab({ watches }: SpendingAnalyticsTabProps) {
           <CardContent>
             <div className="text-2xl font-bold">{watches.length}</div>
             <p className="text-xs text-muted-foreground">
-              Total watches
+              Total {itemsLabel}
             </p>
           </CardContent>
         </Card>
@@ -134,7 +138,7 @@ export function SpendingAnalyticsTab({ watches }: SpendingAnalyticsTabProps) {
                 <div className="flex-1">
                   <p className="font-semibold text-lg">{year}</p>
                   <p className="text-sm text-muted-foreground">
-                    {count} {count === 1 ? 'watch' : 'watches'} acquired
+                    {count} {count === 1 ? itemLabel : itemsLabel} acquired
                   </p>
                 </div>
                 <div className="flex items-center gap-4">
@@ -160,7 +164,7 @@ export function SpendingAnalyticsTab({ watches }: SpendingAnalyticsTabProps) {
               <DialogTitle>{selectedYear} - Monthly Breakdown</DialogTitle>
             </DialogHeader>
             <div className="space-y-6">
-              {getMonthlyBreakdown(selectedYear).map(({ month, monthName, watches, total }) => (
+              {getMonthlyBreakdown(selectedYear).map(({ month, monthName, items, total }) => (
                 <Card key={month}>
                   <CardHeader>
                     <div className="flex items-center justify-between">
@@ -168,25 +172,25 @@ export function SpendingAnalyticsTab({ watches }: SpendingAnalyticsTabProps) {
                       <div className="text-right">
                         <p className="font-bold text-lg">${total.toLocaleString()}</p>
                         <p className="text-xs text-muted-foreground">
-                          {watches.length} {watches.length === 1 ? 'watch' : 'watches'}
+                          {items.length} {items.length === 1 ? itemLabel : itemsLabel}
                         </p>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      {watches.map((watch) => (
-                        <div key={watch.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      {items.map((item) => (
+                        <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg">
                           <div>
-                            <p className="font-semibold">{watch.brand} {watch.model}</p>
+                            <p className="font-semibold">{item.brand} {item.model}</p>
                             <p className="text-xs text-muted-foreground">
                               {(() => {
-                                const parsed = parsePurchaseDate(watch.when_bought, watch.created_at);
-                                return watch.when_bought ? formatPurchaseDateForDisplay(parsed.date, parsed.precision) : "Date unknown";
+                                const parsed = parsePurchaseDate(item.when_bought, item.created_at);
+                                return item.when_bought ? formatPurchaseDateForDisplay(parsed.date, parsed.precision) : "Date unknown";
                               })()}
                             </p>
                           </div>
-                          <p className="font-bold">${watch.cost.toLocaleString()}</p>
+                          <p className="font-bold">${item.cost.toLocaleString()}</p>
                         </div>
                       ))}
                     </div>

@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Watch as WatchIcon, Calendar, RotateCcw, Trash2 } from "lucide-react";
+import { Calendar, RotateCcw, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
@@ -12,6 +12,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useCollection } from "@/contexts/CollectionContext";
+import { ItemTypeIcon } from "@/components/ItemTypeIcon";
 
 interface PastWatchCardProps {
   watch: {
@@ -31,6 +33,10 @@ interface PastWatchCardProps {
 
 export const PastWatchCard = ({ watch, totalDays, onUpdate, collectionId }: PastWatchCardProps) => {
   const { toast } = useToast();
+  const { currentCollectionConfig, currentCollectionType } = useCollection();
+  const singularLabel = currentCollectionConfig.singularLabel;
+  const usageVerbPast = currentCollectionConfig.usageVerbPast;
+  const usageNoun = currentCollectionConfig.usageNoun;
   const [showRestoreDialog, setShowRestoreDialog] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -46,7 +52,7 @@ export const PastWatchCard = ({ watch, totalDays, onUpdate, collectionId }: Past
       if (error) throw error;
 
       toast({
-        title: "Watch Restored",
+        title: `${singularLabel} Restored`,
         description: `${watch.brand} ${watch.model} is back in your collection`,
       });
 
@@ -55,7 +61,7 @@ export const PastWatchCard = ({ watch, totalDays, onUpdate, collectionId }: Past
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to restore watch",
+        description: `Failed to restore ${singularLabel.toLowerCase()}`,
         variant: "destructive",
       });
     } finally {
@@ -71,14 +77,14 @@ export const PastWatchCard = ({ watch, totalDays, onUpdate, collectionId }: Past
       await supabase.from("water_usage").delete().eq("watch_id", watch.id);
       await supabase.from("watch_specs").delete().eq("watch_id", watch.id);
       
-      // Delete the watch
+      // Delete the item
       const { error } = await supabase.from("watches").delete().eq("id", watch.id);
 
       if (error) throw error;
 
       toast({
-        title: "Watch Deleted",
-        description: "Watch and all related data permanently removed",
+        title: `${singularLabel} Deleted`,
+        description: `${singularLabel} and all related data permanently removed`,
       });
 
       setShowRestoreDialog(false);
@@ -86,7 +92,7 @@ export const PastWatchCard = ({ watch, totalDays, onUpdate, collectionId }: Past
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to delete watch",
+        description: `Failed to delete ${singularLabel.toLowerCase()}`,
         variant: "destructive",
       });
     } finally {
@@ -100,7 +106,7 @@ export const PastWatchCard = ({ watch, totalDays, onUpdate, collectionId }: Past
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <WatchIcon className="w-4 h-4 text-textMuted" />
+              <ItemTypeIcon type={currentCollectionType} className="w-4 h-4 text-textMuted" />
               <h3 className="font-semibold text-sm text-textMain">{watch.brand}</h3>
             </div>
             <p className="text-xs text-textSoft">{watch.model}</p>
@@ -115,17 +121,17 @@ export const PastWatchCard = ({ watch, totalDays, onUpdate, collectionId }: Past
 
         <div className="space-y-2 mb-3">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-textMuted">Dial</span>
+            <span className="text-textMuted">{currentCollectionConfig.primaryColorLabel}</span>
             <span className="text-textSoft">{watch.dial_color}</span>
           </div>
           <div className="flex items-center justify-between text-xs">
-            <span className="text-textMuted">Type</span>
+            <span className="text-textMuted">{currentCollectionConfig.typeLabel}</span>
             <span className="text-textSoft">{watch.type}</span>
           </div>
           <div className="flex items-center justify-between pt-2 border-t border-borderSubtle">
             <div className="flex items-center gap-1 text-textMuted">
               <Calendar className="w-3 h-3" />
-              <span className="text-xs">Total Days Worn</span>
+              <span className="text-xs">Total Days {usageVerbPast.charAt(0).toUpperCase() + usageVerbPast.slice(1)}</span>
             </div>
             <span className="text-lg font-bold text-primary">{totalDays}</span>
           </div>
@@ -144,7 +150,7 @@ export const PastWatchCard = ({ watch, totalDays, onUpdate, collectionId }: Past
         <Dialog open={showRestoreDialog} onOpenChange={setShowRestoreDialog}>
           <DialogContent className="bg-surface border-borderSubtle sm:max-w-sm">
             <DialogHeader>
-              <DialogTitle className="text-textMain">Manage Past Watch</DialogTitle>
+              <DialogTitle className="text-textMain">Manage Past {singularLabel}</DialogTitle>
               <DialogDescription className="text-textSoft">
                 {watch.brand} {watch.model} was marked as {watch.status}.
               </DialogDescription>
