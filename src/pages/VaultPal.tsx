@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Trash2, Bot, Sparkles, Loader2, User, Plus, MessageSquare, MoreVertical, Pencil, Search, X } from "lucide-react";
+import { Send, Trash2, Bot, Sparkles, Loader2, User, Plus, MessageSquare, MoreVertical, Pencil, Search, X, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
@@ -489,6 +489,16 @@ const ConversationItem = ({
 
 const MessageBubble = ({ message }: { message: ChatMessage }) => {
   const isUser = message.role === "user";
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  // Determine if message is long (more than 300 characters or 4 lines)
+  const lines = message.content.split("\n");
+  const isLongMessage = message.content.length > 300 || lines.length > 4;
+  
+  // Show truncated content when collapsed
+  const displayContent = isExpanded || !isLongMessage 
+    ? message.content 
+    : message.content.slice(0, 250) + "...";
 
   return (
     <div className={`flex items-start gap-3 ${isUser ? "flex-row-reverse" : ""}`}>
@@ -507,12 +517,34 @@ const MessageBubble = ({ message }: { message: ChatMessage }) => {
         }`}
       >
         <div className="text-sm whitespace-pre-wrap break-words leading-relaxed">
-          {message.content.split("\n").map((line, i) => (
+          {displayContent.split("\n").map((line, i) => (
             <p key={i} className={i > 0 ? "mt-2" : ""}>
               {line}
             </p>
           ))}
         </div>
+        {isLongMessage && (
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className={`flex items-center gap-1 mt-2 text-xs font-medium transition-colors ${
+              isUser 
+                ? "text-primary-foreground/80 hover:text-primary-foreground" 
+                : "text-accent hover:text-accent/80"
+            }`}
+          >
+            {isExpanded ? (
+              <>
+                <ChevronUp className="w-3.5 h-3.5" />
+                Show less
+              </>
+            ) : (
+              <>
+                <ChevronDown className="w-3.5 h-3.5" />
+                Show more
+              </>
+            )}
+          </button>
+        )}
       </div>
     </div>
   );
