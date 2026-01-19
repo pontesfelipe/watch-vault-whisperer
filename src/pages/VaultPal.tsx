@@ -122,8 +122,10 @@ const VaultPal = () => {
     }
   };
 
+  const singularItemLabel = currentCollectionType ? getItemLabel(currentCollectionType, false) : "item";
+
   const suggestedQuestions = [
-    `What's my most worn ${itemLabel.slice(0, -1)}?`,
+    `What's my most worn ${singularItemLabel}?`,
     "What patterns do you see in my collection?",
     "What should I add next?",
     "Tell me about my collecting style",
