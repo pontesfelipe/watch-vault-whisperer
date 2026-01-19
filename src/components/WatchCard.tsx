@@ -9,8 +9,11 @@ import { useState, useEffect } from "react";
 import { usePasscode } from "@/contexts/PasscodeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { EditWatchDialog } from "@/components/EditWatchDialog";
+import { EditSneakerSpecsDialog } from "@/components/EditSneakerSpecsDialog";
+import { EditPurseSpecsDialog } from "@/components/EditPurseSpecsDialog";
 import { useCollection } from "@/contexts/CollectionContext";
 import { ItemTypeIcon } from "@/components/ItemTypeIcon";
+import { isSneakerCollection, isPurseCollection } from "@/types/collection";
 import {
   Dialog,
   DialogContent,
@@ -58,6 +61,9 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isFetchingPrice, setIsFetchingPrice] = useState(false);
   const [showReasoningDialog, setShowReasoningDialog] = useState(false);
+  
+  const isSneaker = currentCollectionType ? isSneakerCollection(currentCollectionType) : false;
+  const isPurse = currentCollectionType ? isPurseCollection(currentCollectionType) : false;
 
   const handleToggleCost = () => {
     if (!showCost) {
@@ -378,6 +384,22 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
           </Button>
 
           <EditWatchDialog watch={watch} onSuccess={onDelete} />
+
+          {isSneaker && (
+            <EditSneakerSpecsDialog 
+              itemId={watch.id} 
+              itemName={`${watch.brand} ${watch.model}`}
+              onSuccess={onDelete} 
+            />
+          )}
+
+          {isPurse && (
+            <EditPurseSpecsDialog 
+              itemId={watch.id} 
+              itemName={`${watch.brand} ${watch.model}`}
+              onSuccess={onDelete} 
+            />
+          )}
 
           <Button
             variant="outline" 
