@@ -8,14 +8,16 @@ import { CollectionInsights } from "@/components/CollectionInsights";
 import { MonthlyUsageTable } from "@/components/MonthlyUsageTable";
 import { CollectionSwitcher } from "@/components/CollectionSwitcher";
 import { SneakerStatsCards } from "@/components/SneakerStatsCards";
+import { PurseStatsCards } from "@/components/PurseStatsCards";
 
 import { useWatchData } from "@/hooks/useWatchData";
 import { useTripData } from "@/hooks/useTripData";
 import { useWaterUsageData } from "@/hooks/useWaterUsageData";
 import { useStatsCalculations } from "@/hooks/useStatsCalculations";
 import { useSneakerStats } from "@/hooks/useSneakerStats";
+import { usePurseStats } from "@/hooks/usePurseStats";
 import { useCollection } from "@/contexts/CollectionContext";
-import { isWatchCollection, isSneakerCollection, getCollectionConfig } from "@/types/collection";
+import { isWatchCollection, isSneakerCollection, isPurseCollection, getCollectionConfig } from "@/types/collection";
 
 const Dashboard = () => {
   const { selectedCollectionId, currentCollection, currentCollectionType, currentCollectionConfig } = useCollection();
@@ -27,12 +29,19 @@ const Dashboard = () => {
   
   const isWatch = currentCollectionType ? isWatchCollection(currentCollectionType) : true;
   const isSneaker = currentCollectionType ? isSneakerCollection(currentCollectionType) : false;
+  const isPurse = currentCollectionType ? isPurseCollection(currentCollectionType) : false;
   const config = currentCollectionType ? getCollectionConfig(currentCollectionType) : getCollectionConfig('watches');
   
   // Fetch sneaker-specific stats
   const { stats: sneakerStats, loading: sneakerStatsLoading } = useSneakerStats({
     itemIds: watches.map(w => w.id),
     enabled: isSneaker,
+  });
+  
+  // Fetch purse-specific stats
+  const { stats: purseStats, loading: purseStatsLoading } = usePurseStats({
+    itemIds: watches.map(w => w.id),
+    enabled: isPurse,
   });
   
   // Get dynamic icon based on collection type
@@ -180,6 +189,16 @@ const Dashboard = () => {
             Sneaker Details
           </h3>
           <SneakerStatsCards stats={sneakerStats} totalSneakers={stats.totalWatches} />
+        </div>
+      )}
+
+      {/* Purse-specific stats */}
+      {isPurse && (
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-textMuted">
+            Purse Details
+          </h3>
+          <PurseStatsCards stats={purseStats} totalPurses={stats.totalWatches} />
         </div>
       )}
 
