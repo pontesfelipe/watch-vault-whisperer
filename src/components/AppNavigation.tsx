@@ -3,6 +3,8 @@ import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { SubmitFeedbackDialog } from "@/components/SubmitFeedbackDialog";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCollection } from "@/contexts/CollectionContext";
+import { isWatchCollection } from "@/types/collection";
 import {
   Sidebar,
   SidebarContent,
@@ -22,6 +24,9 @@ export function AppNavigation() {
   const { open } = useSidebar();
   const location = useLocation();
   const { user, isAdmin, signOut } = useAuth();
+  const { currentCollection } = useCollection();
+  
+  const isWatches = currentCollection ? isWatchCollection(currentCollection.collection_type) : true;
 
   const navItems = [
     { title: "Dashboard", url: "/", icon: BarChart3 },
@@ -30,7 +35,8 @@ export function AppNavigation() {
     { title: "Trips", url: "/trips", icon: Plane },
     { title: "Events", url: "/events", icon: Calendar },
     { title: "Sports", url: "/sports", icon: Dumbbell },
-    { title: "Water Usage", url: "/water-usage", icon: Droplets },
+    // Water Usage only applies to watches
+    ...(isWatches ? [{ title: "Water Usage", url: "/water-usage", icon: Droplets }] : []),
     { title: "Collection Insights", url: "/personal-notes", icon: BookHeart },
     { title: "Messages", url: "/messages", icon: MessageCircle },
     { title: "Forum", url: "/forum", icon: MessageSquare },
