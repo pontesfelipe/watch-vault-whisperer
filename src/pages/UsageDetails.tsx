@@ -1,8 +1,6 @@
-import { useState } from "react";
-import { Droplets, Calendar, Dumbbell } from "lucide-react";
+import { Droplets, Calendar, Dumbbell, Plane } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
 import { WaterUsageList } from "@/components/WaterUsageList";
 import { TripTimeline } from "@/components/TripTimeline";
 import { SportTimeline } from "@/components/SportTimeline";
@@ -19,13 +17,13 @@ import { useSearchParams } from "react-router-dom";
 
 const UsageDetails = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialTab = searchParams.get("tab") || "events";
+  const initialTab = searchParams.get("tab") || "trips";
   
   const { waterUsages, loading: waterLoading, refetch: refetchWater } = useWaterUsageData();
   const { events, loading: eventLoading, refetch: refetchEvents } = useEventData();
   const { sports, loading: sportLoading, refetch: refetchSports } = useSportData();
   const { watches, wearEntries, loading: watchLoading } = useWatchData();
-  const { trips } = useTripData();
+  const { trips, loading: tripLoading, refetch: refetchTrips } = useTripData();
   const { currentCollection } = useCollection();
 
   const stats = useStatsCalculations(watches, wearEntries, trips, waterUsages);
@@ -54,7 +52,7 @@ const UsageDetails = () => {
     setSearchParams({ tab: value });
   };
 
-  const isLoading = waterLoading || eventLoading || sportLoading || watchLoading;
+  const isLoading = waterLoading || eventLoading || sportLoading || watchLoading || tripLoading;
 
   if (isLoading) {
     return (
@@ -75,7 +73,7 @@ const UsageDetails = () => {
             Usage Details
           </h1>
           <p className="text-sm text-textMuted mt-1">
-            Track events, sports, and water activities with your collection
+            Track trips, events, sports, and water activities with your collection
           </p>
         </div>
         <QuickAddWearDialog 
@@ -84,12 +82,17 @@ const UsageDetails = () => {
             refetchWater();
             refetchEvents();
             refetchSports();
+            refetchTrips();
           }}
         />
       </div>
 
       <Tabs value={initialTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">
+        <TabsList className={`grid w-full ${isWatches ? 'grid-cols-4' : 'grid-cols-3'} lg:w-auto lg:inline-grid`}>
+          <TabsTrigger value="trips" className="gap-2">
+            <Plane className="h-4 w-4" />
+            <span className="hidden sm:inline">Trips</span>
+          </TabsTrigger>
           <TabsTrigger value="events" className="gap-2">
             <Calendar className="h-4 w-4" />
             <span className="hidden sm:inline">Events</span>
@@ -105,6 +108,34 @@ const UsageDetails = () => {
             </TabsTrigger>
           )}
         </TabsList>
+
+        {/* Trips Tab */}
+        <TabsContent value="trips" className="space-y-6 mt-6">
+          {stats.topTripWatch && (
+            <Card className="border-borderSubtle bg-surface p-6 shadow-card">
+              <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-textMuted mb-2">
+                #1 Trip Watch
+              </h3>
+              <p className="text-2xl font-bold text-primary">
+                {stats.topTripWatch.brand} {stats.topTripWatch.model}
+              </p>
+            </Card>
+          )}
+          <TripTimeline
+            trips={trips.map((trip) => ({
+              id: trip.id,
+              startDate: trip.start_date,
+              location: trip.location,
+              linkedWatches: trip.linkedWatches,
+              days: trip.days,
+              purpose: trip.purpose,
+              notes: trip.notes || undefined,
+            }))}
+            type="trip"
+            watches={watches}
+            onUpdate={refetchTrips}
+          />
+        </TabsContent>
 
         {/* Events Tab */}
         <TabsContent value="events" className="space-y-6 mt-6">
