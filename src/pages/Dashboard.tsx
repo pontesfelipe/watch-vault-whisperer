@@ -4,7 +4,7 @@ import { UsageChart } from "@/components/UsageChart";
 import { QuickAddWearDialog } from "@/components/QuickAddWearDialog";
 import { DepreciationCard } from "@/components/DepreciationCard";
 import { DepreciationChart } from "@/components/DepreciationChart";
-import { CollectionInsights } from "@/components/CollectionInsights";
+
 import { MonthlyUsageTable } from "@/components/MonthlyUsageTable";
 import { CollectionSwitcher } from "@/components/CollectionSwitcher";
 import { SneakerStatsCards } from "@/components/SneakerStatsCards";
@@ -105,7 +105,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <CollectionInsights watchCount={stats.totalWatches} watches={watches} />
+      
 
       <div className="space-y-3">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
