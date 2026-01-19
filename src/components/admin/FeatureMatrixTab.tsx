@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useFeatureToggles } from "@/hooks/useFeatureToggles";
 import { CollectionType, COLLECTION_CONFIGS } from "@/types/collection";
-import { Watch, Footprints, ShoppingBag, Loader2, Trash2, Plus, X } from "lucide-react";
+import { Watch, Footprints, ShoppingBag, Loader2, Trash2, Plus, X, ToggleRight, BarChart3 } from "lucide-react";
 import { AddFeatureDialog } from "./AddFeatureDialog";
+import { FeatureUsageAnalytics } from "./FeatureUsageAnalytics";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -325,50 +327,79 @@ export const FeatureMatrixTab = () => {
   };
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0">
-        <div>
-          <CardTitle>Feature Matrix</CardTitle>
-          <CardDescription>
-            Configure which features are available for each collection type. 
-            Toggle features on or off to customize the experience.
-          </CardDescription>
-        </div>
-        <AddFeatureDialog onSuccess={refetch} existingFeatureKeys={existingFeatureKeys} />
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-8">
-          {renderFeatureTable('Core Features', coreFeatureKeys, false)}
-          {renderFeatureTable('Type-Specific', typeSpecificKeys, false)}
-          {customFeatureKeys.length > 0 && renderFeatureTable('Custom Features', customFeatureKeys, true)}
-        </div>
+    <Tabs defaultValue="configuration" className="w-full">
+      <TabsList className="mb-4">
+        <TabsTrigger value="configuration" className="flex items-center gap-2">
+          <ToggleRight className="h-4 w-4" />
+          Configuration
+        </TabsTrigger>
+        <TabsTrigger value="analytics" className="flex items-center gap-2">
+          <BarChart3 className="h-4 w-4" />
+          Usage Analytics
+        </TabsTrigger>
+      </TabsList>
 
-        <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-          <h4 className="font-medium mb-2">Legend</h4>
-          <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <Switch checked disabled className="scale-75" />
-              <span>Feature enabled</span>
+      <TabsContent value="configuration">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <div>
+              <CardTitle>Feature Matrix</CardTitle>
+              <CardDescription>
+                Configure which features are available for each collection type. 
+                Toggle features on or off to customize the experience.
+              </CardDescription>
             </div>
-            <div className="flex items-center gap-2">
-              <Switch checked={false} disabled className="scale-75" />
-              <span>Feature disabled</span>
+            <AddFeatureDialog onSuccess={refetch} existingFeatureKeys={existingFeatureKeys} />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-8">
+              {renderFeatureTable('Core Features', coreFeatureKeys, false)}
+              {renderFeatureTable('Type-Specific', typeSpecificKeys, false)}
+              {customFeatureKeys.length > 0 && renderFeatureTable('Custom Features', customFeatureKeys, true)}
             </div>
-            <div className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              <span>Click to extend feature to this type</span>
+
+            <div className="mt-6 p-4 bg-muted/50 rounded-lg">
+              <h4 className="font-medium mb-2">Legend</h4>
+              <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <Switch checked disabled className="scale-75" />
+                  <span>Feature enabled</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Switch checked={false} disabled className="scale-75" />
+                  <span>Feature disabled</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  <span>Click to extend feature to this type</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <X className="h-3 w-3" />
+                  <span>Remove from this type</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span>—</span>
+                  <span>Not applicable (core features)</span>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <X className="h-3 w-3" />
-              <span>Remove from this type</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span>—</span>
-              <span>Not applicable (core features)</span>
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="analytics">
+        <Card>
+          <CardHeader>
+            <CardTitle>Feature Usage Analytics</CardTitle>
+            <CardDescription>
+              Track how features are being used across different collection types.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <FeatureUsageAnalytics />
+          </CardContent>
+        </Card>
+      </TabsContent>
+    </Tabs>
   );
 };
