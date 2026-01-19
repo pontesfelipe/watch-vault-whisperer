@@ -307,6 +307,33 @@ export type Database = {
         }
         Relationships: []
       }
+      feature_usage_events: {
+        Row: {
+          collection_type: string
+          created_at: string
+          feature_key: string
+          id: string
+          used_at: string
+          user_id: string
+        }
+        Insert: {
+          collection_type: string
+          created_at?: string
+          feature_key: string
+          id?: string
+          used_at?: string
+          user_id: string
+        }
+        Update: {
+          collection_type?: string
+          created_at?: string
+          feature_key?: string
+          id?: string
+          used_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       feedback: {
         Row: {
           admin_notes: string | null
@@ -1491,6 +1518,17 @@ export type Database = {
       }
     }
     Views: {
+      feature_usage_stats: {
+        Row: {
+          collection_type: string | null
+          feature_key: string | null
+          last_used: string | null
+          total_uses: number | null
+          unique_users: number | null
+          usage_date: string | null
+        }
+        Relationships: []
+      }
       public_profiles: {
         Row: {
           avatar_color: string | null
@@ -1538,6 +1576,16 @@ export type Database = {
         Returns: {
           remaining_count: number
           used_count: number
+        }[]
+      }
+      get_feature_usage_summary: {
+        Args: { _days_back?: number }
+        Returns: {
+          collection_type: string
+          feature_key: string
+          last_used: string
+          total_uses: number
+          unique_users: number
         }[]
       }
       get_profile_id_by_email: { Args: { _email: string }; Returns: string }
