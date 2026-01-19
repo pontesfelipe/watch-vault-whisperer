@@ -13,7 +13,6 @@ import { SplashScreen } from "@/components/SplashScreen";
 import Dashboard from "./pages/Dashboard";
 import Collection from "./pages/Collection";
 import Wishlist from "./pages/Wishlist";
-import Trips from "./pages/Trips";
 import UsageDetails from "./pages/UsageDetails";
 import PersonalNotes from "./pages/PersonalNotes";
 import Messages from "./pages/Messages";
@@ -63,7 +62,7 @@ function AppContent() {
           <Route path="/vault-pal" element={<ProtectedRoute><AppLayout><VaultPal /></AppLayout></ProtectedRoute>} />
           <Route path="/collection" element={<ProtectedRoute><AppLayout><Collection /></AppLayout></ProtectedRoute>} />
           <Route path="/wishlist" element={<ProtectedRoute><AppLayout><Wishlist /></AppLayout></ProtectedRoute>} />
-          <Route path="/trips" element={<ProtectedRoute><AppLayout><Trips /></AppLayout></ProtectedRoute>} />
+          <Route path="/trips" element={<Navigate to="/usage-details?tab=trips" replace />} />
           <Route path="/usage-details" element={<ProtectedRoute><AppLayout><UsageDetails /></AppLayout></ProtectedRoute>} />
           <Route path="/personal-notes" element={<ProtectedRoute><AppLayout><PersonalNotes /></AppLayout></ProtectedRoute>} />
           <Route path="/messages" element={<ProtectedRoute><AppLayout><Messages /></AppLayout></ProtectedRoute>} />
