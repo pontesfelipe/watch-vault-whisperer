@@ -1,4 +1,4 @@
-import { Watch, Heart, Plane, Calendar, Droplets, BarChart3, LogOut, BookHeart, Shield, Settings, MessageCircle, HelpCircle, Info, MessageSquare, Lightbulb, Dumbbell } from "lucide-react";
+import { Watch, Heart, Plane, Calendar, Droplets, BarChart3, LogOut, BookHeart, Shield, Settings, MessageCircle, HelpCircle, Info, MessageSquare, Lightbulb, Dumbbell, Bot } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { SubmitFeedbackDialog } from "@/components/SubmitFeedbackDialog";
@@ -30,6 +30,7 @@ export function AppNavigation() {
 
   const navItems = [
     { title: "Dashboard", url: "/", icon: BarChart3 },
+    { title: "My Vault Pal", url: "/vault-pal", icon: Bot },
     { title: "Collection", url: "/collection", icon: Watch },
     { title: "Wishlist", url: "/wishlist", icon: Heart },
     { title: "Trips", url: "/trips", icon: Plane },
