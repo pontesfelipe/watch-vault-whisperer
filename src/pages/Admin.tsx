@@ -15,10 +15,11 @@ import { AccessLogsTab } from "@/components/admin/AccessLogsTab";
 import { UsageMetricsTab } from "@/components/admin/UsageMetricsTab";
 import { CollectionsTab } from "@/components/admin/CollectionsTab";
 import { FeedbackTab } from "@/components/admin/FeedbackTab";
+import { FeatureMatrixTab } from "@/components/admin/FeatureMatrixTab";
 import { ExportWearLogsDialog } from "@/components/admin/ExportWearLogsDialog";
 import { ExportWatchInventoryDialog } from "@/components/admin/ExportWatchInventoryDialog";
 import { ExportAllDataDialog } from "@/components/admin/ExportAllDataDialog";
-import { Shield, Users, UserCog, FileCheck, Calendar, RefreshCw, Moon, Sun, BookOpen, FileText, Activity, BarChart3, FolderOpen, MessageSquarePlus } from "lucide-react";
+import { Shield, Users, UserCog, FileCheck, Calendar, RefreshCw, Moon, Sun, BookOpen, FileText, Activity, BarChart3, FolderOpen, MessageSquarePlus, ToggleRight } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -96,7 +97,7 @@ export default function Admin() {
         </div>
 
         <Tabs defaultValue="requests" className="w-full">
-          <TabsList className="grid w-full max-w-6xl grid-cols-10">
+          <TabsList className="grid w-full max-w-7xl grid-cols-11">
             <TabsTrigger value="requests" className="flex items-center gap-1 text-xs">
               <UserCog className="h-3 w-3" />
               Requests
@@ -112,6 +113,10 @@ export default function Admin() {
             <TabsTrigger value="collections" className="flex items-center gap-1 text-xs">
               <FolderOpen className="h-3 w-3" />
               Collections
+            </TabsTrigger>
+            <TabsTrigger value="features" className="flex items-center gap-1 text-xs">
+              <ToggleRight className="h-3 w-3" />
+              Features
             </TabsTrigger>
             <TabsTrigger value="feedback" className="flex items-center gap-1 text-xs">
               <MessageSquarePlus className="h-3 w-3" />
@@ -183,6 +188,10 @@ export default function Admin() {
 
           <TabsContent value="collections" className="space-y-4">
             <CollectionsTab />
+          </TabsContent>
+
+          <TabsContent value="features" className="space-y-4">
+            <FeatureMatrixTab />
           </TabsContent>
 
           <TabsContent value="feedback" className="space-y-4">

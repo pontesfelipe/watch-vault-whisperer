@@ -98,6 +98,36 @@ export type Database = {
         }
         Relationships: []
       }
+      collection_feature_toggles: {
+        Row: {
+          collection_type: string
+          created_at: string
+          feature_key: string
+          feature_name: string
+          id: string
+          is_enabled: boolean
+          updated_at: string
+        }
+        Insert: {
+          collection_type: string
+          created_at?: string
+          feature_key: string
+          feature_name: string
+          id?: string
+          is_enabled?: boolean
+          updated_at?: string
+        }
+        Update: {
+          collection_type?: string
+          created_at?: string
+          feature_key?: string
+          feature_name?: string
+          id?: string
+          is_enabled?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       collection_gap_suggestions: {
         Row: {
           brand: string
