@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Trash2, Bot, Sparkles, Loader2, User, Plus, MessageSquare, MoreVertical, Pencil } from "lucide-react";
+import { Send, Trash2, Bot, Sparkles, Loader2, User, Plus, MessageSquare, MoreVertical, Pencil, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
@@ -34,11 +34,14 @@ const VaultPal = () => {
     currentConversationId,
     isLoading,
     isLoadingConversations,
+    isSearching,
+    searchQuery,
     sendMessage,
     loadConversation,
     startNewChat,
     deleteConversation,
     updateConversationTitle,
+    searchConversations,
   } = useVaultPalChat();
   const { currentCollection, currentCollectionType } = useCollection();
   const { user } = useAuth();
@@ -121,7 +124,7 @@ const VaultPal = () => {
       {/* Conversation History Sidebar - Desktop */}
       {!isMobile && (
         <div className="w-64 shrink-0 border-r border-borderSubtle bg-surfaceMuted flex flex-col">
-          <div className="p-3 border-b border-borderSubtle">
+          <div className="p-3 border-b border-borderSubtle space-y-2">
             <Button
               onClick={startNewChat}
               className="w-full gap-2"
@@ -130,16 +133,35 @@ const VaultPal = () => {
               <Plus className="w-4 h-4" />
               New Chat
             </Button>
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-textMuted" />
+              <Input
+                placeholder="Search chats..."
+                value={searchQuery}
+                onChange={(e) => searchConversations(e.target.value)}
+                className="pl-8 pr-8 h-8 text-sm"
+              />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6"
+                  onClick={() => searchConversations("")}
+                >
+                  <X className="w-3 h-3" />
+                </Button>
+              )}
+            </div>
           </div>
           <ScrollArea className="flex-1">
             <div className="p-2 space-y-1">
-              {isLoadingConversations ? (
+              {isLoadingConversations || isSearching ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="w-5 h-5 animate-spin text-textMuted" />
                 </div>
               ) : conversations.length === 0 ? (
                 <p className="text-xs text-textMuted text-center py-8 px-4">
-                  No conversations yet. Start chatting!
+                  {searchQuery ? "No matching conversations found" : "No conversations yet. Start chatting!"}
                 </p>
               ) : (
                 conversations.map((conv) => (
@@ -150,6 +172,7 @@ const VaultPal = () => {
                     onSelect={() => loadConversation(conv.id)}
                     onDelete={() => deleteConversation(conv.id)}
                     onEdit={() => handleEditTitle(conv.id, conv.title)}
+                    searchQuery={searchQuery}
                   />
                 ))
               )}
@@ -216,17 +239,39 @@ const VaultPal = () => {
         {/* Mobile History Dropdown */}
         {isMobile && showHistory && (
           <div className="absolute inset-x-0 top-[180px] bottom-0 z-50 bg-background/95 backdrop-blur-sm">
-            <div className="p-4 border-b border-borderSubtle flex items-center justify-between">
-              <h3 className="font-medium">Chat History</h3>
-              <Button variant="ghost" size="sm" onClick={() => setShowHistory(false)}>
-                Close
-              </Button>
+            <div className="p-4 border-b border-borderSubtle space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="font-medium">Chat History</h3>
+                <Button variant="ghost" size="sm" onClick={() => setShowHistory(false)}>
+                  Close
+                </Button>
+              </div>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-textMuted" />
+                <Input
+                  placeholder="Search chats..."
+                  value={searchQuery}
+                  onChange={(e) => searchConversations(e.target.value)}
+                  className="pl-8 pr-8 h-9"
+                />
+                {searchQuery && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                    onClick={() => searchConversations("")}
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </Button>
+                )}
+              </div>
             </div>
-            <ScrollArea className="h-[calc(100%-60px)]">
+            <ScrollArea className="h-[calc(100%-120px)]">
               <div className="p-2 space-y-1">
                 <Button
                   onClick={() => {
                     startNewChat();
+                    searchConversations("");
                     setShowHistory(false);
                   }}
                   className="w-full gap-2 mb-2"
@@ -235,19 +280,30 @@ const VaultPal = () => {
                   <Plus className="w-4 h-4" />
                   New Chat
                 </Button>
-                {conversations.map((conv) => (
-                  <ConversationItem
-                    key={conv.id}
-                    conversation={conv}
-                    isActive={conv.id === currentConversationId}
-                    onSelect={() => {
-                      loadConversation(conv.id);
-                      setShowHistory(false);
-                    }}
-                    onDelete={() => deleteConversation(conv.id)}
-                    onEdit={() => handleEditTitle(conv.id, conv.title)}
-                  />
-                ))}
+                {isSearching ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-5 h-5 animate-spin text-textMuted" />
+                  </div>
+                ) : conversations.length === 0 ? (
+                  <p className="text-xs text-textMuted text-center py-4">
+                    {searchQuery ? "No matching conversations" : "No conversations yet"}
+                  </p>
+                ) : (
+                  conversations.map((conv) => (
+                    <ConversationItem
+                      key={conv.id}
+                      conversation={conv}
+                      isActive={conv.id === currentConversationId}
+                      onSelect={() => {
+                        loadConversation(conv.id);
+                        setShowHistory(false);
+                      }}
+                      onDelete={() => deleteConversation(conv.id)}
+                      onEdit={() => handleEditTitle(conv.id, conv.title)}
+                      searchQuery={searchQuery}
+                    />
+                  ))
+                )}
               </div>
             </ScrollArea>
           </div>
@@ -366,13 +422,27 @@ const ConversationItem = ({
   onSelect,
   onDelete,
   onEdit,
+  searchQuery = "",
 }: {
   conversation: Conversation;
   isActive: boolean;
   onSelect: () => void;
   onDelete: () => void;
   onEdit: () => void;
+  searchQuery?: string;
 }) => {
+  // Highlight matching text in title
+  const highlightMatch = (text: string, query: string) => {
+    if (!query.trim()) return text;
+    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    const parts = text.split(regex);
+    return parts.map((part, i) => 
+      regex.test(part) ? (
+        <mark key={i} className="bg-accent/30 text-textMain rounded px-0.5">{part}</mark>
+      ) : part
+    );
+  };
+
   return (
     <div
       className={`group flex items-center gap-2 rounded-lg px-3 py-2 cursor-pointer transition-colors ${
@@ -384,7 +454,7 @@ const ConversationItem = ({
     >
       <MessageSquare className="w-4 h-4 shrink-0" />
       <div className="flex-1 min-w-0">
-        <p className="text-sm truncate">{conversation.title}</p>
+        <p className="text-sm truncate">{highlightMatch(conversation.title, searchQuery)}</p>
         <p className="text-xs text-textMuted">
           {format(new Date(conversation.updated_at), "MMM d, h:mm a")}
         </p>

@@ -22,9 +22,12 @@ const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/vault-pal-ch
 export const useVaultPalChat = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [filteredConversations, setFilteredConversations] = useState<Conversation[]>([]);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingConversations, setIsLoadingConversations] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
   const { currentCollection, currentCollectionType } = useCollection();
   const { user } = useAuth();
 
@@ -41,13 +44,68 @@ export const useVaultPalChat = () => {
         .limit(50);
 
       if (error) throw error;
-      setConversations((data as any[])?.map(d => d as Conversation) || []);
+      const convs = (data as any[])?.map(d => d as Conversation) || [];
+      setConversations(convs);
+      setFilteredConversations(convs);
     } catch (error) {
       console.error("Error loading conversations:", error);
     } finally {
       setIsLoadingConversations(false);
     }
   }, [user]);
+
+  // Search conversations by title and message content
+  const searchConversations = useCallback(async (query: string) => {
+    setSearchQuery(query);
+    
+    if (!query.trim()) {
+      setFilteredConversations(conversations);
+      return;
+    }
+
+    setIsSearching(true);
+    const lowerQuery = query.toLowerCase().trim();
+
+    try {
+      // First filter by title
+      const titleMatches = conversations.filter(conv => 
+        conv.title.toLowerCase().includes(lowerQuery)
+      );
+
+      // Then search in message content
+      const { data: messageMatches, error } = await supabase
+        .from("vault_pal_messages" as any)
+        .select("conversation_id, content")
+        .eq("user_id", user?.id)
+        .ilike("content", `%${lowerQuery}%`);
+
+      if (error) throw error;
+
+      // Get unique conversation IDs from message matches
+      const messageConvIds = new Set(
+        (messageMatches as any[])?.map(m => m.conversation_id) || []
+      );
+
+      // Combine results, prioritizing title matches
+      const combinedIds = new Set([
+        ...titleMatches.map(c => c.id),
+        ...messageConvIds,
+      ]);
+
+      const results = conversations.filter(conv => combinedIds.has(conv.id));
+      setFilteredConversations(results);
+    } catch (error) {
+      console.error("Error searching conversations:", error);
+      // Fallback to title-only search
+      setFilteredConversations(
+        conversations.filter(conv => 
+          conv.title.toLowerCase().includes(lowerQuery)
+        )
+      );
+    } finally {
+      setIsSearching(false);
+    }
+  }, [conversations, user]);
 
   // Load messages for a conversation
   const loadConversation = useCallback(async (conversationId: string) => {
@@ -308,14 +366,17 @@ export const useVaultPalChat = () => {
 
   return {
     messages,
-    conversations,
+    conversations: filteredConversations,
     currentConversationId,
     isLoading,
     isLoadingConversations,
+    isSearching,
+    searchQuery,
     sendMessage,
     loadConversation,
     startNewChat,
     deleteConversation,
     updateConversationTitle,
+    searchConversations,
   };
 };
