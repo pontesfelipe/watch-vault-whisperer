@@ -7,13 +7,15 @@ import { DepreciationChart } from "@/components/DepreciationChart";
 import { CollectionInsights } from "@/components/CollectionInsights";
 import { MonthlyUsageTable } from "@/components/MonthlyUsageTable";
 import { CollectionSwitcher } from "@/components/CollectionSwitcher";
+import { SneakerStatsCards } from "@/components/SneakerStatsCards";
 
 import { useWatchData } from "@/hooks/useWatchData";
 import { useTripData } from "@/hooks/useTripData";
 import { useWaterUsageData } from "@/hooks/useWaterUsageData";
 import { useStatsCalculations } from "@/hooks/useStatsCalculations";
+import { useSneakerStats } from "@/hooks/useSneakerStats";
 import { useCollection } from "@/contexts/CollectionContext";
-import { isWatchCollection, getCollectionConfig } from "@/types/collection";
+import { isWatchCollection, isSneakerCollection, getCollectionConfig } from "@/types/collection";
 
 const Dashboard = () => {
   const { selectedCollectionId, currentCollection, currentCollectionType, currentCollectionConfig } = useCollection();
@@ -24,7 +26,14 @@ const Dashboard = () => {
   const stats = useStatsCalculations(watches, wearEntries, trips, waterUsages);
   
   const isWatch = currentCollectionType ? isWatchCollection(currentCollectionType) : true;
+  const isSneaker = currentCollectionType ? isSneakerCollection(currentCollectionType) : false;
   const config = currentCollectionType ? getCollectionConfig(currentCollectionType) : getCollectionConfig('watches');
+  
+  // Fetch sneaker-specific stats
+  const { stats: sneakerStats, loading: sneakerStatsLoading } = useSneakerStats({
+    itemIds: watches.map(w => w.id),
+    enabled: isSneaker,
+  });
   
   // Get dynamic icon based on collection type
   const getCollectionIcon = () => {
@@ -163,6 +172,16 @@ const Dashboard = () => {
           )}
         </div>
       </div>
+
+      {/* Sneaker-specific stats */}
+      {isSneaker && (
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-textMuted">
+            Sneaker Details
+          </h3>
+          <SneakerStatsCards stats={sneakerStats} totalSneakers={stats.totalWatches} />
+        </div>
+      )}
 
       <UsageChart watches={watches} wearEntries={wearEntries} />
 
