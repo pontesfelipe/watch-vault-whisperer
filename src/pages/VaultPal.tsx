@@ -24,6 +24,16 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -50,6 +60,7 @@ const VaultPal = () => {
   const [showHistory, setShowHistory] = useState(false);
   const [editingTitle, setEditingTitle] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState("");
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isMobile = useIsMobile();
@@ -170,7 +181,7 @@ const VaultPal = () => {
                     conversation={conv}
                     isActive={conv.id === currentConversationId}
                     onSelect={() => loadConversation(conv.id)}
-                    onDelete={() => deleteConversation(conv.id)}
+                    onDelete={() => setDeleteConfirmId(conv.id)}
                     onEdit={() => handleEditTitle(conv.id, conv.title)}
                     searchQuery={searchQuery}
                   />
@@ -298,7 +309,7 @@ const VaultPal = () => {
                         loadConversation(conv.id);
                         setShowHistory(false);
                       }}
-                      onDelete={() => deleteConversation(conv.id)}
+                      onDelete={() => setDeleteConfirmId(conv.id)}
                       onEdit={() => handleEditTitle(conv.id, conv.title)}
                       searchQuery={searchQuery}
                     />
@@ -412,6 +423,32 @@ const VaultPal = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteConfirmId} onOpenChange={() => setDeleteConfirmId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Conversation</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this conversation? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (deleteConfirmId) {
+                  deleteConversation(deleteConfirmId);
+                  setDeleteConfirmId(null);
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
