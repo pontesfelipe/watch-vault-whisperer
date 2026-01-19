@@ -27,6 +27,7 @@ import Settings from "./pages/Settings";
 import FAQ from "./pages/FAQ";
 import About from "./pages/About";
 import Forum from "./pages/Forum";
+import VaultPal from "./pages/VaultPal";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -61,6 +62,7 @@ function AppContent() {
         <Routes>
           <Route path="/auth" element={<Auth />} />
           <Route path="/" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
+          <Route path="/vault-pal" element={<ProtectedRoute><AppLayout><VaultPal /></AppLayout></ProtectedRoute>} />
           <Route path="/collection" element={<ProtectedRoute><AppLayout><Collection /></AppLayout></ProtectedRoute>} />
           <Route path="/wishlist" element={<ProtectedRoute><AppLayout><Wishlist /></AppLayout></ProtectedRoute>} />
           <Route path="/trips" element={<ProtectedRoute><AppLayout><Trips /></AppLayout></ProtectedRoute>} />
