@@ -1,5 +1,7 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useCollection } from "@/contexts/CollectionContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export interface ChatMessage {
@@ -7,19 +9,173 @@ export interface ChatMessage {
   content: string;
 }
 
+export interface Conversation {
+  id: string;
+  title: string;
+  collection_type: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/vault-pal-chat`;
 
 export const useVaultPalChat = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingConversations, setIsLoadingConversations] = useState(true);
   const { currentCollection, currentCollectionType } = useCollection();
+  const { user } = useAuth();
 
+  // Load conversations list
+  const loadConversations = useCallback(async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from("vault_pal_conversations" as any)
+        .select("*")
+        .eq("user_id", user.id)
+        .order("updated_at", { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      setConversations((data as any[])?.map(d => d as Conversation) || []);
+    } catch (error) {
+      console.error("Error loading conversations:", error);
+    } finally {
+      setIsLoadingConversations(false);
+    }
+  }, [user]);
+
+  // Load messages for a conversation
+  const loadConversation = useCallback(async (conversationId: string) => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("vault_pal_messages" as any)
+        .select("role, content")
+        .eq("conversation_id", conversationId)
+        .order("created_at", { ascending: true });
+
+      if (error) throw error;
+      
+      setMessages((data as any[])?.map(d => ({ role: d.role, content: d.content } as ChatMessage)) || []);
+      setCurrentConversationId(conversationId);
+    } catch (error) {
+      console.error("Error loading conversation:", error);
+      toast.error("Failed to load conversation");
+    }
+  }, [user]);
+
+  // Create a new conversation
+  const createConversation = useCallback(async (firstMessage: string): Promise<string | null> => {
+    if (!user) return null;
+
+    try {
+      // Generate a title from the first message (first 50 chars)
+      const title = firstMessage.length > 50 
+        ? firstMessage.substring(0, 50) + "..." 
+        : firstMessage;
+
+      const { data, error } = await supabase
+        .from("vault_pal_conversations" as any)
+        .insert({
+          user_id: user.id,
+          title,
+          collection_type: currentCollectionType,
+        })
+        .select("id")
+        .single();
+
+      if (error) throw error;
+      
+      const newId = (data as any).id;
+      await loadConversations();
+      return newId;
+    } catch (error) {
+      console.error("Error creating conversation:", error);
+      return null;
+    }
+  }, [user, currentCollectionType, loadConversations]);
+
+  // Save a message to the database
+  const saveMessage = useCallback(async (conversationId: string, role: "user" | "assistant", content: string) => {
+    try {
+      await supabase
+        .from("vault_pal_messages" as any)
+        .insert({
+          conversation_id: conversationId,
+          role,
+          content,
+        });
+    } catch (error) {
+      console.error("Error saving message:", error);
+    }
+  }, []);
+
+  // Update conversation title
+  const updateConversationTitle = useCallback(async (conversationId: string, title: string) => {
+    try {
+      await supabase
+        .from("vault_pal_conversations" as any)
+        .update({ title })
+        .eq("id", conversationId);
+      
+      await loadConversations();
+    } catch (error) {
+      console.error("Error updating title:", error);
+    }
+  }, [loadConversations]);
+
+  // Delete a conversation
+  const deleteConversation = useCallback(async (conversationId: string) => {
+    try {
+      const { error } = await supabase
+        .from("vault_pal_conversations" as any)
+        .delete()
+        .eq("id", conversationId);
+
+      if (error) throw error;
+      
+      if (currentConversationId === conversationId) {
+        setMessages([]);
+        setCurrentConversationId(null);
+      }
+      
+      await loadConversations();
+      toast.success("Conversation deleted");
+    } catch (error) {
+      console.error("Error deleting conversation:", error);
+      toast.error("Failed to delete conversation");
+    }
+  }, [currentConversationId, loadConversations]);
+
+  // Send a message
   const sendMessage = useCallback(async (input: string) => {
-    if (!input.trim()) return;
+    if (!input.trim() || !user) return;
 
     const userMessage: ChatMessage = { role: "user", content: input.trim() };
     setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
+
+    let conversationId = currentConversationId;
+    
+    // Create new conversation if needed
+    if (!conversationId) {
+      conversationId = await createConversation(input.trim());
+      if (!conversationId) {
+        setIsLoading(false);
+        toast.error("Failed to create conversation");
+        return;
+      }
+      setCurrentConversationId(conversationId);
+    }
+
+    // Save user message
+    await saveMessage(conversationId, "user", input.trim());
 
     let assistantContent = "";
     
@@ -120,9 +276,14 @@ export const useVaultPalChat = () => {
         }
       }
 
+      // Save assistant message after streaming completes
+      if (assistantContent) {
+        await saveMessage(conversationId, "assistant", assistantContent);
+        await loadConversations(); // Refresh to update timestamps
+      }
+
     } catch (error) {
       console.error("Chat error:", error);
-      // Remove the user message if there was an error before assistant responded
       if (assistantContent === "") {
         setMessages(prev => prev.slice(0, -1));
       }
@@ -132,16 +293,29 @@ export const useVaultPalChat = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [messages, currentCollection, currentCollectionType]);
+  }, [messages, currentCollection, currentCollectionType, currentConversationId, user, createConversation, saveMessage, loadConversations]);
 
-  const clearChat = useCallback(() => {
+  // Start a new chat
+  const startNewChat = useCallback(() => {
     setMessages([]);
+    setCurrentConversationId(null);
   }, []);
+
+  // Load conversations on mount
+  useEffect(() => {
+    loadConversations();
+  }, [loadConversations]);
 
   return {
     messages,
+    conversations,
+    currentConversationId,
     isLoading,
+    isLoadingConversations,
     sendMessage,
-    clearChat,
+    loadConversation,
+    startNewChat,
+    deleteConversation,
+    updateConversationTitle,
   };
 };
