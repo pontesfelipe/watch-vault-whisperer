@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
@@ -5,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useFeatureToggles } from "@/hooks/useFeatureToggles";
 import { CollectionType, COLLECTION_CONFIGS } from "@/types/collection";
-import { Watch, Footprints, ShoppingBag, Loader2, Trash2 } from "lucide-react";
+import { Watch, Footprints, ShoppingBag, Loader2, Trash2, Plus, X } from "lucide-react";
 import { AddFeatureDialog } from "./AddFeatureDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -20,6 +21,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const collectionIcons: Record<CollectionType, React.ReactNode> = {
   watches: <Watch className="h-4 w-4" />,
@@ -27,7 +34,7 @@ const collectionIcons: Record<CollectionType, React.ReactNode> = {
   purses: <ShoppingBag className="h-4 w-4" />,
 };
 
-// Core features that cannot be deleted
+// Core features that cannot be deleted or extended
 const PROTECTED_FEATURE_KEYS = [
   'wear_tracking',
   'ai_analysis', 
@@ -48,6 +55,8 @@ const PROTECTED_FEATURE_KEYS = [
 
 export const FeatureMatrixTab = () => {
   const { toggles, loading, updateToggle, getFeatureMatrix, getToggleId, refetch } = useFeatureToggles();
+  const [extendingFeature, setExtendingFeature] = useState<{ featureKey: string; collectionType: CollectionType } | null>(null);
+  const [removingFeature, setRemovingFeature] = useState<{ featureKey: string; collectionType: CollectionType; featureName: string } | null>(null);
 
   if (loading) {
     return (
@@ -67,6 +76,52 @@ export const FeatureMatrixTab = () => {
     const toggleId = getToggleId(collectionType, featureKey);
     if (toggleId) {
       await updateToggle(toggleId, !currentValue);
+    }
+  };
+
+  const handleExtendFeature = async (featureKey: string, collectionType: CollectionType, featureName: string) => {
+    setExtendingFeature({ featureKey, collectionType });
+    try {
+      const { error } = await supabase
+        .from('collection_feature_toggles')
+        .insert({
+          collection_type: collectionType,
+          feature_key: featureKey,
+          feature_name: featureName,
+          is_enabled: true,
+        });
+
+      if (error) throw error;
+
+      toast.success(`Extended "${featureName}" to ${COLLECTION_CONFIGS[collectionType].label}`);
+      refetch();
+    } catch (error: any) {
+      console.error("Error extending feature:", error);
+      toast.error(error.message || "Failed to extend feature");
+    } finally {
+      setExtendingFeature(null);
+    }
+  };
+
+  const handleRemoveFromType = async (featureKey: string, collectionType: CollectionType) => {
+    try {
+      const toggleId = getToggleId(collectionType, featureKey);
+      if (!toggleId) return;
+
+      const { error } = await supabase
+        .from('collection_feature_toggles')
+        .delete()
+        .eq('id', toggleId);
+
+      if (error) throw error;
+
+      toast.success("Feature removed from collection type");
+      refetch();
+    } catch (error: any) {
+      console.error("Error removing feature:", error);
+      toast.error(error.message || "Failed to remove feature");
+    } finally {
+      setRemovingFeature(null);
     }
   };
 
@@ -96,15 +151,14 @@ export const FeatureMatrixTab = () => {
     key => !coreFeatureKeys.includes(key) && !typeSpecificKeys.includes(key)
   );
 
-  const groupedFeatures: Record<string, string[]> = {
-    'Core Features': coreFeatureKeys,
-    'Type-Specific': typeSpecificKeys,
-    'Custom Features': customFeatureKeys,
-  };
-
   const existingFeatureKeys = [...new Set(toggles.map(t => t.feature_key))];
 
-  const renderFeatureTable = (groupName: string, groupFeatureKeys: string[], allowDelete: boolean) => {
+  // Count how many collection types have this feature
+  const getFeatureTypeCount = (featureKey: string): number => {
+    return collectionTypes.filter(type => getToggleId(type, featureKey) !== null).length;
+  };
+
+  const renderFeatureTable = (groupName: string, groupFeatureKeys: string[], allowModify: boolean) => {
     const relevantFeatures = featureKeys.filter(key => groupFeatureKeys.includes(key));
     if (relevantFeatures.length === 0) return null;
 
@@ -124,7 +178,7 @@ export const FeatureMatrixTab = () => {
                     </div>
                   </TableHead>
                 ))}
-                {allowDelete && <TableHead className="w-[80px]">Actions</TableHead>}
+                {allowModify && <TableHead className="w-[80px]">Actions</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -133,6 +187,7 @@ export const FeatureMatrixTab = () => {
                 if (!feature) return null;
 
                 const isProtected = PROTECTED_FEATURE_KEYS.includes(featureKey);
+                const typeCount = getFeatureTypeCount(featureKey);
 
                 return (
                   <TableRow key={featureKey}>
@@ -148,23 +203,88 @@ export const FeatureMatrixTab = () => {
                       const toggleId = getToggleId(type, featureKey);
                       const isAvailable = toggleId !== null;
                       const isEnabled = feature[type];
+                      const isExtending = extendingFeature?.featureKey === featureKey && extendingFeature?.collectionType === type;
+                      const canRemoveFromType = allowModify && typeCount > 1;
 
                       return (
                         <TableCell key={type} className="text-center">
                           {isAvailable ? (
-                            <div className="flex items-center justify-center">
+                            <div className="flex items-center justify-center gap-1">
                               <Switch
                                 checked={isEnabled}
                                 onCheckedChange={() => handleToggle(type, featureKey, isEnabled)}
                               />
+                              {canRemoveFromType && (
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                          <Button 
+                                            variant="ghost" 
+                                            size="icon" 
+                                            className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                                          >
+                                            <X className="h-3 w-3" />
+                                          </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                          <AlertDialogHeader>
+                                            <AlertDialogTitle>Remove from {COLLECTION_CONFIGS[type].label}</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                              Are you sure you want to remove "{feature.name}" from {COLLECTION_CONFIGS[type].label}? 
+                                              The feature will still be available for other collection types.
+                                            </AlertDialogDescription>
+                                          </AlertDialogHeader>
+                                          <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction
+                                              onClick={() => handleRemoveFromType(featureKey, type)}
+                                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                            >
+                                              Remove
+                                            </AlertDialogAction>
+                                          </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                      </AlertDialog>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Remove from {COLLECTION_CONFIGS[type].label}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              )}
                             </div>
+                          ) : allowModify ? (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-muted-foreground hover:text-primary"
+                                    onClick={() => handleExtendFeature(featureKey, type, feature.name)}
+                                    disabled={isExtending}
+                                  >
+                                    {isExtending ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <Plus className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Add to {COLLECTION_CONFIGS[type].label}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           ) : (
                             <span className="text-muted-foreground">—</span>
                           )}
                         </TableCell>
                       );
                     })}
-                    {allowDelete && (
+                    {allowModify && (
                       <TableCell>
                         {!isProtected && (
                           <AlertDialog>
@@ -235,8 +355,16 @@ export const FeatureMatrixTab = () => {
               <span>Feature disabled</span>
             </div>
             <div className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              <span>Click to extend feature to this type</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <X className="h-3 w-3" />
+              <span>Remove from this type</span>
+            </div>
+            <div className="flex items-center gap-2">
               <span>—</span>
-              <span>Not applicable to this collection type</span>
+              <span>Not applicable (core features)</span>
             </div>
           </div>
         </div>
