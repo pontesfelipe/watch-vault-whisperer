@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 const navItems = [
   { title: "Home", url: "/", icon: BarChart3 },
   { title: "Collection", url: "/collection", icon: Watch },
-  { title: "Vault Pal", url: "/vault-pal", icon: Bot },
+  { title: "Assistant", url: "/vault-pal", icon: Bot },
   { title: "Social", url: "/social", icon: Users },
   { title: "Settings", url: "/settings", icon: Settings },
 ];

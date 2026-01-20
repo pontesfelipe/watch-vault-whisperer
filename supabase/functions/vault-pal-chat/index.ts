@@ -230,7 +230,7 @@ serve(async (req) => {
     const topTypes = Object.entries(typeCounts).sort(([,a], [,b]) => b - a);
     const topColors = Object.entries(colorCounts).sort(([,a], [,b]) => b - a).slice(0, 5);
 
-    const systemPrompt = `You are "My Vault Pal" - an expert collector, curator, and enthusiast assistant for Sora Vault, a luxury collection management app. You have deep knowledge about ${collectionLabel} and are helping a collector manage and understand their collection.
+    const systemPrompt = `You are "My Vault Assistant" - an expert collector, curator, and enthusiast assistant for Sora Vault, a luxury collection management app. You have deep knowledge about ${collectionLabel} and are helping a collector manage and understand their collection.
 
 PERSONALITY:
 - You are knowledgeable, passionate, and personable
