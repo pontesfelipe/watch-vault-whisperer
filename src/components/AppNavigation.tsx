@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom";
 import { SubmitFeedbackDialog } from "@/components/SubmitFeedbackDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCollection } from "@/contexts/CollectionContext";
+import { useSocialNotifications } from "@/hooks/useSocialNotifications";
 import { isWatchCollection } from "@/types/collection";
 import {
   Sidebar,
@@ -19,12 +20,14 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 export function AppNavigation() {
   const { open } = useSidebar();
   const location = useLocation();
   const { user, isAdmin, signOut } = useAuth();
   const { currentCollection } = useCollection();
+  const { totalCount } = useSocialNotifications();
   
   const isWatches = currentCollection ? isWatchCollection(currentCollection.collection_type) : true;
 
@@ -70,20 +73,37 @@ export function AppNavigation() {
           <SidebarMenu className="space-y-1 px-2">
             {mainNavItems.map((item) => {
               const isActive = location.pathname === item.url;
+              const showBadge = item.url === "/social" && totalCount > 0;
               return (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={isActive}>
                     <NavLink
                       to={item.url}
-                      className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm transition-colors ${
+                      className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm transition-colors relative ${
                         isActive
                           ? "bg-accentSubtle text-textMain"
                           : "text-textMuted hover:bg-surfaceMuted hover:text-textMain"
                       }`}
                       activeClassName="bg-accentSubtle text-textMain"
                     >
-                      <item.icon className="h-5 w-5" />
-                      {open && <span>{item.title}</span>}
+                      <div className="relative">
+                        <item.icon className="h-5 w-5" />
+                        {showBadge && !open && (
+                          <Badge className="absolute -top-2 -right-2 h-4 min-w-4 flex items-center justify-center text-[10px] p-0 bg-accent text-accent-foreground">
+                            {totalCount > 9 ? "9+" : totalCount}
+                          </Badge>
+                        )}
+                      </div>
+                      {open && (
+                        <span className="flex items-center gap-2">
+                          {item.title}
+                          {showBadge && (
+                            <Badge className="h-5 min-w-5 flex items-center justify-center text-xs p-0 bg-accent text-accent-foreground">
+                              {totalCount > 99 ? "99+" : totalCount}
+                            </Badge>
+                          )}
+                        </span>
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

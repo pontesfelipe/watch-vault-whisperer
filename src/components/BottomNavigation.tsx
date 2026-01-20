@@ -2,6 +2,8 @@ import { BarChart3, Watch, Settings, Bot, Users } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { triggerHaptic } from "@/utils/haptics";
+import { useSocialNotifications } from "@/hooks/useSocialNotifications";
+import { Badge } from "@/components/ui/badge";
 
 const navItems = [
   { title: "Home", url: "/", icon: BarChart3 },
@@ -13,6 +15,7 @@ const navItems = [
 
 export function BottomNavigation() {
   const location = useLocation();
+  const { totalCount } = useSocialNotifications();
 
   const handleNavClick = () => {
     triggerHaptic('selection');
@@ -23,6 +26,7 @@ export function BottomNavigation() {
       <div className="flex items-center justify-around h-16 px-2">
         {navItems.map((item) => {
           const isActive = location.pathname === item.url;
+          const showBadge = item.url === "/social" && totalCount > 0;
           return (
             <NavLink
               key={item.title}
@@ -35,7 +39,14 @@ export function BottomNavigation() {
               }`}
               activeClassName="text-accent"
             >
-              <item.icon className={`h-6 w-6 mb-1 ${isActive ? "text-accent" : ""}`} />
+              <div className="relative">
+                <item.icon className={`h-6 w-6 mb-1 ${isActive ? "text-accent" : ""}`} />
+                {showBadge && (
+                  <Badge className="absolute -top-1 -right-2 h-4 min-w-4 flex items-center justify-center text-[10px] p-0 bg-accent text-accent-foreground">
+                    {totalCount > 9 ? "9+" : totalCount}
+                  </Badge>
+                )}
+              </div>
               <span className={`text-[10px] font-medium ${isActive ? "text-accent" : ""}`}>
                 {item.title}
               </span>
