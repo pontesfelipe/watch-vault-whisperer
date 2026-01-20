@@ -498,30 +498,41 @@ const ConversationItem = ({
           {format(new Date(conversation.updated_at), "MMM d, h:mm a")}
         </p>
       </div>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6 opacity-0 group-hover:opacity-100 shrink-0"
-          >
-            <MoreVertical className="w-3 h-3" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="bg-surface border-borderSubtle">
-          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit(); }}>
-            <Pencil className="w-3 h-3 mr-2" />
-            Rename
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={(e) => { e.stopPropagation(); onDelete(); }}
-            className="text-destructive focus:text-destructive"
-          >
-            <Trash2 className="w-3 h-3 mr-2" />
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <div className="flex items-center gap-1 shrink-0">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6 opacity-0 group-hover:opacity-100 text-textMuted hover:text-destructive"
+          onClick={(e) => { e.stopPropagation(); onDelete(); }}
+          title="Delete conversation"
+        >
+          <Trash2 className="w-3 h-3" />
+        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 opacity-0 group-hover:opacity-100"
+            >
+              <MoreVertical className="w-3 h-3" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="bg-surface border-borderSubtle">
+            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit(); }}>
+              <Pencil className="w-3 h-3 mr-2" />
+              Rename
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={(e) => { e.stopPropagation(); onDelete(); }}
+              className="text-destructive focus:text-destructive"
+            >
+              <Trash2 className="w-3 h-3 mr-2" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </div>
   );
 };
