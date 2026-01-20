@@ -11,6 +11,7 @@ import { getItemLabel } from "@/types/collection";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
+import { SwipeableConversationItem } from "@/components/SwipeableConversationItem";
 import {
   Dialog,
   DialogContent,
@@ -254,7 +255,7 @@ const VaultPal = () => {
                 </p>
               ) : (
                 conversations.map((conv) => (
-                  <ConversationItem
+                  <SwipeableConversationItem
                     key={conv.id}
                     conversation={conv}
                     isActive={conv.id === currentConversationId}
@@ -265,6 +266,7 @@ const VaultPal = () => {
                     }}
                     onEdit={() => handleEditTitle(conv.id, conv.title)}
                     searchQuery={searchQuery}
+                    isMobile={isMobile}
                   />
                 ))
               )}
@@ -420,7 +422,7 @@ const VaultPal = () => {
                   </p>
                 ) : (
                   conversations.map((conv) => (
-                    <ConversationItem
+                    <SwipeableConversationItem
                       key={conv.id}
                       conversation={conv}
                       isActive={conv.id === currentConversationId}
@@ -434,6 +436,7 @@ const VaultPal = () => {
                       }}
                       onEdit={() => handleEditTitle(conv.id, conv.title)}
                       searchQuery={searchQuery}
+                      isMobile={true}
                     />
                   ))
                 )}
@@ -575,98 +578,6 @@ const VaultPal = () => {
   );
 };
 
-const ConversationItem = ({
-  conversation,
-  isActive,
-  onSelect,
-  onDelete,
-  onEdit,
-  searchQuery = "",
-}: {
-  conversation: Conversation;
-  isActive: boolean;
-  onSelect: () => void;
-  onDelete: () => void;
-  onEdit: () => void;
-  searchQuery?: string;
-}) => {
-  // Highlight matching text in title
-  const highlightMatch = (text: string, query: string) => {
-    if (!query.trim()) return text;
-    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-    const parts = text.split(regex);
-    return parts.map((part, i) => 
-      regex.test(part) ? (
-        <mark key={i} className="bg-accent/30 text-textMain rounded px-0.5">{part}</mark>
-      ) : part
-    );
-  };
-
-  return (
-    <div
-      className={`group flex items-center gap-2 rounded-lg px-2 py-2 cursor-pointer transition-colors ${
-        isActive ? "bg-accent/10" : "hover:bg-surfaceMuted"
-      }`}
-      onClick={onSelect}
-    >
-      {/* Always-visible quick delete (left) so it's impossible to miss */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-8 w-8 text-destructive hover:bg-surfaceMuted"
-        onClick={(e) => {
-          e.stopPropagation();
-          console.log("[VaultPal] delete clicked (left)", conversation.id);
-          onDelete();
-        }}
-        aria-label="Delete conversation"
-        title="Delete"
-      >
-        <Trash2 className="w-4 h-4" />
-      </Button>
-
-      <MessageSquare className="w-4 h-4 shrink-0 text-textMuted" />
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-textMain truncate">
-          {highlightMatch(conversation.title, searchQuery)}
-        </p>
-        <p className="text-xs text-textMuted">
-          {format(new Date(conversation.updated_at), "MMM d, h:mm a")}
-        </p>
-      </div>
-      <div className="flex items-center gap-1 shrink-0">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-textMain hover:bg-surfaceMuted"
-          onClick={(e) => {
-            e.stopPropagation();
-            console.log("[VaultPal] rename clicked", conversation.id);
-            onEdit();
-          }}
-          aria-label="Rename conversation"
-          title="Rename"
-        >
-          <Pencil className="w-4 h-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-destructive hover:bg-surfaceMuted"
-          onClick={(e) => {
-            e.stopPropagation();
-            console.log("[VaultPal] delete clicked", conversation.id);
-            onDelete();
-          }}
-          aria-label="Delete conversation"
-          title="Delete"
-        >
-          <Trash2 className="w-4 h-4" />
-        </Button>
-      </div>
-    </div>
-  );
-};
 
 const MessageBubble = ({ message }: { message: ChatMessage }) => {
   const isUser = message.role === "user";
