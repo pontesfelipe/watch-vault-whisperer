@@ -623,9 +623,9 @@ const ConversationItem = ({
           <Button
             variant="ghost"
             size="icon"
-            className="h-6 w-6 shrink-0 text-textMuted opacity-60 hover:opacity-100"
+            className="h-7 w-7 shrink-0 text-textMuted hover:text-textMain hover:bg-surfaceMuted"
           >
-            <MoreVertical className="w-3.5 h-3.5" />
+            <MoreVertical className="w-4 h-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="bg-surface border-borderSubtle">
