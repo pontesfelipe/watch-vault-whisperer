@@ -526,7 +526,7 @@ const VaultPal = () => {
       </div>
 
       {/* Edit Title Dialog */}
-      <Dialog open={!!editingTitle} onOpenChange={() => setEditingTitle(null)}>
+      <Dialog open={!!editingTitle} onOpenChange={(open) => { if (!open) setEditingTitle(null); }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Rename Conversation</DialogTitle>
@@ -547,7 +547,7 @@ const VaultPal = () => {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteConfirmId} onOpenChange={() => setDeleteConfirmId(null)}>
+      <AlertDialog open={!!deleteConfirmId} onOpenChange={(open) => { if (!open) setDeleteConfirmId(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Conversation</AlertDialogTitle>
