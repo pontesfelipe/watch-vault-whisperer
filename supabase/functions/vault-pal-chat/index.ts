@@ -71,7 +71,7 @@ serve(async (req) => {
         .select("*, watches(brand, model, type, dial_color)")
         .eq("user_id", user.id)
         .order("wear_date", { ascending: false })
-        .limit(100),
+        .limit(1000),
       supabaseClient
         .from("trips")
         .select("*")
