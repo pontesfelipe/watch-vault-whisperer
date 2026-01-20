@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react";
-import { Send, Trash2, Bot, Sparkles, Loader2, User, Plus, MessageSquare, MoreVertical, Pencil, Search, X, ChevronDown, ChevronUp } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { Send, Trash2, Bot, Sparkles, Loader2, User, Plus, MessageSquare, MoreVertical, Pencil, Search, X, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { toast } from "sonner";
 
 const VaultPal = () => {
   const {
@@ -57,6 +58,8 @@ const VaultPal = () => {
   const { user } = useAuth();
   const [input, setInput] = useState("");
   const [collectionInsights, setCollectionInsights] = useState<string | null>(null);
+  const [insightsExpanded, setInsightsExpanded] = useState(false);
+  const [isRefreshingInsights, setIsRefreshingInsights] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [editingTitle, setEditingTitle] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState("");
@@ -68,23 +71,102 @@ const VaultPal = () => {
   const itemLabel = currentCollectionType ? getItemLabel(currentCollectionType, true) : "items";
 
   // Load collection insights
-  useEffect(() => {
-    const loadInsights = async () => {
-      if (!user) return;
-      const { data } = await supabase
-        .from("collection_insights")
-        .select("insights")
-        .eq("user_id", user.id)
-        .order("updated_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      
-      if (data?.insights) {
-        setCollectionInsights(data.insights);
-      }
-    };
-    loadInsights();
+  const loadInsights = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("collection_insights")
+      .select("insights")
+      .eq("user_id", user.id)
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    
+    if (data?.insights) {
+      setCollectionInsights(data.insights);
+    }
   }, [user]);
+
+  useEffect(() => {
+    loadInsights();
+  }, [loadInsights]);
+
+  // Refresh insights when watches change
+  const refreshInsights = useCallback(async () => {
+    if (!user || isRefreshingInsights) return;
+    
+    setIsRefreshingInsights(true);
+    try {
+      // Fetch current watches
+      const { data: watches, error: watchesError } = await supabase
+        .from("watches")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("status", "active");
+      
+      if (watchesError) throw watchesError;
+      
+      if (!watches || watches.length < 3) {
+        toast.info("Need at least 3 items in your collection for AI insights");
+        setIsRefreshingInsights(false);
+        return;
+      }
+
+      // Call the analyze-collection edge function
+      const { data, error } = await supabase.functions.invoke("analyze-collection", {
+        body: { watches },
+      });
+
+      if (error) throw error;
+
+      if (data?.insights) {
+        // Save to database
+        await supabase
+          .from("collection_insights")
+          .upsert({
+            user_id: user.id,
+            insights: data.insights,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: "user_id" });
+
+        setCollectionInsights(data.insights);
+        toast.success("Collection insights updated!");
+      }
+    } catch (error) {
+      console.error("Error refreshing insights:", error);
+      toast.error("Failed to refresh insights");
+    } finally {
+      setIsRefreshingInsights(false);
+    }
+  }, [user, isRefreshingInsights]);
+
+  // Subscribe to watch changes for auto-refresh
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel("watches-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "watches",
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          // Debounce: wait 2 seconds after change before refreshing
+          const timeoutId = setTimeout(() => {
+            refreshInsights();
+          }, 2000);
+          return () => clearTimeout(timeoutId);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, refreshInsights]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -240,9 +322,47 @@ const VaultPal = () => {
               <CardContent className="py-3 px-4">
                 <div className="flex items-start gap-3">
                   <Sparkles className="w-4 h-4 text-accent mt-0.5 shrink-0" />
-                  <div className="text-sm text-textMuted leading-relaxed line-clamp-2">
-                    {collectionInsights}
+                  <div className="flex-1 min-w-0">
+                    <div 
+                      className={`text-sm text-textMuted leading-relaxed ${
+                        insightsExpanded ? "" : "line-clamp-2"
+                      }`}
+                    >
+                      {collectionInsights}
+                    </div>
+                    {collectionInsights.length > 150 && (
+                      <button
+                        onClick={() => setInsightsExpanded(!insightsExpanded)}
+                        className="flex items-center gap-1 mt-2 text-xs font-medium text-accent hover:text-accent/80 transition-colors"
+                      >
+                        {insightsExpanded ? (
+                          <>
+                            <ChevronUp className="w-3.5 h-3.5" />
+                            Show less
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className="w-3.5 h-3.5" />
+                            Show more
+                          </>
+                        )}
+                      </button>
+                    )}
                   </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 shrink-0 text-accent hover:text-accent/80"
+                    onClick={refreshInsights}
+                    disabled={isRefreshingInsights}
+                    title="Refresh insights"
+                  >
+                    {isRefreshingInsights ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <RefreshCw className="w-3.5 h-3.5" />
+                    )}
+                  </Button>
                 </div>
               </CardContent>
             </Card>
