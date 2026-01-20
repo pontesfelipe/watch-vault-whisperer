@@ -605,9 +605,7 @@ const ConversationItem = ({
   return (
     <div
       className={`group flex items-center gap-2 rounded-lg px-2 py-2 cursor-pointer transition-colors ${
-        isActive
-          ? "bg-accent/10 text-textMain"
-          : "text-textMuted hover:bg-surfaceMuted hover:text-textMain"
+        isActive ? "bg-accent/10" : "hover:bg-surfaceMuted"
       }`}
       onClick={onSelect}
     >
@@ -627,9 +625,11 @@ const ConversationItem = ({
         <Trash2 className="w-4 h-4" />
       </Button>
 
-      <MessageSquare className="w-4 h-4 shrink-0" />
+      <MessageSquare className="w-4 h-4 shrink-0 text-textMuted" />
       <div className="flex-1 min-w-0">
-        <p className="text-sm truncate">{highlightMatch(conversation.title, searchQuery)}</p>
+        <p className="text-sm font-medium text-textMain truncate">
+          {highlightMatch(conversation.title, searchQuery)}
+        </p>
         <p className="text-xs text-textMuted">
           {format(new Date(conversation.updated_at), "MMM d, h:mm a")}
         </p>
