@@ -1,4 +1,4 @@
-import { BarChart3, Watch, Heart, MessageCircle, Settings, Bot, ClipboardList, BookHeart, MessageSquare } from "lucide-react";
+import { BarChart3, Watch, MessageCircle, Settings, Bot } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { triggerHaptic } from "@/utils/haptics";
