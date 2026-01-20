@@ -28,7 +28,7 @@ export function AppNavigation() {
   
   const isWatches = currentCollection ? isWatchCollection(currentCollection.collection_type) : true;
 
-  const navItems = [
+  const mainNavItems = [
     { title: "Dashboard", url: "/", icon: BarChart3 },
     { title: "My Vault Pal", url: "/vault-pal", icon: Bot },
     { title: "Collection", url: "/collection", icon: Watch },
@@ -37,6 +37,9 @@ export function AppNavigation() {
     { title: "Collection Insights", url: "/personal-notes", icon: BookHeart },
     { title: "Messages", url: "/messages", icon: MessageCircle },
     { title: "Forum", url: "/forum", icon: MessageSquare },
+  ];
+
+  const utilityNavItems = [
     { title: "Settings", url: "/settings", icon: Settings },
     { title: "FAQ", url: "/faq", icon: HelpCircle },
     { title: "About", url: "/about", icon: Info },
@@ -49,8 +52,8 @@ export function AppNavigation() {
       variant="sidebar"
       collapsible="icon"
     >
-      <SidebarContent>
-        <SidebarGroup>
+      <SidebarContent className="flex flex-col h-full">
+        <SidebarGroup className="flex-1">
           <div className={`mb-6 ${open ? "px-4" : "px-2"} pt-6 transition-all duration-200 flex items-center gap-2`}>
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-accentSubtle text-xs font-semibold text-accent">
               SV
@@ -67,7 +70,7 @@ export function AppNavigation() {
             )}
           </div>
           <SidebarMenu className="space-y-1 px-2">
-            {navItems.map((item) => {
+            {mainNavItems.map((item) => {
               const isActive = location.pathname === item.url;
               return (
                 <SidebarMenuItem key={item.title}>
@@ -104,21 +107,46 @@ export function AppNavigation() {
           )}
         </SidebarGroup>
       </SidebarContent>
-      {user && open && (
-        <SidebarFooter className="border-t border-sidebar-border px-4 py-4">
-          <div className="flex flex-col gap-2">
-            <p className="text-xs text-sidebar-foreground truncate">{user.email}</p>
+      
+      <SidebarFooter className="border-t border-sidebar-border px-2 py-3">
+        <SidebarMenu className="space-y-1">
+          {utilityNavItems.map((item) => {
+            const isActive = location.pathname === item.url;
+            return (
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton asChild isActive={isActive}>
+                  <NavLink
+                    to={item.url}
+                    className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm transition-colors ${
+                      isActive
+                        ? "bg-accentSubtle text-textMain"
+                        : "text-textMuted hover:bg-surfaceMuted hover:text-textMain"
+                    }`}
+                    activeClassName="bg-accentSubtle text-textMain"
+                  >
+                    <item.icon className="h-5 w-5" />
+                    {open && <span>{item.title}</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
+        </SidebarMenu>
+        
+        {user && open && (
+          <div className="mt-3 pt-3 border-t border-sidebar-border">
+            <p className="text-xs text-sidebar-foreground truncate px-3 mb-2">{user.email}</p>
             <Button
               variant="ghost"
               size="sm"
               onClick={signOut}
-              className="justify-start text-sidebar-foreground hover:text-sidebar-accent-foreground"
+              className="w-full justify-start text-sidebar-foreground hover:text-sidebar-accent-foreground px-3"
             >
               Sign Out
             </Button>
           </div>
-        </SidebarFooter>
-      )}
+        )}
+      </SidebarFooter>
     </Sidebar>
   );
 }
