@@ -33,7 +33,7 @@ export function AppNavigation() {
 
   const mainNavItems = [
     { title: "Dashboard", url: "/", icon: BarChart3 },
-    { title: "My Vault Pal", url: "/vault-pal", icon: Bot },
+    { title: "My Vault Assistant", url: "/vault-pal", icon: Bot },
     { title: "Collection", url: "/collection", icon: Watch },
     { title: "Usage Details", url: "/usage-details", icon: ClipboardList },
     { title: "Collection Insights", url: "/personal-notes", icon: BookHeart },

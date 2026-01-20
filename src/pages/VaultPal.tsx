@@ -295,7 +295,7 @@ const VaultPal = () => {
                 <Bot className="w-6 h-6 text-accent" />
               </div>
               <div>
-                <h1 className="text-lg font-semibold text-textMain">My Vault Pal</h1>
+                <h1 className="text-lg font-semibold text-textMain">My Vault Assistant</h1>
                 <p className="text-xs text-textMuted">Your personal collection expert</p>
               </div>
             </div>
@@ -454,7 +454,7 @@ const VaultPal = () => {
                   <Bot className="w-10 h-10 text-accent" />
                 </div>
                 <h2 className="text-lg font-medium text-textMain mb-2">
-                  Welcome to My Vault Pal
+                  Welcome to My Vault Assistant
                 </h2>
                 <p className="text-sm text-textMuted mb-6 max-w-md">
                   I'm your personal collection expert. I know everything about your {itemLabel.toLowerCase()}, 
