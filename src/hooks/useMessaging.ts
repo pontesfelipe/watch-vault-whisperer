@@ -423,12 +423,17 @@ export const useMessaging = () => {
   const markMessagesAsRead = async (conversationId: string) => {
     if (!user) return;
 
-    await (supabase
+    const { error } = await (supabase
       .from('messages' as any) as any)
       .update({ read_at: new Date().toISOString() })
       .eq('conversation_id', conversationId)
       .neq('sender_id', user.id)
       .is('read_at', null);
+
+    if (!error) {
+      // Refetch conversations to update unread counts
+      await fetchConversations();
+    }
   };
 
   const dismissTradeNotification = async (notificationId: string) => {
