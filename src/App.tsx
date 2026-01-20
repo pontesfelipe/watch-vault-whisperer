@@ -15,7 +15,7 @@ import Collection from "./pages/Collection";
 
 import UsageDetails from "./pages/UsageDetails";
 import PersonalNotes from "./pages/PersonalNotes";
-import Messages from "./pages/Messages";
+import Social from "./pages/Social";
 import WatchDetail from "./pages/WatchDetail";
 import Admin from "./pages/Admin";
 import WearLogsAdmin from "./pages/WearLogsAdmin";
@@ -23,7 +23,6 @@ import Auth from "./pages/Auth";
 import Settings from "./pages/Settings";
 import FAQ from "./pages/FAQ";
 import About from "./pages/About";
-import Forum from "./pages/Forum";
 import VaultPal from "./pages/VaultPal";
 import NotFound from "./pages/NotFound";
 
@@ -65,8 +64,9 @@ function AppContent() {
           <Route path="/trips" element={<Navigate to="/usage-details?tab=trips" replace />} />
           <Route path="/usage-details" element={<ProtectedRoute><AppLayout><UsageDetails /></AppLayout></ProtectedRoute>} />
           <Route path="/personal-notes" element={<ProtectedRoute><AppLayout><PersonalNotes /></AppLayout></ProtectedRoute>} />
-          <Route path="/messages" element={<ProtectedRoute><AppLayout><Messages /></AppLayout></ProtectedRoute>} />
-          <Route path="/forum" element={<ProtectedRoute><AppLayout><Forum /></AppLayout></ProtectedRoute>} />
+          <Route path="/social" element={<ProtectedRoute><AppLayout><Social /></AppLayout></ProtectedRoute>} />
+          <Route path="/messages" element={<Navigate to="/social?tab=messages" replace />} />
+          <Route path="/forum" element={<Navigate to="/social?tab=forum" replace />} />
           <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
           <Route path="/admin/wear-logs" element={<ProtectedRoute><WearLogsAdmin /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
