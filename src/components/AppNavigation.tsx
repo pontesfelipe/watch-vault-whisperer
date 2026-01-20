@@ -134,13 +134,13 @@ export function AppNavigation() {
         </SidebarMenu>
         
         {user && open && (
-          <div className="mt-3 pt-3 border-t border-sidebar-border">
-            <p className="text-xs text-sidebar-foreground truncate px-3 mb-2">{user.email}</p>
+          <div className="mt-2 px-3">
+            <p className="text-xs text-sidebar-foreground truncate mb-2">{user.email}</p>
             <Button
               variant="ghost"
               size="sm"
               onClick={signOut}
-              className="w-full justify-start text-sidebar-foreground hover:text-sidebar-accent-foreground px-3"
+              className="w-full justify-start text-sidebar-foreground hover:text-sidebar-accent-foreground px-0"
             >
               Sign Out
             </Button>
