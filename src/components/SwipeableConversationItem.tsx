@@ -42,8 +42,17 @@ export const SwipeableConversationItem = ({
     );
   };
 
+  const triggerHapticFeedback = () => {
+    if (navigator.vibrate) {
+      navigator.vibrate(50); // Short 50ms vibration
+    }
+  };
+
   const handleDragEnd = (_: any, info: PanInfo) => {
     if (info.offset.x < SWIPE_THRESHOLD) {
+      if (!isRevealed) {
+        triggerHapticFeedback();
+      }
       setIsRevealed(true);
     } else {
       setIsRevealed(false);
