@@ -604,13 +604,29 @@ const ConversationItem = ({
 
   return (
     <div
-      className={`group flex items-center gap-2 rounded-lg px-3 py-2 cursor-pointer transition-colors ${
+      className={`group flex items-center gap-2 rounded-lg px-2 py-2 cursor-pointer transition-colors ${
         isActive
           ? "bg-accent/10 text-textMain"
           : "text-textMuted hover:bg-surfaceMuted hover:text-textMain"
       }`}
       onClick={onSelect}
     >
+      {/* Always-visible quick delete (left) so it's impossible to miss */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8 text-destructive hover:bg-surfaceMuted"
+        onClick={(e) => {
+          e.stopPropagation();
+          console.log("[VaultPal] delete clicked (left)", conversation.id);
+          onDelete();
+        }}
+        aria-label="Delete conversation"
+        title="Delete"
+      >
+        <Trash2 className="w-4 h-4" />
+      </Button>
+
       <MessageSquare className="w-4 h-4 shrink-0" />
       <div className="flex-1 min-w-0">
         <p className="text-sm truncate">{highlightMatch(conversation.title, searchQuery)}</p>
