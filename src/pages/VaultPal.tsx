@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Send, Trash2, Bot, Sparkles, Loader2, User, Plus, MessageSquare, Pencil, Search, X, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
+import { Send, Trash2, Bot, Sparkles, Loader2, User, Plus, MessageSquare, Pencil, Search, X, ChevronDown, ChevronUp, RefreshCw, Mic, MicOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
@@ -32,6 +32,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
+import { useVoiceInput } from "@/hooks/useVoiceInput";
 
 const VaultPal = () => {
   const {
@@ -62,6 +63,17 @@ const VaultPal = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isMobile = useIsMobile();
+
+  // Voice input hook
+  const { isListening, isSupported: isVoiceSupported, interimText, toggleListening } = useVoiceInput({
+    onTranscript: (transcript) => {
+      // Append transcript to input or send directly
+      setInput((prev) => {
+        const newInput = prev ? `${prev} ${transcript}` : transcript;
+        return newInput;
+      });
+    },
+  });
 
   const itemLabel = currentCollectionType ? getItemLabel(currentCollectionType, true) : "items";
 
@@ -497,17 +509,49 @@ const VaultPal = () => {
         {/* Input Area */}
         <div className="shrink-0 border-t border-borderSubtle bg-surface px-4 py-3">
           <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
+            {/* Voice input indicator */}
+            {isListening && (
+              <div className="flex items-center justify-center gap-2 mb-2 py-2 px-3 bg-accent/10 rounded-lg">
+                <div className="flex gap-1">
+                  <span className="w-1 h-4 bg-accent rounded-full animate-pulse" style={{ animationDelay: "0ms" }} />
+                  <span className="w-1 h-4 bg-accent rounded-full animate-pulse" style={{ animationDelay: "150ms" }} />
+                  <span className="w-1 h-4 bg-accent rounded-full animate-pulse" style={{ animationDelay: "300ms" }} />
+                </div>
+                <span className="text-sm text-accent font-medium">
+                  {interimText || "Listening..."}
+                </span>
+              </div>
+            )}
             <div className="flex gap-2">
               <Textarea
                 ref={textareaRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder={`Ask about your ${itemLabel.toLowerCase()}...`}
+                placeholder={isListening ? "Speak now..." : `Ask about your ${itemLabel.toLowerCase()}...`}
                 className="min-h-[44px] max-h-[120px] resize-none"
                 rows={1}
                 disabled={isLoading}
               />
+              {isVoiceSupported && (
+                <Button
+                  type="button"
+                  variant={isListening ? "default" : "outline"}
+                  size="icon"
+                  className={`shrink-0 h-[44px] w-[44px] transition-colors ${
+                    isListening ? "bg-accent hover:bg-accent/90 text-accent-foreground" : ""
+                  }`}
+                  onClick={toggleListening}
+                  disabled={isLoading}
+                  title={isListening ? "Stop listening" : "Start voice input"}
+                >
+                  {isListening ? (
+                    <MicOff className="w-4 h-4" />
+                  ) : (
+                    <Mic className="w-4 h-4" />
+                  )}
+                </Button>
+              )}
               <Button
                 type="submit"
                 disabled={!input.trim() || isLoading}
@@ -522,7 +566,9 @@ const VaultPal = () => {
               </Button>
             </div>
             <p className="text-xs text-textMuted mt-2 text-center">
-              Press Enter to send, Shift+Enter for new line
+              {isVoiceSupported 
+                ? "Press Enter to send, Shift+Enter for new line, or tap mic for voice" 
+                : "Press Enter to send, Shift+Enter for new line"}
             </p>
           </form>
         </div>
