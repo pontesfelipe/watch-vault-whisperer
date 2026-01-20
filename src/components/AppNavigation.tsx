@@ -1,4 +1,4 @@
-import { Watch, BarChart3, BookHeart, Shield, Settings, MessageCircle, HelpCircle, Info, MessageSquare, Lightbulb, Bot, ClipboardList } from "lucide-react";
+import { Watch, BarChart3, BookHeart, Shield, Settings, HelpCircle, Info, Lightbulb, Bot, ClipboardList, Users } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { SubmitFeedbackDialog } from "@/components/SubmitFeedbackDialog";
@@ -34,8 +34,7 @@ export function AppNavigation() {
     { title: "Collection", url: "/collection", icon: Watch },
     { title: "Usage Details", url: "/usage-details", icon: ClipboardList },
     { title: "Collection Insights", url: "/personal-notes", icon: BookHeart },
-    { title: "Messages", url: "/messages", icon: MessageCircle },
-    { title: "Forum", url: "/forum", icon: MessageSquare },
+    { title: "Social", url: "/social", icon: Users },
   ];
 
   const utilityNavItems = [
