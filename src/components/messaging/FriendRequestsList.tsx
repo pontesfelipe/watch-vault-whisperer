@@ -4,6 +4,7 @@ import { FriendRequest } from "@/hooks/useMessaging";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { triggerHaptic } from "@/utils/haptics";
 
 interface FriendRequestsListProps {
   requests: FriendRequest[];
@@ -16,6 +17,16 @@ export function FriendRequestsList({ requests, onAccept, onDecline }: FriendRequ
     return null;
   }
 
+  const handleAccept = async (requestId: string) => {
+    triggerHaptic('success');
+    await onAccept(requestId);
+  };
+
+  const handleDecline = async (requestId: string) => {
+    triggerHaptic('warning');
+    await onDecline(requestId);
+  };
+
   return (
     <div className="space-y-2">
       <h3 className="text-sm font-medium text-textMain px-1">Friend Requests</h3>
@@ -25,7 +36,7 @@ export function FriendRequestsList({ requests, onAccept, onDecline }: FriendRequ
         return (
           <Card 
             key={request.id} 
-            className={`p-3 ${isTradeRequest ? 'border-primary/30 bg-primary/5' : ''}`}
+            className={`p-3 touch-active ${isTradeRequest ? 'border-primary/30 bg-primary/5' : ''}`}
           >
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">
@@ -53,8 +64,8 @@ export function FriendRequestsList({ requests, onAccept, onDecline }: FriendRequ
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="h-8 w-8 text-green-500 hover:text-green-600 hover:bg-green-500/10"
-                  onClick={() => onAccept(request.id)}
+                  className="h-10 w-10 text-green-500 hover:text-green-600 hover:bg-green-500/10 touch-target-sm"
+                  onClick={() => handleAccept(request.id)}
                   title="Accept"
                 >
                   <Check className="h-4 w-4" />
@@ -62,8 +73,8 @@ export function FriendRequestsList({ requests, onAccept, onDecline }: FriendRequ
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                  onClick={() => onDecline(request.id)}
+                  className="h-10 w-10 text-destructive hover:text-destructive hover:bg-destructive/10 touch-target-sm"
+                  onClick={() => handleDecline(request.id)}
                   title="Decline"
                 >
                   <X className="h-4 w-4" />
