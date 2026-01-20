@@ -108,7 +108,7 @@ export function AppNavigation() {
         </SidebarGroup>
       </SidebarContent>
       
-      <SidebarFooter className="border-t border-sidebar-border px-2 py-3">
+      <SidebarFooter className="bg-accentSubtle/30 border-t border-accent/20 px-2 py-3">
         <SidebarMenu className="space-y-1">
           {utilityNavItems.map((item) => {
             const isActive = location.pathname === item.url;
