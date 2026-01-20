@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Send, Trash2, Bot, Sparkles, Loader2, User, Plus, MessageSquare, MoreVertical, Pencil, Search, X, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
+import { Send, Trash2, Bot, Sparkles, Loader2, User, Plus, MessageSquare, Pencil, Search, X, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,12 +11,6 @@ import { getItemLabel } from "@/types/collection";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
@@ -558,9 +552,9 @@ const VaultPal = () => {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => {
+              onClick={async () => {
                 if (deleteConfirmId) {
-                  deleteConversation(deleteConfirmId);
+                  await deleteConversation(deleteConfirmId);
                   setDeleteConfirmId(null);
                 }
               }}
@@ -618,30 +612,34 @@ const ConversationItem = ({
           {format(new Date(conversation.updated_at), "MMM d, h:mm a")}
         </p>
       </div>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 shrink-0 text-textMuted hover:text-textMain hover:bg-surfaceMuted"
-          >
-            <MoreVertical className="w-4 h-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="bg-surface border-borderSubtle">
-          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit(); }}>
-            <Pencil className="w-3.5 h-3.5 mr-2" />
-            Rename
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={(e) => { e.stopPropagation(); onDelete(); }}
-            className="text-destructive focus:text-destructive"
-          >
-            <Trash2 className="w-3.5 h-3.5 mr-2" />
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <div className="flex items-center gap-1 shrink-0">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 text-textMuted hover:text-textMain hover:bg-surfaceMuted"
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit();
+          }}
+          aria-label="Rename conversation"
+          title="Rename"
+        >
+          <Pencil className="w-4 h-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 text-destructive hover:bg-surfaceMuted"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete();
+          }}
+          aria-label="Delete conversation"
+          title="Delete"
+        >
+          <Trash2 className="w-4 h-4" />
+        </Button>
+      </div>
     </div>
   );
 };
