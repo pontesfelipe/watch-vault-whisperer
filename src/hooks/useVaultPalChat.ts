@@ -190,26 +190,43 @@ export const useVaultPalChat = () => {
 
   // Delete a conversation
   const deleteConversation = useCallback(async (conversationId: string) => {
+    if (!user) {
+      toast.error("You must be logged in to delete chats");
+      return;
+    }
+
+    console.log("[VaultPal] deleteConversation() start", { conversationId, userId: user.id });
+
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("vault_pal_conversations" as any)
         .delete()
-        .eq("id", conversationId);
+        .eq("id", conversationId)
+        .eq("user_id", user.id)
+        .select("id");
 
       if (error) throw error;
-      
+
+      const deletedCount = Array.isArray(data) ? data.length : 0;
+      console.log("[VaultPal] deleteConversation() result", { deletedCount, data });
+
+      if (deletedCount === 0) {
+        toast.error("Couldn't delete: no permission or chat not found");
+        return;
+      }
+
       if (currentConversationId === conversationId) {
         setMessages([]);
         setCurrentConversationId(null);
       }
-      
+
       await loadConversations();
       toast.success("Conversation deleted");
-    } catch (error) {
-      console.error("Error deleting conversation:", error);
-      toast.error("Failed to delete conversation");
+    } catch (error: any) {
+      console.error("[VaultPal] Error deleting conversation:", error);
+      toast.error(error?.message ? `Failed to delete: ${error.message}` : "Failed to delete conversation");
     }
-  }, [currentConversationId, loadConversations]);
+  }, [currentConversationId, loadConversations, user]);
 
   // Send a message
   const sendMessage = useCallback(async (input: string) => {

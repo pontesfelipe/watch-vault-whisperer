@@ -259,7 +259,10 @@ const VaultPal = () => {
                     conversation={conv}
                     isActive={conv.id === currentConversationId}
                     onSelect={() => loadConversation(conv.id)}
-                    onDelete={() => setDeleteConfirmId(conv.id)}
+                    onDelete={() => {
+                      console.log("[VaultPal] request delete conversation", conv.id);
+                      setDeleteConfirmId(conv.id);
+                    }}
                     onEdit={() => handleEditTitle(conv.id, conv.title)}
                     searchQuery={searchQuery}
                   />
@@ -425,7 +428,10 @@ const VaultPal = () => {
                         loadConversation(conv.id);
                         setShowHistory(false);
                       }}
-                      onDelete={() => setDeleteConfirmId(conv.id)}
+                      onDelete={() => {
+                        console.log("[VaultPal] request delete conversation (mobile)", conv.id);
+                        setDeleteConfirmId(conv.id);
+                      }}
                       onEdit={() => handleEditTitle(conv.id, conv.title)}
                       searchQuery={searchQuery}
                     />
@@ -616,9 +622,10 @@ const ConversationItem = ({
         <Button
           variant="ghost"
           size="icon"
-          className="h-7 w-7 text-textMuted hover:text-textMain hover:bg-surfaceMuted"
+          className="h-8 w-8 text-textMain hover:bg-surfaceMuted"
           onClick={(e) => {
             e.stopPropagation();
+            console.log("[VaultPal] rename clicked", conversation.id);
             onEdit();
           }}
           aria-label="Rename conversation"
@@ -629,9 +636,10 @@ const ConversationItem = ({
         <Button
           variant="ghost"
           size="icon"
-          className="h-7 w-7 text-destructive hover:bg-surfaceMuted"
+          className="h-8 w-8 text-destructive hover:bg-surfaceMuted"
           onClick={(e) => {
             e.stopPropagation();
+            console.log("[VaultPal] delete clicked", conversation.id);
             onDelete();
           }}
           aria-label="Delete conversation"
