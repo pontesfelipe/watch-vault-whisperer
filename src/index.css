@@ -201,6 +201,38 @@
   .avatar-mobile {
     @apply h-8 w-8 sm:h-10 sm:w-10;
   }
+
+  /* Swipeable list items - prevent text selection during swipe */
+  .touch-pan-y {
+    touch-action: pan-y;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Mobile-optimized buttons with larger touch areas */
+  .btn-touch {
+    @apply min-h-[44px] min-w-[44px] p-2.5;
+  }
+
+  /* Swipe hint animation for first-time users */
+  @keyframes swipe-hint {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(-20px); }
+  }
+
+  .swipe-hint {
+    animation: swipe-hint 1.5s ease-in-out 2;
+  }
+
+  /* Active/pressed state for touch feedback */
+  .touch-active:active {
+    @apply scale-[0.98] transition-transform duration-75;
+  }
+
+  /* Improved focus states for mobile accessibility */
+  .focus-mobile:focus-visible {
+    @apply outline-none ring-2 ring-accent ring-offset-2 ring-offset-background;
+  }
 }
 
 /* Table mobile responsiveness */

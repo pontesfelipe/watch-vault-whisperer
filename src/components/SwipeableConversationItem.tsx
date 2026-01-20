@@ -4,6 +4,7 @@ import { Trash2, MessageSquare, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { Conversation } from "@/hooks/useVaultPalChat";
+import { triggerHaptic } from "@/utils/haptics";
 
 interface SwipeableConversationItemProps {
   conversation: Conversation;
@@ -42,16 +43,10 @@ export const SwipeableConversationItem = ({
     );
   };
 
-  const triggerHapticFeedback = () => {
-    if (navigator.vibrate) {
-      navigator.vibrate(50); // Short 50ms vibration
-    }
-  };
-
   const handleDragEnd = (_: any, info: PanInfo) => {
     if (info.offset.x < SWIPE_THRESHOLD) {
       if (!isRevealed) {
-        triggerHapticFeedback();
+        triggerHaptic('medium');
       }
       setIsRevealed(true);
     } else {
@@ -61,12 +56,14 @@ export const SwipeableConversationItem = ({
 
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    triggerHaptic('heavy');
     onDelete();
     setIsRevealed(false);
   };
 
   const handleEditClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    triggerHaptic('selection');
     onEdit();
   };
 
