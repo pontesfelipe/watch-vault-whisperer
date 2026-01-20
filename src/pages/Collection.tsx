@@ -15,7 +15,7 @@ import { CreateFirstCollectionDialog } from "@/components/CreateFirstCollectionD
 import { CollectionSwitcher } from "@/components/CollectionSwitcher";
 import { AnalyzeWatchMetadataDialog } from "@/components/AnalyzeWatchMetadataDialog";
 import { ImportSpreadsheetDialog } from "@/components/ImportSpreadsheetDialog";
-import { CollectionInsights } from "@/components/CollectionInsights";
+
 import { WishlistTable } from "@/components/WishlistTable";
 import { TastePreferences } from "@/components/TastePreferences";
 import { AddWishlistDialog } from "@/components/AddWishlistDialog";
@@ -371,7 +371,7 @@ const Collection = () => {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 mb-6">
+        <TabsList className="grid w-full grid-cols-2 mb-6">
           <TabsTrigger value="collection" className="gap-2">
             <Search className="w-4 h-4 hidden sm:inline" />
             Collection
@@ -379,10 +379,6 @@ const Collection = () => {
           <TabsTrigger value="wishlist" className="gap-2">
             <Heart className="w-4 h-4 hidden sm:inline" />
             Wishlist
-          </TabsTrigger>
-          <TabsTrigger value="insights" className="gap-2">
-            <Sparkles className="w-4 h-4 hidden sm:inline" />
-            Insights
           </TabsTrigger>
         </TabsList>
 
@@ -600,17 +596,6 @@ const Collection = () => {
           />
         </TabsContent>
 
-        {/* Insights Tab */}
-        <TabsContent value="insights" className="space-y-6">
-          <div>
-            <h2 className="text-xl font-semibold text-textMain mb-2">Collection Insights</h2>
-            <p className="text-sm text-textMuted mb-6">
-              AI-powered analysis of your {currentCollectionConfig.pluralLabel.toLowerCase()} and collecting patterns
-            </p>
-          </div>
-          
-          <CollectionInsights watchCount={watches.length} watches={watches} />
-        </TabsContent>
       </Tabs>
     </div>
   );
