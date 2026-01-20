@@ -91,9 +91,13 @@ export function AppNavigation() {
               );
             })}
           </SidebarMenu>
-          
+        </SidebarGroup>
+      </SidebarContent>
+      
+      <SidebarFooter className="bg-accentSubtle/30 border-t border-accent/20 px-2 py-3">
+        <SidebarMenu className="space-y-1">
           {user && (
-            <div className={`mt-4 ${open ? "px-2" : "px-1"}`}>
+            <SidebarMenuItem>
               <SubmitFeedbackDialog>
                 <SidebarMenuButton
                   className={`w-full flex items-center gap-2 rounded-xl px-3 py-2 text-sm transition-colors text-textMuted hover:bg-surfaceMuted hover:text-textMain ${!open ? "justify-center" : ""}`}
@@ -102,13 +106,8 @@ export function AppNavigation() {
                   {open && <span>Feedback</span>}
                 </SidebarMenuButton>
               </SubmitFeedbackDialog>
-            </div>
+            </SidebarMenuItem>
           )}
-        </SidebarGroup>
-      </SidebarContent>
-      
-      <SidebarFooter className="bg-accentSubtle/30 border-t border-accent/20 px-2 py-3">
-        <SidebarMenu className="space-y-1">
           {utilityNavItems.map((item) => {
             const isActive = location.pathname === item.url;
             return (
