@@ -69,9 +69,8 @@ export const WishlistTable = ({ items, onDelete, showAISuggested = false, showDe
     }
   };
 
-  const filteredItems = showAISuggested 
-    ? items.filter(item => item.is_ai_suggested)
-    : items.filter(item => !item.is_ai_suggested);
+  // Since items are already pre-filtered by parent, just use all items passed in
+  const filteredItems = items;
 
   const sortedItems = [...filteredItems].sort((a, b) => a.rank - b.rank);
 
