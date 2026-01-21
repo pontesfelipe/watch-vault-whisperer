@@ -48,26 +48,30 @@ export function SwipeableConversationItem({
   };
 
   const content = (
-    <>
-      <div className="flex items-center justify-between">
-        <span className="font-medium text-textMain text-sm truncate">
-          {conversation.other_user_name || conversation.other_user_email}
-        </span>
-        {(conversation.unread_count ?? 0) > 0 && (
-          <Badge variant="default" className="ml-2 h-5 min-w-5 flex items-center justify-center text-xs">
-            {conversation.unread_count}
-          </Badge>
-        )}
+    <div className="flex items-start gap-3">
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between gap-2">
+          <span className="font-medium text-textMain text-sm truncate">
+            {conversation.other_user_name || conversation.other_user_email}
+          </span>
+          <span className="text-xs text-textMuted whitespace-nowrap flex-shrink-0">
+            {formatDistanceToNow(new Date(conversation.updated_at), { addSuffix: true })}
+          </span>
+        </div>
+        <div className="flex items-center gap-2 mt-1">
+          {conversation.last_message && (
+            <p className="text-xs text-textMuted truncate flex-1">
+              {conversation.last_message}
+            </p>
+          )}
+          {(conversation.unread_count ?? 0) > 0 && (
+            <Badge variant="default" className="h-5 min-w-5 flex items-center justify-center text-xs flex-shrink-0">
+              {conversation.unread_count}
+            </Badge>
+          )}
+        </div>
       </div>
-      {conversation.last_message && (
-        <p className="text-xs text-textMuted mt-1 truncate">
-          {conversation.last_message}
-        </p>
-      )}
-      <p className="text-xs text-textMuted mt-1">
-        {formatDistanceToNow(new Date(conversation.updated_at), { addSuffix: true })}
-      </p>
-    </>
+    </div>
   );
 
   // Desktop version - no swipe
