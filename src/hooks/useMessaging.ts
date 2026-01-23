@@ -439,6 +439,9 @@ export const useMessaging = () => {
       prev.map((c) => (c.id === conversationId ? { ...c, unread_count: 0 } : c))
     );
 
+    // Trigger global event to refresh social notification counts immediately.
+    window.dispatchEvent(new CustomEvent('social-notifications-refresh'));
+
     // Refetch conversations to keep last_message + ordering accurate.
     await fetchConversations();
   };

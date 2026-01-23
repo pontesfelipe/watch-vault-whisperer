@@ -70,6 +70,13 @@ export const useSocialNotifications = () => {
     }
   }, [user]);
 
+  // Listen for manual refresh events (e.g., after marking messages as read)
+  useEffect(() => {
+    const handleRefresh = () => fetchCounts();
+    window.addEventListener('social-notifications-refresh', handleRefresh);
+    return () => window.removeEventListener('social-notifications-refresh', handleRefresh);
+  }, [fetchCounts]);
+
   useEffect(() => {
     if (!user) {
       setUnreadMessages(0);
