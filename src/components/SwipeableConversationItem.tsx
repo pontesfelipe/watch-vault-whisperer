@@ -67,26 +67,15 @@ export const SwipeableConversationItem = ({
     onEdit();
   };
 
-  // Desktop version - no swipe, show buttons directly
+  // Desktop version - no swipe, show buttons on hover
   if (!isMobile) {
     return (
       <div
-        className={`group flex items-center gap-2 rounded-lg px-2 py-2 cursor-pointer transition-colors ${
+        className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 cursor-pointer transition-colors ${
           isActive ? "bg-accent/10" : "hover:bg-surfaceMuted"
         }`}
         onClick={onSelect}
       >
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-destructive hover:bg-surfaceMuted"
-          onClick={handleDeleteClick}
-          aria-label="Delete conversation"
-          title="Delete"
-        >
-          <Trash2 className="w-4 h-4" />
-        </Button>
-
         <MessageSquare className="w-4 h-4 shrink-0 text-textMuted" />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-textMain truncate">
@@ -96,26 +85,26 @@ export const SwipeableConversationItem = ({
             {format(new Date(conversation.updated_at), "MMM d, h:mm a")}
           </p>
         </div>
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-textMain hover:bg-surfaceMuted"
+            className="h-7 w-7 text-textMuted hover:text-textMain hover:bg-surfaceMuted"
             onClick={handleEditClick}
             aria-label="Rename conversation"
             title="Rename"
           >
-            <Pencil className="w-4 h-4" />
+            <Pencil className="w-3.5 h-3.5" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-destructive hover:bg-surfaceMuted"
+            className="h-7 w-7 text-textMuted hover:text-destructive hover:bg-surfaceMuted"
             onClick={handleDeleteClick}
             aria-label="Delete conversation"
             title="Delete"
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="w-3.5 h-3.5" />
           </Button>
         </div>
       </div>
