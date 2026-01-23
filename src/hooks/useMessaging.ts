@@ -423,17 +423,24 @@ export const useMessaging = () => {
   const markMessagesAsRead = async (conversationId: string) => {
     if (!user) return;
 
-    const { error } = await (supabase
-      .from('messages' as any) as any)
-      .update({ read_at: new Date().toISOString() })
-      .eq('conversation_id', conversationId)
-      .neq('sender_id', user.id)
-      .is('read_at', null);
+    // NOTE: Receivers cannot update messages due to RLS (only senders can UPDATE).
+    // We use a secure backend RPC to mark messages as read for the current user.
+    const { error } = await supabase.rpc('mark_messages_as_read', {
+      _conversation_id: conversationId,
+    });
 
-    if (!error) {
-      // Refetch conversations to update unread counts
-      await fetchConversations();
+    if (error) {
+      console.error('Error marking messages as read:', error);
+      return;
     }
+
+    // Optimistic UI: clear unread badge immediately.
+    setConversations((prev) =>
+      prev.map((c) => (c.id === conversationId ? { ...c, unread_count: 0 } : c))
+    );
+
+    // Refetch conversations to keep last_message + ordering accurate.
+    await fetchConversations();
   };
 
   const dismissTradeNotification = async (notificationId: string) => {

@@ -1687,6 +1687,10 @@ export type Database = {
         Args: { _collection_id: string; _user_id: string }
         Returns: boolean
       }
+      mark_messages_as_read: {
+        Args: { _conversation_id: string }
+        Returns: undefined
+      }
       purge_old_login_history: { Args: never; Returns: undefined }
     }
     Enums: {

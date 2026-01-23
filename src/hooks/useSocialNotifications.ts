@@ -12,40 +12,62 @@ export const useSocialNotifications = () => {
     if (!user) return;
 
     // Fetch unread messages count
-    const { data: conversations } = await supabase
-      .from('conversations')
-      .select('id, user1_id, user2_id')
-      .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`);
+    try {
+      const { data: conversations, error: convError } = await supabase
+        .from('conversations')
+        .select('id, user1_id, user2_id')
+        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`);
 
-    if (conversations) {
-      let totalUnread = 0;
-      for (const conv of conversations) {
-        const { count } = await supabase
-          .from('messages')
-          .select('*', { count: 'exact', head: true })
-          .eq('conversation_id', conv.id)
-          .neq('sender_id', user.id)
-          .is('read_at', null);
-        totalUnread += count || 0;
-      }
+      if (convError) throw convError;
+
+      const convs = conversations ?? [];
+      const counts = await Promise.all(
+        convs.map((conv) =>
+          supabase
+            .from('messages')
+            .select('*', { count: 'exact', head: true })
+            .eq('conversation_id', conv.id)
+            .neq('sender_id', user.id)
+            .is('read_at', null)
+        )
+      );
+
+      const totalUnread = counts.reduce((sum, r) => sum + (r.count || 0), 0);
       setUnreadMessages(totalUnread);
+    } catch (e) {
+      console.error('Error fetching unread messages count:', e);
+      setUnreadMessages(0);
     }
 
     // Fetch pending friend requests count
-    const { count: requestCount } = await supabase
-      .from('friend_requests')
-      .select('*', { count: 'exact', head: true })
-      .eq('to_user_id', user.id)
-      .eq('status', 'pending');
-    setPendingRequests(requestCount || 0);
+    try {
+      const { count: requestCount, error: requestError } = await supabase
+        .from('friend_requests')
+        .select('*', { count: 'exact', head: true })
+        .eq('to_user_id', user.id)
+        .eq('status', 'pending');
+
+      if (requestError) throw requestError;
+      setPendingRequests(requestCount || 0);
+    } catch (e) {
+      console.error('Error fetching pending friend requests count:', e);
+      setPendingRequests(0);
+    }
 
     // Fetch trade notifications count
-    const { count: tradeCount } = await supabase
-      .from('trade_match_notifications')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .eq('is_dismissed', false);
-    setTradeNotifications(tradeCount || 0);
+    try {
+      const { count: tradeCount, error: tradeError } = await supabase
+        .from('trade_match_notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('is_dismissed', false);
+
+      if (tradeError) throw tradeError;
+      setTradeNotifications(tradeCount || 0);
+    } catch (e) {
+      console.error('Error fetching trade notifications count:', e);
+      setTradeNotifications(0);
+    }
   }, [user]);
 
   useEffect(() => {
