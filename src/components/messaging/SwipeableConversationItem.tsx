@@ -48,24 +48,27 @@ export function SwipeableConversationItem({
   };
 
   const content = (
-    <div className="flex items-start gap-3">
+    <div className="flex items-center gap-3 w-full">
       <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between gap-2">
-          <span className="font-medium text-textMain text-sm truncate">
+        {/* Row 1: Name + Timestamp */}
+        <div className="flex items-center gap-2">
+          <span className="font-medium text-textMain text-sm truncate flex-1">
             {conversation.other_user_name || conversation.other_user_email}
           </span>
-          <span className="text-xs text-textMuted whitespace-nowrap flex-shrink-0">
+          <span className="text-[11px] text-textMuted whitespace-nowrap shrink-0">
             {formatDistanceToNow(new Date(conversation.updated_at), { addSuffix: true })}
           </span>
         </div>
-        <div className="flex items-center gap-2 mt-1">
-          {conversation.last_message && (
-            <p className="text-xs text-textMuted truncate flex-1">
-              {conversation.last_message}
-            </p>
-          )}
+        {/* Row 2: Message preview + Badge */}
+        <div className="flex items-center gap-2 mt-0.5">
+          <p className="text-xs text-textMuted truncate flex-1">
+            {conversation.last_message || "No messages yet"}
+          </p>
           {(conversation.unread_count ?? 0) > 0 && (
-            <Badge variant="default" className="h-5 min-w-5 flex items-center justify-center text-xs flex-shrink-0">
+            <Badge 
+              variant="default" 
+              className="h-5 min-w-5 px-1.5 flex items-center justify-center text-[10px] font-medium shrink-0 rounded-full"
+            >
               {conversation.unread_count}
             </Badge>
           )}

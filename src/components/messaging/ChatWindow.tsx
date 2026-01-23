@@ -88,20 +88,25 @@ export function ChatWindow({ conversation, onSendMessage, onMarkAsRead }: ChatWi
             return (
               <div
                 key={message.id}
-                className={cn("flex", isMine ? "justify-end" : "justify-start")}
+                className={cn(
+                  "flex w-full",
+                  isMine ? "justify-end" : "justify-start"
+                )}
               >
                 <div
                   className={cn(
-                    "max-w-[70%] rounded-2xl px-4 py-2",
+                    "max-w-[70%] rounded-2xl px-4 py-2.5",
                     isMine
                       ? "bg-primary text-primary-foreground"
                       : "bg-surfaceMuted text-textMain"
                   )}
                 >
-                  <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+                  <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
+                    {message.content}
+                  </p>
                   <p
                     className={cn(
-                      "text-xs mt-1",
+                      "text-[10px] mt-1.5 text-right",
                       isMine ? "text-primary-foreground/70" : "text-textMuted"
                     )}
                   >
