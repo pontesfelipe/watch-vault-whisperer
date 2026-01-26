@@ -1,10 +1,10 @@
-import { BarChart3, Watch, Settings, Bot, Users, Menu } from "lucide-react";
+import { BarChart3, Watch, Bot, Users, Menu } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { triggerHaptic } from "@/utils/haptics";
 import { useSocialNotifications } from "@/hooks/useSocialNotifications";
 import { Badge } from "@/components/ui/badge";
-import { useSidebar } from "@/components/ui/sidebar";
+import { MobileMenuDrawer } from "@/components/MobileMenuDrawer";
 
 const navItems = [
   { title: "Home", url: "/", icon: BarChart3 },
@@ -16,7 +16,6 @@ const navItems = [
 export function BottomNavigation() {
   const location = useLocation();
   const { totalCount } = useSocialNotifications();
-  const { toggleSidebar } = useSidebar();
 
   const handleNavClick = () => {
     triggerHaptic('selection');
@@ -24,7 +23,6 @@ export function BottomNavigation() {
 
   const handleMenuClick = () => {
     triggerHaptic('selection');
-    toggleSidebar();
   };
 
   return (
@@ -60,14 +58,16 @@ export function BottomNavigation() {
           );
         })}
         
-        {/* Menu button to open sidebar */}
-        <button
-          onClick={handleMenuClick}
-          className="flex flex-col items-center justify-center flex-1 h-full py-2 transition-colors touch-target text-textMuted"
-        >
-          <Menu className="h-6 w-6 mb-1" />
-          <span className="text-[10px] font-medium">More</span>
-        </button>
+        {/* Menu button to open drawer */}
+        <MobileMenuDrawer>
+          <button
+            onClick={handleMenuClick}
+            className="flex flex-col items-center justify-center flex-1 h-full py-2 transition-colors touch-target text-textMuted"
+          >
+            <Menu className="h-6 w-6 mb-1" />
+            <span className="text-[10px] font-medium">More</span>
+          </button>
+        </MobileMenuDrawer>
       </div>
     </nav>
   );
