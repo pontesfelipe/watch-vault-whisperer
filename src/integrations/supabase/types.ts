@@ -373,6 +373,27 @@ export type Database = {
         }
         Relationships: []
       }
+      followers: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+          id?: string
+        }
+        Relationships: []
+      }
       friend_requests: {
         Row: {
           created_at: string
@@ -426,6 +447,42 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      list_items: {
+        Row: {
+          added_at: string
+          id: string
+          list_id: string
+          watch_id: string
+        }
+        Insert: {
+          added_at?: string
+          id?: string
+          list_id: string
+          watch_id: string
+        }
+        Update: {
+          added_at?: string
+          id?: string
+          list_id?: string
+          watch_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "list_items_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "user_lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "list_items_watch_id_fkey"
+            columns: ["watch_id"]
+            isOneToOne: false
+            referencedRelation: "watches"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       login_history: {
         Row: {
@@ -617,6 +674,35 @@ export type Database = {
             columns: ["post_id"]
             isOneToOne: false
             referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_likes: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "user_posts"
             referencedColumns: ["id"]
           },
         ]
@@ -942,6 +1028,30 @@ export type Database = {
         }
         Relationships: []
       }
+      tags: {
+        Row: {
+          category: string | null
+          created_at: string
+          id: string
+          name: string
+          usage_count: number | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          usage_count?: number | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          usage_count?: number | null
+        }
+        Relationships: []
+      }
       terms_acceptances: {
         Row: {
           accepted_at: string
@@ -1092,6 +1202,112 @@ export type Database = {
             columns: ["collection_id"]
             isOneToOne: false
             referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_lists: {
+        Row: {
+          created_at: string
+          id: string
+          is_system: boolean | null
+          list_type: string | null
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_system?: boolean | null
+          list_type?: string | null
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_system?: boolean | null
+          list_type?: string | null
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_post_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          post_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          post_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "user_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_posts: {
+        Row: {
+          content: string | null
+          created_at: string
+          id: string
+          image_url: string | null
+          post_type: string
+          updated_at: string
+          user_id: string
+          watch_id: string | null
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          post_type?: string
+          updated_at?: string
+          user_id: string
+          watch_id?: string | null
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          post_type?: string
+          updated_at?: string
+          user_id?: string
+          watch_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_posts_watch_id_fkey"
+            columns: ["watch_id"]
+            isOneToOne: false
+            referencedRelation: "watches"
             referencedColumns: ["id"]
           },
         ]
@@ -1303,6 +1519,7 @@ export type Database = {
             | Database["public"]["Enums"]["watch_historical_significance"]
             | null
           id: string
+          is_shared: boolean | null
           lug_to_lug_size: string | null
           metadata_analysis_reasoning: string | null
           metadata_analyzed_at: string | null
@@ -1340,6 +1557,7 @@ export type Database = {
             | Database["public"]["Enums"]["watch_historical_significance"]
             | null
           id?: string
+          is_shared?: boolean | null
           lug_to_lug_size?: string | null
           metadata_analysis_reasoning?: string | null
           metadata_analyzed_at?: string | null
@@ -1377,6 +1595,7 @@ export type Database = {
             | Database["public"]["Enums"]["watch_historical_significance"]
             | null
           id?: string
+          is_shared?: boolean | null
           lug_to_lug_size?: string | null
           metadata_analysis_reasoning?: string | null
           metadata_analyzed_at?: string | null
@@ -1532,6 +1751,42 @@ export type Database = {
             columns: ["water_usage_id"]
             isOneToOne: false
             referencedRelation: "water_usage"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wear_entry_tags: {
+        Row: {
+          created_at: string
+          id: string
+          tag_id: string
+          wear_entry_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          tag_id: string
+          wear_entry_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          tag_id?: string
+          wear_entry_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wear_entry_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wear_entry_tags_wear_entry_id_fkey"
+            columns: ["wear_entry_id"]
+            isOneToOne: false
+            referencedRelation: "wear_entries"
             referencedColumns: ["id"]
           },
         ]
