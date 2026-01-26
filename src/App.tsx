@@ -8,18 +8,11 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { PasscodeProvider } from "@/contexts/PasscodeContext";
 import { CollectionProvider } from "@/contexts/CollectionContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { AppLayout } from "@/components/AppLayout";
 import { SplashScreen } from "@/components/SplashScreen";
-
-// New pages
-import HomePage from "./pages/HomePage";
-import LogPage from "./pages/LogPage";
-import FeedPage from "./pages/FeedPage";
-import ProfilePage from "./pages/ProfilePage";
-import SearchPage from "./pages/SearchPage";
-
-// Legacy pages (for backwards compatibility)
 import Dashboard from "./pages/Dashboard";
 import Collection from "./pages/Collection";
+
 import UsageDetails from "./pages/UsageDetails";
 import PersonalNotes from "./pages/PersonalNotes";
 import Social from "./pages/Social";
@@ -32,7 +25,6 @@ import FAQ from "./pages/FAQ";
 import About from "./pages/About";
 import VaultPal from "./pages/VaultPal";
 import NotFound from "./pages/NotFound";
-import { AppLayout } from "@/components/AppLayout";
 
 const queryClient = new QueryClient();
 
@@ -65,35 +57,23 @@ function AppContent() {
       <BrowserRouter>
         <Routes>
           <Route path="/auth" element={<Auth />} />
-          
-          {/* New simplified navigation */}
-          <Route path="/" element={<Navigate to="/home" replace />} />
-          <Route path="/home" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
-          <Route path="/log" element={<ProtectedRoute><LogPage /></ProtectedRoute>} />
-          <Route path="/feed" element={<ProtectedRoute><FeedPage /></ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-          <Route path="/profile/:userId" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-          <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
-          
-          {/* Legacy routes - redirect to new structure */}
-          <Route path="/vault-pal" element={<Navigate to="/home" replace />} />
-          <Route path="/collection" element={<Navigate to="/profile" replace />} />
-          <Route path="/wishlist" element={<Navigate to="/profile" replace />} />
-          <Route path="/trips" element={<Navigate to="/log" replace />} />
-          <Route path="/usage-details" element={<Navigate to="/profile" replace />} />
-          <Route path="/personal-notes" element={<Navigate to="/profile" replace />} />
-          <Route path="/social" element={<Navigate to="/feed" replace />} />
-          <Route path="/messages" element={<Navigate to="/feed" replace />} />
-          <Route path="/forum" element={<Navigate to="/feed" replace />} />
-          
-          {/* Utility routes */}
+          <Route path="/" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
+          <Route path="/vault-pal" element={<ProtectedRoute><AppLayout><VaultPal /></AppLayout></ProtectedRoute>} />
+          <Route path="/collection" element={<ProtectedRoute><AppLayout><Collection /></AppLayout></ProtectedRoute>} />
+          <Route path="/wishlist" element={<Navigate to="/collection" replace />} />
+          <Route path="/trips" element={<Navigate to="/usage-details?tab=trips" replace />} />
+          <Route path="/usage-details" element={<ProtectedRoute><AppLayout><UsageDetails /></AppLayout></ProtectedRoute>} />
+          <Route path="/personal-notes" element={<ProtectedRoute><AppLayout><PersonalNotes /></AppLayout></ProtectedRoute>} />
+          <Route path="/social" element={<ProtectedRoute><AppLayout><Social /></AppLayout></ProtectedRoute>} />
+          <Route path="/messages" element={<Navigate to="/social?tab=messages" replace />} />
+          <Route path="/forum" element={<Navigate to="/social?tab=forum" replace />} />
           <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
           <Route path="/admin/wear-logs" element={<ProtectedRoute><WearLogsAdmin /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
           <Route path="/watch/:id" element={<ProtectedRoute><WatchDetail /></ProtectedRoute>} />
           <Route path="/faq" element={<ProtectedRoute><FAQ /></ProtectedRoute>} />
           <Route path="/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
-          
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
