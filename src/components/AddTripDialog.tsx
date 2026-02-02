@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { format, subDays, parseISO } from "date-fns";
 
 
 interface AddTripDialogProps {
@@ -29,6 +30,44 @@ export const AddTripDialog = ({ watches, onSuccess, open, onOpenChange }: AddTri
     purpose: "Business",
     notes: "",
   });
+
+  // Check for previous day's trip when date changes
+  useEffect(() => {
+    const checkPreviousDayEntry = async () => {
+      if (!formData.startDate || !user) return;
+      
+      // Only prefill if form is mostly empty (user just selected a date)
+      if (formData.location || formData.notes || Object.keys(formData.watchDays).length > 0) return;
+      
+      try {
+        const previousDate = format(subDays(parseISO(formData.startDate), 1), 'yyyy-MM-dd');
+        
+        const { data: previousTrip } = await supabase
+          .from('trips')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('start_date', previousDate)
+          .maybeSingle();
+        
+        if (previousTrip) {
+          const watchModel = previousTrip.watch_model as Record<string, number> | null;
+          setFormData(prev => ({
+            ...prev,
+            location: previousTrip.location,
+            purpose: previousTrip.purpose,
+            totalDays: previousTrip.days.toString(),
+            notes: previousTrip.notes || "",
+            watchDays: watchModel || {},
+          }));
+          toast.info("Pre-filled from yesterday's trip");
+        }
+      } catch (error) {
+        console.error("Error checking previous day trip:", error);
+      }
+    };
+    
+    checkPreviousDayEntry();
+  }, [formData.startDate, user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
