@@ -29,13 +29,41 @@ export const AddEventDialog = ({ watches, onSuccess, open, onOpenChange }: AddEv
     purpose: "",
   });
 
+  // Fetch user's profile location on mount
+  useEffect(() => {
+    const fetchUserLocation = async () => {
+      if (!user) return;
+      
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('city, state, country')
+          .eq('id', user.id)
+          .maybeSingle();
+        
+        if (profile) {
+          const locationParts = [profile.city, profile.state, profile.country].filter(Boolean);
+          if (locationParts.length > 0 && !formData.location) {
+            setFormData(prev => ({ ...prev, location: locationParts.join(', ') }));
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user location:", error);
+      }
+    };
+    
+    if (open) {
+      fetchUserLocation();
+    }
+  }, [open, user]);
+
   // Check for previous day's event when date changes
   useEffect(() => {
     const checkPreviousDayEntry = async () => {
       if (!formData.startDate || !user) return;
       
       // Only prefill if form is mostly empty (user just selected a date)
-      if (formData.location || formData.purpose || Object.keys(formData.watchDays).length > 0) return;
+      if (formData.purpose || Object.keys(formData.watchDays).length > 0) return;
       
       try {
         const previousDate = format(subDays(parseISO(formData.startDate), 1), 'yyyy-MM-dd');
