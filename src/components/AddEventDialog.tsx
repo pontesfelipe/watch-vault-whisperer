@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { format, subDays, parseISO } from "date-fns";
 
 
 interface AddEventDialogProps {
@@ -27,6 +28,43 @@ export const AddEventDialog = ({ watches, onSuccess, open, onOpenChange }: AddEv
     totalDays: "0.5",
     purpose: "",
   });
+
+  // Check for previous day's event when date changes
+  useEffect(() => {
+    const checkPreviousDayEntry = async () => {
+      if (!formData.startDate || !user) return;
+      
+      // Only prefill if form is mostly empty (user just selected a date)
+      if (formData.location || formData.purpose || Object.keys(formData.watchDays).length > 0) return;
+      
+      try {
+        const previousDate = format(subDays(parseISO(formData.startDate), 1), 'yyyy-MM-dd');
+        
+        const { data: previousEvent } = await supabase
+          .from('events')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('start_date', previousDate)
+          .maybeSingle();
+        
+        if (previousEvent) {
+          const watchModel = previousEvent.watch_model as Record<string, number> | null;
+          setFormData(prev => ({
+            ...prev,
+            location: previousEvent.location,
+            purpose: previousEvent.purpose,
+            totalDays: previousEvent.days.toString(),
+            watchDays: watchModel || {},
+          }));
+          toast.info("Pre-filled from yesterday's event");
+        }
+      } catch (error) {
+        console.error("Error checking previous day event:", error);
+      }
+    };
+    
+    checkPreviousDayEntry();
+  }, [formData.startDate, user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
