@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { useAuth } from "@/contexts/AuthContext";
+import { format, subDays, parseISO } from "date-fns";
+import { toast as sonnerToast } from "sonner";
 
 
 const wearSchema = z.object({
@@ -31,8 +33,94 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
   const [tripNotes, setTripNotes] = useState("");
   const [eventLocation, setEventLocation] = useState("");
   const [sportLocation, setSportLocation] = useState("");
+  const [wearDate, setWearDate] = useState(new Date().toISOString().split('T')[0]);
+  const [userProfileLocation, setUserProfileLocation] = useState("");
   const { toast } = useToast();
   const { user } = useAuth();
+
+  // Fetch user's profile location when dialog opens
+  useEffect(() => {
+    const fetchUserLocation = async () => {
+      if (!user) return;
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('city, state, country')
+          .eq('id', user.id)
+          .maybeSingle();
+        if (profile) {
+          const locationParts = [profile.city, profile.state, profile.country].filter(Boolean);
+          if (locationParts.length > 0) {
+            const loc = locationParts.join(', ');
+            setUserProfileLocation(loc);
+            // Set as default for all location fields if they're empty
+            if (!tripLocation) setTripLocation(loc);
+            if (!eventLocation) setEventLocation(loc);
+            if (!sportLocation) setSportLocation(loc);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user location:", error);
+      }
+    };
+    if (open) {
+      fetchUserLocation();
+    }
+  }, [open, user]);
+
+  // Check for previous day's entries when date changes
+  useEffect(() => {
+    const checkPreviousDayEntries = async () => {
+      if (!wearDate || !user) return;
+      
+      try {
+        const previousDate = format(subDays(parseISO(wearDate), 1), 'yyyy-MM-dd');
+        
+        // Check for previous trip
+        const { data: previousTrip } = await supabase
+          .from('trips')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('start_date', previousDate)
+          .maybeSingle();
+        
+        if (previousTrip) {
+          setTripLocation(previousTrip.location);
+          setTripNotes(previousTrip.notes || "");
+          sonnerToast.info("Trip location pre-filled from yesterday's entry");
+        }
+
+        // Check for previous event
+        const { data: previousEvent } = await supabase
+          .from('events')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('start_date', previousDate)
+          .maybeSingle();
+        
+        if (previousEvent) {
+          setEventLocation(previousEvent.location);
+          sonnerToast.info("Event location pre-filled from yesterday's entry");
+        }
+
+        // Check for previous sport
+        const { data: previousSport } = await (supabase.from('sports' as any) as any)
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('activity_date', previousDate)
+          .maybeSingle();
+        
+        if (previousSport?.location) {
+          setSportLocation(previousSport.location);
+          sonnerToast.info("Sport location pre-filled from yesterday's entry");
+        }
+      } catch (error) {
+        console.error("Error checking previous day entries:", error);
+      }
+    };
+    
+    checkPreviousDayEntries();
+  }, [wearDate, user]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -260,7 +348,11 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
       setIsEvent(false);
       setIsWaterActivity(false);
       setIsSport(false);
-      setSportLocation("");
+      setTripLocation(userProfileLocation);
+      setTripNotes("");
+      setEventLocation(userProfileLocation);
+      setSportLocation(userProfileLocation);
+      setWearDate(new Date().toISOString().split('T')[0]);
       onSuccess();
       (e.target as HTMLFormElement).reset();
     } catch (error) {
@@ -301,7 +393,8 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
               type="date"
               required
               max={new Date().toISOString().split('T')[0]}
-              defaultValue={new Date().toISOString().split('T')[0]}
+              value={wearDate}
+              onChange={(e) => setWearDate(e.target.value)}
               className="bg-background border-border"
             />
           </div>
