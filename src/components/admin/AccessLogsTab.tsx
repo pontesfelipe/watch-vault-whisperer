@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
 import { RefreshCw, Search, Download } from "lucide-react";
-import * as XLSX from 'xlsx';
+import { createWorkbook, addSheetFromJson, writeWorkbookToFile } from '@/utils/excel';
 import { toast } from "sonner";
 
 export function AccessLogsTab() {
@@ -72,11 +72,10 @@ export function AccessLogsTab() {
       'User Agent': log.user_agent || 'N/A',
     }));
 
-    const ws = XLSX.utils.json_to_sheet(exportData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Access Logs');
+    const wb = createWorkbook();
+    addSheetFromJson(wb, exportData, 'Access Logs');
     const filename = `access_logs_${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
-    XLSX.writeFile(wb, filename);
+    writeWorkbookToFile(wb, filename);
     toast.success("Access logs exported");
   };
 

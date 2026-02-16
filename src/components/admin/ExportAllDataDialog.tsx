@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { FileSpreadsheet, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import * as XLSX from 'xlsx';
+import { createWorkbook, addSheetFromJson, writeWorkbookToFile } from '@/utils/excel';
 
 interface CollectionWithOwner {
   id: string;
@@ -112,7 +112,7 @@ export function ExportAllDataDialog() {
       const waterMap = new Map(waterUsages.map(w => [w.id, w]));
 
       // Create workbook
-      const wb = XLSX.utils.book_new();
+      const wb = createWorkbook();
 
       // Sheet 1: Watch Inventory
       const inventoryData = watches.map(watch => {
@@ -150,8 +150,7 @@ export function ExportAllDataDialog() {
           'Updated At': watch.updated_at ? new Date(watch.updated_at).toLocaleDateString() : '',
         };
       });
-      const wsInventory = XLSX.utils.json_to_sheet(inventoryData);
-      XLSX.utils.book_append_sheet(wb, wsInventory, 'Watch Inventory');
+      addSheetFromJson(wb, inventoryData, 'Watch Inventory');
 
       // Sheet 2: Wear Logs
       const wearData = wearEntries.map(entry => {
@@ -185,8 +184,7 @@ export function ExportAllDataDialog() {
         };
       });
       if (wearData.length > 0) {
-        const wsWear = XLSX.utils.json_to_sheet(wearData);
-        XLSX.utils.book_append_sheet(wb, wsWear, 'Wear Logs');
+        addSheetFromJson(wb, wearData, 'Wear Logs');
       }
 
       // Sheet 3: Trips
@@ -199,8 +197,7 @@ export function ExportAllDataDialog() {
         'Created At': trip.created_at ? new Date(trip.created_at).toLocaleDateString() : '',
       }));
       if (tripData.length > 0) {
-        const wsTrips = XLSX.utils.json_to_sheet(tripData);
-        XLSX.utils.book_append_sheet(wb, wsTrips, 'Trips');
+        addSheetFromJson(wb, tripData, 'Trips');
       }
 
       // Sheet 4: Events
@@ -212,8 +209,7 @@ export function ExportAllDataDialog() {
         'Created At': event.created_at ? new Date(event.created_at).toLocaleDateString() : '',
       }));
       if (eventData.length > 0) {
-        const wsEvents = XLSX.utils.json_to_sheet(eventData);
-        XLSX.utils.book_append_sheet(wb, wsEvents, 'Events');
+        addSheetFromJson(wb, eventData, 'Events');
       }
 
       // Sheet 5: Water Usage
@@ -231,8 +227,7 @@ export function ExportAllDataDialog() {
         };
       });
       if (waterData.length > 0) {
-        const wsWater = XLSX.utils.json_to_sheet(waterData);
-        XLSX.utils.book_append_sheet(wb, wsWater, 'Water Usage');
+        addSheetFromJson(wb, waterData, 'Water Usage');
       }
 
       // Get collection name for filename
@@ -241,9 +236,9 @@ export function ExportAllDataDialog() {
       const timestamp = new Date().toISOString().split('T')[0];
       const filename = `collection_export_${collectionName}_${timestamp}.xlsx`;
 
-      XLSX.writeFile(wb, filename);
+      await writeWorkbookToFile(wb, filename);
       
-      const sheetCount = wb.SheetNames.length;
+      const sheetCount = wb.worksheets.length;
       toast.success(`Exported ${watches.length} watches across ${sheetCount} sheets`);
       setOpen(false);
     } catch (error) {

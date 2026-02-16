@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Download, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import * as XLSX from 'xlsx';
+import { createWorkbook, addSheetFromJson, writeWorkbookToFile } from '@/utils/excel';
 
 interface CollectionWithOwner {
   id: string;
@@ -186,9 +186,8 @@ export function ExportWearLogsDialog() {
       });
 
       // Create workbook
-      const ws = XLSX.utils.json_to_sheet(exportData);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Wear Logs');
+      const wb = createWorkbook();
+      addSheetFromJson(wb, exportData, 'Wear Logs');
 
       // Get collection name for filename
       const selectedCollection = collections.find(c => c.id === selectedCollectionId);
@@ -196,7 +195,7 @@ export function ExportWearLogsDialog() {
       const timestamp = new Date().toISOString().split('T')[0];
       const filename = `wear_logs_${collectionName}_${timestamp}.xlsx`;
 
-      XLSX.writeFile(wb, filename);
+      await writeWorkbookToFile(wb, filename);
       toast.success(`Exported ${exportData.length} wear entries`);
       setOpen(false);
     } catch (error) {
