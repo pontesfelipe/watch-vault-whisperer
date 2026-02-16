@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Package, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import * as XLSX from 'xlsx';
+import { createWorkbook, addSheetFromJson, writeWorkbookToFile } from '@/utils/excel';
 
 interface CollectionWithOwner {
   id: string;
@@ -136,9 +136,8 @@ export function ExportWatchInventoryDialog() {
       });
 
       // Create workbook
-      const ws = XLSX.utils.json_to_sheet(exportData);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Watch Inventory');
+      const wb = createWorkbook();
+      addSheetFromJson(wb, exportData, 'Watch Inventory');
 
       // Get collection name for filename
       const selectedCollection = collections.find(c => c.id === selectedCollectionId);
@@ -146,7 +145,7 @@ export function ExportWatchInventoryDialog() {
       const timestamp = new Date().toISOString().split('T')[0];
       const filename = `watch_inventory_${collectionName}_${timestamp}.xlsx`;
 
-      XLSX.writeFile(wb, filename);
+      await writeWorkbookToFile(wb, filename);
       toast.success(`Exported ${exportData.length} watches`);
       setOpen(false);
     } catch (error) {
