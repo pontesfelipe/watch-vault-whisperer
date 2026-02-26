@@ -20,24 +20,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        // Check admin status when session changes
-        if (session?.user) {
-          setTimeout(() => {
-            checkAdminStatus(session.user.id);
-          }, 0);
-        } else {
-          setIsAdmin(false);
-        }
-      }
-    );
-
-    // Check for existing session
+    // Check for existing session FIRST
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -47,6 +30,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       setLoading(false);
     });
+
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        // Only clear user on explicit sign out, not on transient events
+        if (event === 'SIGNED_OUT') {
+          setSession(null);
+          setUser(null);
+          setIsAdmin(false);
+          setLoading(false);
+          return;
+        }
+
+        if (session) {
+          setSession(session);
+          setUser(session.user);
+          
+          setTimeout(() => {
+            checkAdminStatus(session.user.id);
+          }, 0);
+        }
+
+        // Set loading false on initial session event
+        if (event === 'INITIAL_SESSION') {
+          setLoading(false);
+        }
+      }
+    );
 
     return () => subscription.unsubscribe();
   }, []);
