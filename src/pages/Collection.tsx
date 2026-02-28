@@ -8,6 +8,8 @@ import { SortableWatchCard } from "@/components/SortableWatchCard";
 import { PastWatchCard } from "@/components/PastWatchCard";
 import { PastWatchesStats } from "@/components/PastWatchesStats";
 import { AddWatchDialog } from "@/components/AddWatchDialog";
+import { WatchCaseGrid } from "@/components/WatchCaseGrid";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { AddItemDialog } from "@/components/AddItemDialog";
 import { QuickAddWearDialog } from "@/components/QuickAddWearDialog";
 import { EditCollectionDialog } from "@/components/EditCollectionDialog";
@@ -57,6 +59,7 @@ const Collection = () => {
   const { isAllowed } = useAllowedUserCheck();
   const { isAdmin, user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
+  const isMobile = useIsMobile();
   const [selectedBrand, setSelectedBrand] = useState<string>("all");
   const [isBulkUpdating, setIsBulkUpdating] = useState(false);
   const [localWatches, setLocalWatches] = useState(watches);
@@ -445,6 +448,13 @@ const Collection = () => {
                   : `No ${currentCollectionConfig.pluralLabel.toLowerCase()} yet. Add your first ${currentCollectionConfig.singularLabel.toLowerCase()}!`}
               </p>
             </div>
+          ) : isMobile ? (
+            <WatchCaseGrid
+              watches={filteredWatches}
+              wearEntries={wearEntries}
+              onDelete={handleRefetchAll}
+              isLoading={loading}
+            />
           ) : (
             <DndContext
               sensors={sensors}
