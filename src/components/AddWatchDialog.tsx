@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ResponsiveDialog } from "@/components/ResponsiveDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -296,9 +296,38 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
           }
         } catch (aiError) {
           console.error('Auto-analysis failed:', aiError);
-          // Don't block the main flow if AI analysis fails
         }
 
+        // Generate AI image in the background
+        try {
+          supabase.functions.invoke('generate-watch-image', {
+            body: {
+              watchId: insertData.id,
+              brand: data.brand,
+              model: data.model,
+              dialColor: data.dialColor,
+              type: data.type,
+              caseSize: formValues.caseSize || undefined,
+              movement: formValues.movement || undefined,
+              referenceImageBase64: uploadedPhotoBase64 || undefined,
+            }
+          }).then(({ error: imgError }) => {
+            if (imgError) {
+              console.error('AI image generation failed:', imgError);
+            } else {
+              console.log('AI image generated for', data.brand, data.model);
+              // Trigger a refresh after image is generated
+              onSuccess();
+            }
+          });
+
+          toast({
+            title: "Generating AI Image",
+            description: "A product photo is being generated in the background...",
+          });
+        } catch (imgError) {
+          console.error('AI image generation trigger failed:', imgError);
+        }
       }
 
       toast({
@@ -350,15 +379,17 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <>
       <Button onClick={() => setOpen(true)} className="gap-2">
         <Plus className="w-4 h-4" />
         Add to Collection
       </Button>
-      <DialogContent className="bg-card border-border max-w-md max-h-[90vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="text-foreground">Add New Watch</DialogTitle>
-        </DialogHeader>
+      <ResponsiveDialog
+        open={open}
+        onOpenChange={setOpen}
+        title="Add New Watch"
+        className="bg-card border-border max-w-md"
+      >
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col flex-1 min-h-0">
           <TabsList className="grid w-full grid-cols-2">
@@ -750,7 +781,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         </form>
           </TabsContent>
         </Tabs>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialog>
+    </>
   );
 };
