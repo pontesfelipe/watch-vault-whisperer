@@ -1,12 +1,20 @@
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { MoreVertical, DollarSign, TrendingUp, Edit2, Trash2, ArrowUpDown, CheckCircle, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { CollectionType, getCollectionConfig, SNEAKER_CONDITIONS, PURSE_SIZES } from "@/types/collection";
 import { ItemTypeIcon } from "./ItemTypeIcon";
 import { formatCurrency } from "@/utils/format";
+import { useIsMobile } from "@/hooks/use-mobile";
 import watchHero from "@/assets/watch-hero.jpg";
 import sneakerHero from "@/assets/sneaker-hero.jpg";
 import purseHero from "@/assets/purse-hero.jpg";
@@ -33,125 +41,98 @@ export const DynamicItemCard = ({
   isDraggable = false,
 }: DynamicItemCardProps) => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const config = getCollectionConfig(collectionType);
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // Don't navigate if clicking on buttons/menus
     if ((e.target as HTMLElement).closest('button, [role="menu"]')) return;
     navigate(`/watch/${item.id}`);
   };
 
-  // Get type-specific display values
   const getPrimaryColorDisplay = () => {
-    if (collectionType === 'sneakers' && item.specs?.colorway) {
-      return item.specs.colorway;
-    }
-    if (collectionType === 'purses' && item.specs?.color) {
-      return item.specs.color;
-    }
+    if (collectionType === 'sneakers' && item.specs?.colorway) return item.specs.colorway;
+    if (collectionType === 'purses' && item.specs?.color) return item.specs.color;
     return item.dial_color;
   };
 
   const getSecondaryInfo = () => {
     switch (collectionType) {
-      case 'sneakers':
+      case 'sneakers': {
         const specs = item.specs;
         if (!specs) return null;
         return (
           <div className="flex flex-wrap gap-1.5">
-            {specs.shoe_size && (
-              <Badge variant="outline" className="text-xs">
-                Size {specs.shoe_size} {specs.size_type}
-              </Badge>
-            )}
-            {specs.condition && (
-              <Badge variant="secondary" className="text-xs">
-                {SNEAKER_CONDITIONS[specs.condition]?.label || specs.condition}
-              </Badge>
-            )}
+            {specs.shoe_size && <Badge variant="outline" className="text-xs">Size {specs.shoe_size} {specs.size_type}</Badge>}
+            {specs.condition && <Badge variant="secondary" className="text-xs">{SNEAKER_CONDITIONS[specs.condition]?.label || specs.condition}</Badge>}
             {specs.limited_edition && (
               <Badge className="text-xs bg-amber-500/10 text-amber-600 border-amber-500/30">
-                <Sparkles className="w-3 h-3 mr-1" />
-                Limited
+                <Sparkles className="w-3 h-3 mr-1" />Limited
               </Badge>
             )}
           </div>
         );
-      case 'purses':
+      }
+      case 'purses': {
         const purseSpecs = item.specs;
         if (!purseSpecs) return null;
         return (
           <div className="flex flex-wrap gap-1.5">
-            {purseSpecs.size_category && (
-              <Badge variant="outline" className="text-xs">
-                {PURSE_SIZES[purseSpecs.size_category]?.label || purseSpecs.size_category}
-              </Badge>
-            )}
-            {purseSpecs.material && (
-              <Badge variant="secondary" className="text-xs">
-                {purseSpecs.material}
-              </Badge>
-            )}
+            {purseSpecs.size_category && <Badge variant="outline" className="text-xs">{PURSE_SIZES[purseSpecs.size_category]?.label || purseSpecs.size_category}</Badge>}
+            {purseSpecs.material && <Badge variant="secondary" className="text-xs">{purseSpecs.material}</Badge>}
             {purseSpecs.authenticity_verified && (
               <Badge className="text-xs bg-green-500/10 text-green-600 border-green-500/30">
-                <CheckCircle className="w-3 h-3 mr-1" />
-                Verified
+                <CheckCircle className="w-3 h-3 mr-1" />Verified
               </Badge>
             )}
           </div>
         );
-      case 'watches':
+      }
       default:
         return (
           <div className="flex flex-wrap gap-1.5">
-            {item.movement && (
-              <Badge variant="outline" className="text-xs">
-                {item.movement}
-              </Badge>
-            )}
-            {item.case_size && (
-              <Badge variant="secondary" className="text-xs">
-                {item.case_size}
-              </Badge>
-            )}
+            {item.movement && <Badge variant="outline" className="text-xs">{item.movement}</Badge>}
+            {item.case_size && <Badge variant="secondary" className="text-xs">{item.case_size}</Badge>}
             {item.rarity && item.rarity !== 'common' && (
-              <Badge className="text-xs bg-accent/10 text-accent border-accent/30">
-                {item.rarity.replace('_', ' ')}
-              </Badge>
+              <Badge className="text-xs bg-accent/10 text-accent border-accent/30">{item.rarity.replace('_', ' ')}</Badge>
             )}
           </div>
         );
     }
   };
 
-  const getPriceMetrics = () => {
-    const cost = item.cost || 0;
-    const resalePrice = item.average_resale_price;
-    const appreciation = resalePrice ? ((resalePrice - cost) / cost * 100).toFixed(0) : null;
-    
-    return { cost, resalePrice, appreciation };
-  };
+  const cost = item.cost || 0;
+  const resalePrice = item.average_resale_price;
+  const appreciation = resalePrice ? ((resalePrice - cost) / cost * 100).toFixed(0) : null;
 
-  const { cost, resalePrice, appreciation } = getPriceMetrics();
-
-  // Get placeholder image based on collection type
   const getPlaceholderImage = () => {
     switch (collectionType) {
       case 'sneakers': return sneakerHero;
       case 'purses': return purseHero;
-      case 'watches':
       default: return watchHero;
     }
   };
 
   const imageUrl = item.ai_image_url || getPlaceholderImage();
 
+  const menuActions = [
+    { label: "Edit", icon: Edit2, onClick: onEdit },
+    { label: "Mark as Sold", icon: DollarSign, onClick: onMarkAsSold, separator: true },
+    { label: "Mark as Traded", icon: ArrowUpDown, onClick: onMarkAsTraded },
+    { label: "Delete", icon: Trash2, onClick: onDelete, destructive: true, separator: true },
+  ];
+
+  const menuButton = (
+    <Button variant="secondary" size="icon" className="h-8 w-8 backdrop-blur-sm bg-background/80 shadow-md" aria-label="Item actions">
+      <MoreVertical className="h-4 w-4" />
+    </Button>
+  );
+
   return (
     <Card 
       className="group hover:shadow-luxury transition-all duration-300 cursor-pointer overflow-hidden border-0 shadow-card"
       onClick={handleCardClick}
     >
-      {/* Image with gradient overlay */}
       <div className="relative aspect-square overflow-hidden bg-muted">
         <img 
           src={imageUrl} 
@@ -160,7 +141,6 @@ export const DynamicItemCard = ({
         />
         <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
         
-        {/* Brand/Model overlay on image */}
         <div className="absolute bottom-0 left-0 right-0 p-4">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-background/80 backdrop-blur-sm">
@@ -173,61 +153,77 @@ export const DynamicItemCard = ({
           </div>
         </div>
         
-        {/* Actions dropdown */}
+        {/* Actions - Drawer on mobile, Dropdown on desktop */}
         <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="secondary" size="icon" className="h-8 w-8 backdrop-blur-sm bg-background/80 shadow-md">
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={onEdit}>
-                <Edit2 className="w-4 h-4 mr-2" />
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={onMarkAsSold}>
-                <DollarSign className="w-4 h-4 mr-2" />
-                Mark as Sold
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={onMarkAsTraded}>
-                <ArrowUpDown className="w-4 h-4 mr-2" />
-                Mark as Traded
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={onDelete} className="text-destructive">
-                <Trash2 className="w-4 h-4 mr-2" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {isMobile ? (
+            <>
+              <div onClick={(e) => { e.stopPropagation(); setDrawerOpen(true); }}>
+                {menuButton}
+              </div>
+              <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
+                <DrawerContent onClick={(e) => e.stopPropagation()}>
+                  <DrawerHeader>
+                    <DrawerTitle>{item.brand} {item.model}</DrawerTitle>
+                  </DrawerHeader>
+                  <div className="pb-safe">
+                    {menuActions.map((action, i) => (
+                      <div key={action.label}>
+                        {action.separator && i > 0 && <div className="h-px bg-borderSubtle mx-4" />}
+                        <button
+                          onClick={() => { setDrawerOpen(false); action.onClick?.(); }}
+                          className={`flex items-center gap-3 w-full px-4 py-3 text-left text-sm transition-colors hover:bg-surfaceMuted ${
+                            action.destructive ? "text-destructive" : "text-textMain"
+                          }`}
+                        >
+                          <action.icon className="w-4 h-4" />
+                          {action.label}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </DrawerContent>
+              </Drawer>
+            </>
+          ) : (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>{menuButton}</DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={onEdit}>
+                  <Edit2 className="w-4 h-4 mr-2" />Edit
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={onMarkAsSold}>
+                  <DollarSign className="w-4 h-4 mr-2" />Mark as Sold
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onMarkAsTraded}>
+                  <ArrowUpDown className="w-4 h-4 mr-2" />Mark as Traded
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={onDelete} className="text-destructive">
+                  <Trash2 className="w-4 h-4 mr-2" />Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
         
-        {/* Trade badge on image */}
         {item.available_for_trade && (
           <div className="absolute top-2 left-2">
             <Badge className="text-xs bg-accent/90 text-accent-foreground backdrop-blur-sm">
-              <ArrowUpDown className="w-3 h-3 mr-1" />
-              Trade
+              <ArrowUpDown className="w-3 h-3 mr-1" />Trade
             </Badge>
           </div>
         )}
       </div>
       
       <CardContent className="space-y-3 p-4">
-        {/* Primary color/colorway */}
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">{config.primaryColorLabel}:</span>
-          <Badge variant="outline" className="text-xs font-medium">
-            {getPrimaryColorDisplay()}
-          </Badge>
+          <Badge variant="outline" className="text-xs font-medium">{getPrimaryColorDisplay()}</Badge>
         </div>
         
-        {/* Type-specific secondary info */}
         {getSecondaryInfo()}
         
-        {/* Price and metrics */}
         <div className="flex items-center justify-between pt-3 border-t border-border">
           <div className="flex items-center gap-1.5">
             <DollarSign className="w-4 h-4 text-muted-foreground" />
