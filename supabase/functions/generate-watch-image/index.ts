@@ -82,8 +82,8 @@ function getIdentityProfile(brand: string, model: string, type?: string): Identi
   if (brandLc.includes('casio') && modelLc.includes('databank')) {
     return {
       officialName: 'Casio Databank',
-      requiredElements: 'Rectangular digital LCD face, segmented numerals, utility keypad/button aesthetic, compact resin case and strap',
-      forbiddenElements: 'NO analog hands, NO round case, NO dive bezel, NO chronograph subdials, NO smart-watch UI',
+      requiredElements: 'Rectangular digital LCD face with segmented numerals, multi-button layout on front face (typical calculator-style keypad), compact resin case, resin or stainless steel strap, Casio branding on dial, classic retro 1980s-1990s digital watch aesthetic, silver-tone or dark resin case',
+      forbiddenElements: 'NO analog hands, NO round case, NO dive bezel, NO chronograph subdials, NO smart-watch touchscreen UI, NO large modern smartwatch form factor',
     };
   }
 
@@ -97,9 +97,20 @@ function getIdentityProfile(brand: string, model: string, type?: string): Identi
 
   if (brandLc.includes('trafford')) {
     return {
-      officialName: `${brand} ${model}`,
-      requiredElements: 'Upright portrait orientation, crown aligned at 3 o’clock, dial text/logos readable upright, realistic Trafford case proportions',
-      forbiddenElements: 'NO horizontal rotation, NO sideways dial, NO distorted stretched case geometry',
+      officialName: `Trafford ${model}`,
+      requiredElements: 'Trafford Watches brand identity, round case with clean minimalist dial, applied indices or printed numerals, small brand logo at 12, slim dauphine or baton hands, date window at 3 or 6 if applicable, thin polished bezel, leather or NATO strap, upright portrait orientation with crown at 3 o’clock',
+      forbiddenElements: 'NO horizontal rotation, NO sideways dial, NO distorted case, NO dive bezel, NO chronograph subdials, NO digital display, NO oversized crown guards',
+    };
+  }
+
+  if ((brandLc.includes('swatch') || brandLc.includes('omega')) && modelLc.includes('moonswatch')) {
+    // Extract edition name from quotes or after "MoonSwatch"
+    const editionMatch = model.match(/["“]([^"”]+)["”]/);
+    const editionName = editionMatch?.[1] || model.replace(/.*moonswatch\s*/i, '').trim();
+    return {
+      officialName: `Omega x Swatch MoonSwatch Mission to ${editionName || 'the Planet'}`,
+      requiredElements: 'Bioceramic case material (matte plastic-ceramic blend), Speedmaster Moonwatch-inspired round case shape, tachymeter scale on bezel ring, THREE chronograph subdials in tri-compax layout (running seconds at 9, 30-minute counter at 3, 12-hour counter at 6), applied Omega logo on dial, SWATCH text on dial, matching planet-themed colorway for the specific edition, velcro strap or matching bioceramic bracelet',
+      forbiddenElements: 'NO polished metal case, NO sapphire crystal, NO exhibition caseback, NO leather strap, NO generic Speedmaster without Swatch co-branding, NO wrong planet color scheme',
     };
   }
 
