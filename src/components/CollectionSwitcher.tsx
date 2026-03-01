@@ -60,7 +60,7 @@ export const CollectionSwitcher = () => {
             )}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-72">
+        <DropdownMenuContent align="end" className="w-screen sm:w-72 max-w-[calc(100vw-2rem)]">
           <DropdownMenuLabel>My Collections</DropdownMenuLabel>
           <DropdownMenuSeparator />
           

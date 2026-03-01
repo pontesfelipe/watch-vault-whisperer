@@ -4,6 +4,7 @@ import { UsageChart } from "@/components/UsageChart";
 import { QuickAddWearDialog } from "@/components/QuickAddWearDialog";
 import { DepreciationCard } from "@/components/DepreciationCard";
 import { DepreciationChart } from "@/components/DepreciationChart";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 import { MonthlyUsageTable } from "@/components/MonthlyUsageTable";
 import { CollectionSwitcher } from "@/components/CollectionSwitcher";
@@ -55,32 +56,25 @@ const Dashboard = () => {
   const CollectionIcon = getCollectionIcon();
 
   if (watchLoading || tripLoading || waterLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto"></div>
-          <p className="mt-4 text-textMuted">Loading your collection...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner message="Loading your collection..." />;
   }
 
   return (
     <div className="space-y-6">
       {/* Mobile layout */}
       <div className="flex flex-col md:hidden">
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-3xl font-semibold text-textMain">Dashboard</h1>
+        <div className="flex justify-between items-start gap-3">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl sm:text-3xl font-semibold text-textMain">Dashboard</h1>
             <p className="mt-1 text-sm text-textMuted">
-              {currentCollection 
+              {currentCollection
                 ? `Overview of ${currentCollection.name} statistics`
                 : `Overview of your ${config.pluralLabel.toLowerCase()} collection statistics`}
             </p>
           </div>
           <CollectionSwitcher />
         </div>
-        <div className="mt-4 flex justify-center">
+        <div className="flex justify-center">
           <QuickAddWearDialog watches={watches} onSuccess={refetch} collectionType={currentCollectionType} />
         </div>
       </div>

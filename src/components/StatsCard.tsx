@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Card } from "@/components/ui/card";
 import { LucideIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -12,7 +13,7 @@ interface StatsCardProps {
   watchId?: string; // Kept for backward compatibility
 }
 
-export const StatsCard = ({ title, value, icon: Icon, subtitle, variant = "default", itemId, watchId }: StatsCardProps) => {
+export const StatsCard = memo(({ title, value, icon: Icon, subtitle, variant = "default", itemId, watchId }: StatsCardProps) => {
   const navigate = useNavigate();
   const isCompact = variant === "compact";
   const linkId = itemId || watchId; // Use itemId first, fall back to watchId
@@ -25,7 +26,7 @@ export const StatsCard = ({ title, value, icon: Icon, subtitle, variant = "defau
   };
 
   return (
-    <Card 
+    <Card
       className={`border-borderSubtle bg-surface ${isCompact ? "p-2 sm:p-3" : "p-3 sm:p-4 md:p-6"} shadow-card hover:shadow-soft transition-all duration-300 ${isClickable ? "cursor-pointer hover:border-accent/50" : ""}`}
       onClick={isClickable ? handleClick : undefined}
     >
@@ -43,4 +44,4 @@ export const StatsCard = ({ title, value, icon: Icon, subtitle, variant = "defau
       </div>
     </Card>
   );
-};
+});

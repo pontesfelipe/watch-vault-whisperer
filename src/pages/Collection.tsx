@@ -17,6 +17,7 @@ import { CreateFirstCollectionDialog } from "@/components/CreateFirstCollectionD
 import { CollectionSwitcher } from "@/components/CollectionSwitcher";
 import { AnalyzeWatchMetadataDialog } from "@/components/AnalyzeWatchMetadataDialog";
 import { ImportSpreadsheetDialog } from "@/components/ImportSpreadsheetDialog";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 import { WishlistTable } from "@/components/WishlistTable";
 import { TastePreferences } from "@/components/TastePreferences";
@@ -307,14 +308,7 @@ const Collection = () => {
   }
 
   if (loading || collectionsLoading || !selectedCollectionId) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto"></div>
-          <p className="mt-4 text-textMuted">Loading collection...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner message="Loading collection..." />;
   }
 
   const filteredWatches = localWatches.filter((watch) => {
