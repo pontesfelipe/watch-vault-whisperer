@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Calendar, DollarSign, Eye, EyeOff, Trash2, Info, Pencil } from "lucide-react";
+import { ArrowLeft, Calendar, DollarSign, Eye, EyeOff, Trash2, Info, Pencil, RefreshCw } from "lucide-react";
 import { AddWearDialog } from "@/components/AddWearDialog";
 import { EditWatchDialog } from "@/components/EditWatchDialog";
 import { EditWearEntryDialog } from "@/components/EditWearEntryDialog";
@@ -82,6 +82,34 @@ const WatchDetail = () => {
   const [showCost, setShowCost] = useState(isAdmin);
   const [editingEntry, setEditingEntry] = useState<WearEntry | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [regeneratingImage, setRegeneratingImage] = useState(false);
+
+  const handleRegenerateImage = async () => {
+    if (!watch) return;
+    setRegeneratingImage(true);
+    try {
+      const { error } = await supabase.functions.invoke('generate-watch-image', {
+        body: {
+          watchId: watch.id,
+          brand: watch.brand,
+          model: watch.model,
+          edition: watch.model,
+          dialColor: watch.dial_color,
+          type: watch.type,
+          caseSize: watch.case_size || undefined,
+          movement: watch.movement || undefined,
+        }
+      });
+      if (error) throw error;
+      toast({ title: "Success", description: "AI image regenerated successfully" });
+      fetchData();
+    } catch (err) {
+      console.error('Regenerate failed:', err);
+      toast({ title: "Error", description: "Failed to regenerate image. Please try again.", variant: "destructive" });
+    } finally {
+      setRegeneratingImage(false);
+    }
+  };
 
   const handleToggleCost = () => {
     if (!showCost) {
@@ -193,6 +221,16 @@ const WatchDetail = () => {
               <p className="text-xl text-muted-foreground">{watch.model}</p>
             </div>
             <div className="flex gap-2 items-start">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRegenerateImage}
+                disabled={regeneratingImage}
+                className="gap-1.5"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${regeneratingImage ? 'animate-spin' : ''}`} />
+                {regeneratingImage ? 'Generating...' : 'Regenerate Image'}
+              </Button>
               <EditWatchDialog watch={watch} onSuccess={fetchData} />
               <Badge variant="secondary" className="text-sm">
                 {watch.type}
