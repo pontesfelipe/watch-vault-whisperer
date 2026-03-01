@@ -10,6 +10,7 @@ interface Watch {
   msrp?: number;
   image_url?: string;
   ai_image_url?: string;
+  updated_at?: string;
   dial_color: string;
   case_size?: string;
   lug_to_lug_size?: string;
@@ -40,6 +41,13 @@ export const useWatchData = (collectionId?: string | null) => {
   const [wearEntries, setWearEntries] = useState<WearEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const { user, isAdmin } = useAuth();
+
+  const appendImageVersion = (url?: string | null, updatedAt?: string) => {
+    if (!url) return undefined;
+    const separator = url.includes("?") ? "&" : "?";
+    const version = updatedAt ? encodeURIComponent(updatedAt) : "1";
+    return `${url}${separator}v=${version}`;
+  };
 
   const fetchData = async () => {
     if (!user) {
@@ -75,10 +83,15 @@ export const useWatchData = (collectionId?: string | null) => {
         .order("model", { ascending: true });
 
       if (watchesResult.data) {
-        setWatches(watchesResult.data);
+        const watchesWithFreshImages = (watchesResult.data as Watch[]).map((watch) => ({
+          ...watch,
+          ai_image_url: appendImageVersion(watch.ai_image_url, watch.updated_at),
+        }));
+
+        setWatches(watchesWithFreshImages);
         
         // Fetch wear entries for the watches in this collection
-        const watchIds = watchesResult.data.map((w: Watch) => w.id);
+        const watchIds = watchesWithFreshImages.map((w: Watch) => w.id);
         
         if (watchIds.length > 0) {
           const wearEntriesQuery: any = (supabase.from('wear_entries' as any) as any)

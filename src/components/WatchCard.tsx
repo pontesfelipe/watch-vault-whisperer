@@ -14,6 +14,9 @@ import { EditPurseSpecsDialog } from "@/components/EditPurseSpecsDialog";
 import { useCollection } from "@/contexts/CollectionContext";
 import { ItemTypeIcon } from "@/components/ItemTypeIcon";
 import { isSneakerCollection, isPurseCollection } from "@/types/collection";
+import watchHero from "@/assets/watch-hero.jpg";
+import sneakerHero from "@/assets/sneaker-hero.jpg";
+import purseHero from "@/assets/purse-hero.jpg";
 import {
   Dialog,
   DialogContent,
@@ -45,6 +48,7 @@ interface WatchCardProps {
     available_for_trade?: boolean;
     metadata_analysis_reasoning?: string;
     ai_image_url?: string;
+    updated_at?: string;
   };
   totalDays: number;
   onDelete: () => void;
@@ -64,6 +68,16 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
   
   const isSneaker = currentCollectionType ? isSneakerCollection(currentCollectionType) : false;
   const isPurse = currentCollectionType ? isPurseCollection(currentCollectionType) : false;
+
+  const getFallbackImage = () => {
+    if (isSneaker) return sneakerHero;
+    if (isPurse) return purseHero;
+    return watchHero;
+  };
+
+  const imageUrl = watch.ai_image_url
+    ? `${watch.ai_image_url}${watch.ai_image_url.includes("?") ? "&" : "?"}v=${encodeURIComponent(watch.updated_at ?? watch.id)}`
+    : getFallbackImage();
 
   const handleToggleCost = () => {
     if (!showCost) {
@@ -222,6 +236,15 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
           <Badge variant="secondary" className="text-[10px] sm:text-xs font-medium flex-shrink-0">
             {watch.type}
           </Badge>
+        </div>
+
+        <div className="mb-3 sm:mb-4 rounded-xl overflow-hidden border border-borderSubtle bg-surfaceMuted">
+          <img
+            src={imageUrl}
+            alt={`${watch.brand} ${watch.model}`}
+            className="w-full h-40 sm:h-44 object-cover"
+            loading="lazy"
+          />
         </div>
 
         <div className="space-y-2 sm:space-y-3 mb-3 sm:mb-4">
