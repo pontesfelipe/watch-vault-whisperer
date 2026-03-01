@@ -17,20 +17,28 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    // Verify caller is admin
+    // Verify caller is admin, service-role, or internal cron
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) throw new Error('Not authenticated');
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    if (authError || !user) throw new Error('Not authenticated');
+    const cronSecret = req.headers.get('x-cron-secret');
+    const expectedCronSecret = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    // Allow internal cron calls with service role key as cron secret
+    const isCronCall = cronSecret && expectedCronSecret && cronSecret === expectedCronSecret;
+    
+    if (!isCronCall) {
+      if (!authHeader) throw new Error('Not authenticated');
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+      if (authError || !user) throw new Error('Not authenticated');
 
-    const { data: roleData } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .eq('role', 'admin')
-      .maybeSingle();
-    if (!roleData) throw new Error('Admin access required');
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'admin')
+        .maybeSingle();
+      if (!roleData) throw new Error('Admin access required');
+    }
 
     // Get all ai_image_url values from watches
     const { data: watches } = await supabase
