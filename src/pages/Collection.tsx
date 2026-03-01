@@ -38,7 +38,7 @@ import {
 } from "@dnd-kit/sortable";
 
 const Collection = () => {
-  const { selectedCollectionId, currentCollection, collections, collectionsLoading, refetchCollections } = useCollection();
+  const { selectedCollectionId, currentCollection, collections, collectionsLoading, refetchCollections, currentCollectionConfig } = useCollection();
   const { watches, wearEntries, loading, refetch } = useWatchData(selectedCollectionId);
   const { pastWatches, wearEntries: pastWearEntries, loading: pastLoading, refetch: refetchPast } = usePastWatchData();
   const { trips } = useTripData();
@@ -50,6 +50,10 @@ const Collection = () => {
   const [localWatches, setLocalWatches] = useState(watches);
   const [showPastWatches, setShowPastWatches] = useState(false);
   const { toast } = useToast();
+
+  // Dynamic labels
+  const itemLabel = currentCollectionConfig?.singular || 'item';
+  const itemsLabel = currentCollectionConfig?.plural || 'items';
 
   const handleRefetchAll = () => {
     refetch();
@@ -221,7 +225,7 @@ const Collection = () => {
                   )}
                 </div>
                 <p className="text-sm text-textMuted mt-1">
-                  {watches.length} {watches.length === 1 ? "watch" : "watches"} in {currentCollection?.role === 'owner' ? 'your' : 'this'} collection
+                  {watches.length} {watches.length === 1 ? itemLabel.toLowerCase() : itemsLabel.toLowerCase()} in {currentCollection?.role === 'owner' ? 'your' : 'this'} collection
                 </p>
               </div>
               {currentCollection && currentCollection.role === 'owner' && (
@@ -258,7 +262,7 @@ const Collection = () => {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
-            placeholder="Search watches..."
+            placeholder={`Search ${itemsLabel.toLowerCase()}...`}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
@@ -283,8 +287,8 @@ const Collection = () => {
         <div className="text-center py-12">
           <p className="text-muted-foreground">
             {searchQuery || selectedBrand !== "all"
-              ? "No watches match your filters"
-              : "No watches yet. Add your first watch!"}
+              ? `No ${itemsLabel.toLowerCase()} match your filters`
+              : `No ${itemsLabel.toLowerCase()} yet. Add your first ${itemLabel.toLowerCase()}!`}
           </p>
         </div>
       ) : (
@@ -320,7 +324,7 @@ const Collection = () => {
           >
             <div className="flex items-center gap-2">
               <History className="w-5 h-5 text-textMuted" />
-              <h2 className="text-xl font-semibold text-textMain">Past Watches</h2>
+              <h2 className="text-xl font-semibold text-textMain">Past {itemsLabel}</h2>
               <span className="text-sm text-textMuted">({pastWatches.length})</span>
             </div>
             {showPastWatches ? (
@@ -333,7 +337,7 @@ const Collection = () => {
           {showPastWatches && (
             <>
               <p className="text-sm text-textMuted mb-4">
-                Watches you've sold or traded. Historical wear data is preserved.
+                {itemsLabel} you've sold or traded. Historical wear data is preserved.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {pastWatches.map((watch) => (

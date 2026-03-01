@@ -13,12 +13,21 @@ import { useStatsCalculations } from "@/hooks/useStatsCalculations";
 import { useCollection } from "@/contexts/CollectionContext";
 
 const Dashboard = () => {
-  const { selectedCollectionId, currentCollection } = useCollection();
+  const { selectedCollectionId, currentCollection, currentCollectionType, currentCollectionConfig } = useCollection();
   const { watches, wearEntries, loading: watchLoading, refetch } = useWatchData(selectedCollectionId);
   const { trips, loading: tripLoading } = useTripData();
   const { waterUsages, loading: waterLoading } = useWaterUsageData();
 
   const stats = useStatsCalculations(watches, wearEntries, trips, waterUsages);
+
+  // Dynamic labels based on collection type
+  const labels = currentCollectionConfig?.statsLabels || {
+    totalItems: 'Total Items',
+    mostUsed: 'Most Used',
+    avgUsage: 'Avg Days/Item'
+  };
+  const itemLabel = currentCollectionConfig?.singular || 'Item';
+  const isWatches = currentCollectionType === 'watches';
 
   if (watchLoading || tripLoading || waterLoading) {
     return (
@@ -59,44 +68,48 @@ const Dashboard = () => {
       <div className="space-y-3">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           <StatsCard
-            title="Total Watches"
+            title={labels.totalItems}
             value={stats.totalWatches}
             icon={Watch}
             variant="compact"
           />
           <StatsCard
-            title="Total Days Worn"
+            title="Total Days Used"
             value={stats.totalDaysWorn}
             icon={Calendar}
             variant="compact"
           />
           <StatsCard
-            title="Most Worn Watch"
+            title={labels.mostUsed}
             value={stats.mostWornWatch ? `${stats.mostWornWatch.brand} ${stats.mostWornWatch.model}` : "N/A"}
             icon={TrendingUp}
             variant="compact"
             watchId={stats.mostWornWatch?.id}
           />
           <StatsCard
-            title="Avg Days/Watch"
+            title={labels.avgUsage}
             value={stats.avgDaysPerWatch}
             icon={Target}
             variant="compact"
           />
-          <StatsCard
-            title="Most Worn Dial Color"
-            value={stats.mostWornDialColor || "N/A"}
-            icon={Palette}
-            variant="compact"
-          />
+          {isWatches && (
+            <StatsCard
+              title="Most Worn Dial Color"
+              value={stats.mostWornDialColor || "N/A"}
+              icon={Palette}
+              variant="compact"
+            />
+          )}
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-          <StatsCard
-            title="Most Worn Style"
-            value={stats.mostWornStyle || "N/A"}
-            icon={Shirt}
-            variant="compact"
-          />
+          {isWatches && (
+            <StatsCard
+              title="Most Worn Style"
+              value={stats.mostWornStyle || "N/A"}
+              icon={Shirt}
+              variant="compact"
+            />
+          )}
           <StatsCard
             title="Trending (30 Days)"
             value={stats.trendingWatch ? `${stats.trendingWatch.brand} ${stats.trendingWatch.model}` : "N/A"}
@@ -107,25 +120,27 @@ const Dashboard = () => {
           <StatsCard
             title="Trending Down (90d)"
             value={stats.trendingDownWatch ? `${stats.trendingDownWatch.brand} ${stats.trendingDownWatch.model}` : "N/A"}
-            subtitle={stats.trendingDownCount ? `${stats.trendingDownCount} watches ↓` : undefined}
+            subtitle={stats.trendingDownCount ? `${stats.trendingDownCount} ${isWatches ? 'watches' : 'items'} ↓` : undefined}
             icon={TrendingDown}
             variant="compact"
             watchId={stats.trendingDownWatch?.id}
           />
           <StatsCard
-            title="#1 Trip Watch"
+            title={`#1 Trip ${itemLabel}`}
             value={stats.topTripWatch ? `${stats.topTripWatch.brand} ${stats.topTripWatch.model}` : "N/A"}
             icon={Plane}
             variant="compact"
             watchId={stats.topTripWatch?.id}
           />
-          <StatsCard
-            title="#1 Water Usage"
-            value={stats.topWaterWatch ? `${stats.topWaterWatch.brand} ${stats.topWaterWatch.model}` : "N/A"}
-            icon={Droplets}
-            variant="compact"
-            watchId={stats.topWaterWatch?.id}
-          />
+          {isWatches && (
+            <StatsCard
+              title="#1 Water Usage"
+              value={stats.topWaterWatch ? `${stats.topWaterWatch.brand} ${stats.topWaterWatch.model}` : "N/A"}
+              icon={Droplets}
+              variant="compact"
+              watchId={stats.topWaterWatch?.id}
+            />
+          )}
         </div>
       </div>
 
