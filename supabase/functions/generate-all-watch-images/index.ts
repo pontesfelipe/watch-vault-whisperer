@@ -42,6 +42,8 @@ interface VerifiedEdition {
   braceletOrStrap: string;
   keyDesignElements: string;
   complications: string;
+  notThisWatch: string;
+  negativeElements: string;
 }
 
 async function verifyEdition(watch: any, LOVABLE_API_KEY: string): Promise<VerifiedEdition | null> {
@@ -66,23 +68,25 @@ async function verifyEdition(watch: any, LOVABLE_API_KEY: string): Promise<Verif
         messages: [
           {
             role: "system",
-            content: `You are a horological identification expert with encyclopedic knowledge of every watch reference ever produced. Given watch metadata from a collector, identify the EXACT edition/reference and describe its visual design elements with absolute precision.
+            content: `You are a horological identification expert. Given watch metadata from a collector, identify the EXACT edition and describe it with absolute precision.
 
 CRITICAL RULES:
-- COMPLICATIONS MATTER: A "Navitimer GMT" is NOT a chronograph — it has a GMT hand and 24-hour bezel, NOT chronograph subdials. A chronograph has pushers and subdials. A GMT has a 4th hand. NEVER confuse them.
-- EDITION NAMES MATTER: "Seamaster 300" from 2023 is the heritage reissue with sandwich dial and rubber strap, NOT the Seamaster Diver 300M (which has a wave dial and helium escape valve). "Aqua Terra Beijing 2022" has a specific ice-crystal pattern dial — NOT a plain Aqua Terra.
-- DIAL COLOR IS SACRED: If the owner says "Black" dial, it MUST be black. If "Ice Blue", it must be ice blue. Never change the dial color.
-- Use the owner's "what_i_like" and "why_bought" notes as CRITICAL clues about which exact variant they own. These notes often contain edition-defining details.
-- The "type" field tells you the complication category. If it says "Pilot, GMT" — it's a GMT watch, NOT a chronograph. If it says "Digital, Fun" — it's a digital watch.
+- COMPLICATIONS ARE IDENTITY: A "Navitimer GMT" has a GMT hand and 24-hour rotating bezel — it does NOT have chronograph subdials or chronograph pushers. A "Navitimer Chronograph" has subdials and pushers. These are COMPLETELY DIFFERENT watches. The "type" field is the ground truth for complications.
+- EDITIONS ARE UNIQUE: "Seamaster 300" (2018+) is the heritage reissue with sandwich dial, broad arrow hands, and rubber strap — NOT the Seamaster Diver 300M (wave dial, helium valve, ceramic bezel). "Aqua Terra Beijing 2022" has a distinctive ice-crystal/snowflake patterned dial inspired by winter sports — NOT a plain teak/horizontal stripe Aqua Terra.
+- DIAL COLOR IS ABSOLUTE: The owner's stated dial color overrides everything. "Black" = black. "Ice Blue" = ice blue. Never substitute.
+- DIGITAL = DIGITAL: If type says "Digital" the watch has an LCD/LED screen, NOT an analog dial with hands.
+- Owner's "what_i_like" and "why_bought" notes contain edition-defining clues. Read them carefully.
 
-Return ONLY valid JSON with these fields:
+Return ONLY valid JSON:
 {
-  "officialName": "The most precise official name including reference number if known (e.g., 'Omega Seamaster 300 Master Co-Axial 41mm' or 'Breitling Navitimer Automatic GMT 41 Ice Blue A32310171C1A1')",
-  "dialDescription": "EXACT dial appearance: color, texture (sunburst/matte/sandwich/patterned), indices style (applied/printed/lume plots), subdial layout if any, any special markings, patterns, or edition-specific details like ice crystal patterns",
-  "bezelDescription": "EXACT bezel: material (ceramic/steel/aluminum), type (dive/GMT 24hr/tachymeter/smooth), rotation (uni/bi/fixed), color(s), markings",
-  "braceletOrStrap": "EXACT bracelet or strap: type (rubber/nato/leather/mesh/metal bracelet), specific pattern, clasp style, color",
-  "keyDesignElements": "ALL distinguishing features: crown guards, case shape, hand style (sword/dauphine/arrow/skeleton), lume color, caseback (display/solid), pushers or lack thereof, any special edition engravings or markings",
-  "complications": "PRECISE list: ONLY the actual complications this specific model has. GMT = extra hand + 24hr scale. Chronograph = pushers + subdials. Date = date window. Do NOT add complications the watch doesn't have."
+  "officialName": "Most precise official name with reference number (e.g. 'Breitling Navitimer Automatic GMT 41 Ice Blue Ref. A32310171C1A1')",
+  "dialDescription": "EXACT dial: color, texture, indices, subdials if any, special patterns/markings unique to this edition",
+  "bezelDescription": "EXACT bezel: material, type (dive/GMT-24hr/tachymeter/smooth/digital-no-bezel), rotation, colors",
+  "braceletOrStrap": "EXACT strap/bracelet: material, color, pattern, clasp",
+  "keyDesignElements": "Unique identifiers: hand style, crown shape, case details, special edition marks, lume color",
+  "complications": "ONLY the real complications: GMT/chronograph/date/moonphase/digital-multifunction. If type says GMT, it's GMT only. If type says Digital, it's digital display only. Never invent complications.",
+  "notThisWatch": "Common models this could be confused with and WHY it's different. E.g. 'NOT the Navitimer B01 Chronograph (which has 3 subdials and pushers — this GMT has no subdials, no pushers, just a GMT hand)'. 'NOT the Seamaster Diver 300M (which has wave dial and helium valve — this Seamaster 300 has sandwich dial and no helium valve)'.",
+  "negativeElements": "Visual elements that MUST NOT appear: e.g. 'NO chronograph subdials, NO chronograph pushers, NO wave pattern on dial, NO helium escape valve'. Be specific about what the image model might incorrectly add."
 }`
           },
           { role: "user", content: contextParts }
@@ -115,15 +119,19 @@ Return ONLY valid JSON with these fields:
 
 function buildVerifiedPrompt(watch: any, edition: VerifiedEdition): string {
   return [
-    `Create an ACCURATE photorealistic product photograph of the EXACT ${edition.officialName} wristwatch`,
-    `CRITICAL: This is specifically the "${edition.officialName}" — NOT a generic ${watch.brand} watch`,
+    // NEGATIVE CONSTRAINTS FIRST — these are most critical for accuracy
+    `⚠️ ABSOLUTE RESTRICTIONS — READ BEFORE GENERATING: ${edition.negativeElements}`,
+    `⚠️ THIS IS NOT: ${edition.notThisWatch}`,
+    ``,
+    // Identity
+    `Generate a photorealistic product photo of EXACTLY the ${edition.officialName}`,
+    `COMPLICATIONS — ONLY THESE, nothing else: ${edition.complications}`,
     `DIAL: ${edition.dialDescription}`,
     `BEZEL: ${edition.bezelDescription}`,
     `BRACELET/STRAP: ${edition.braceletOrStrap}`,
-    `KEY DESIGN ELEMENTS: ${edition.keyDesignElements}`,
-    `COMPLICATIONS (ONLY THESE — do NOT add extra subdials or pushers): ${edition.complications}`,
-    `CRITICAL: If complications say "GMT" then show a GMT hand pointing to 24-hour markings — do NOT show chronograph subdials or pushers. If complications say "Digital" then show a digital LCD display, not an analog dial.`,
-    `Render the exact real-world reference/edition; avoid generic lookalikes`,
+    `DISTINGUISHING FEATURES: ${edition.keyDesignElements}`,
+    ``,
+    // Composition
     COMPOSITION_RULES,
   ].join('. ');
 }
@@ -149,17 +157,20 @@ function buildFallbackPrompt(watch: any): string {
 
 function buildVerifiedReferencePrompt(watch: any, edition: VerifiedEdition): string {
   return [
-    `IMPORTANT: Use the reference image ONLY to identify design details (dial layout, hand style, bezel markings, bracelet pattern, crown shape)`,
-    `Do NOT copy the framing, zoom level, angle, or proportions from the reference photo`,
+    // NEGATIVE CONSTRAINTS FIRST
+    `⚠️ ABSOLUTE RESTRICTIONS — READ BEFORE GENERATING: ${edition.negativeElements}`,
+    `⚠️ THIS IS NOT: ${edition.notThisWatch}`,
+    ``,
+    // Reference image guidance
+    `Use the reference image ONLY to identify design details (dial layout, hand style, bezel markings). Do NOT copy framing or angle`,
     `This is EXACTLY the ${edition.officialName}`,
+    `COMPLICATIONS — ONLY THESE, nothing else: ${edition.complications}`,
     `DIAL: ${edition.dialDescription}`,
     `BEZEL: ${edition.bezelDescription}`,
     `BRACELET/STRAP: ${edition.braceletOrStrap}`,
-    `KEY DESIGN ELEMENTS: ${edition.keyDesignElements}`,
-    `COMPLICATIONS (ONLY THESE — do NOT add extra subdials or pushers): ${edition.complications}`,
-    `CRITICAL: If complications say "GMT" then show a GMT hand pointing to 24-hour markings — do NOT show chronograph subdials or pushers. If complications say "Digital" then show a digital LCD display, not an analog dial.`,
-    `Never output a generic or placeholder-style watch`,
-    `CRITICAL OVERRIDE - IGNORE THE REFERENCE IMAGE'S FRAMING: ${COMPOSITION_RULES}`,
+    `DISTINGUISHING FEATURES: ${edition.keyDesignElements}`,
+    ``,
+    `CRITICAL OVERRIDE — IGNORE REFERENCE IMAGE FRAMING: ${COMPOSITION_RULES}`,
   ].join('. ');
 }
 
@@ -230,20 +241,35 @@ async function generateImageForWatch(
 
     // STEP 1: Verify the exact edition using AI
     const edition = await verifyEdition(watch, LOVABLE_API_KEY);
+    if (edition) {
+      console.log(`  Verified: ${edition.officialName}`);
+      console.log(`  NOT this: ${edition.notThisWatch}`);
+      console.log(`  Negative: ${edition.negativeElements}`);
+      console.log(`  Complications: ${edition.complications}`);
+    }
     
     // STEP 2: Search for reference image using verified edition name
     let referenceBase64: string | null = null;
     const foundUrl = await findReferenceImageUrl(watch.brand, watch.model, edition, LOVABLE_API_KEY);
     if (foundUrl) referenceBase64 = await fetchImageAsBase64(foundUrl);
 
+    // Build system message with negative constraints for image model
+    const systemMsg = edition ? {
+      role: "system",
+      content: `You are generating a product photo of EXACTLY the ${edition.officialName}. ABSOLUTE RULES you MUST follow:\n1. ${edition.negativeElements}\n2. This watch is NOT: ${edition.notThisWatch}\n3. Only these complications exist: ${edition.complications}\nViolating any of these rules means the image is WRONG and unusable.`
+    } : null;
+
     // STEP 3: Build prompt using verified edition details
     let messages: any[];
     if (referenceBase64 && edition) {
       console.log(`Using reference image + verified edition for ${edition.officialName}`);
-      messages = [{ role: "user", content: [
-        { type: "text", text: buildVerifiedReferencePrompt(watch, edition) },
-        { type: "image_url", image_url: { url: referenceBase64 } }
-      ]}];
+      messages = [
+        ...(systemMsg ? [systemMsg] : []),
+        { role: "user", content: [
+          { type: "text", text: buildVerifiedReferencePrompt(watch, edition) },
+          { type: "image_url", image_url: { url: referenceBase64 } }
+        ]}
+      ];
     } else if (referenceBase64) {
       console.log(`Using reference image (no verification) for ${watch.brand} ${watch.model}`);
       const fallbackHints = buildFallbackPrompt(watch);
@@ -253,7 +279,10 @@ async function generateImageForWatch(
       ]}];
     } else if (edition) {
       console.log(`No reference found, using verified edition: ${edition.officialName}`);
-      messages = [{ role: "user", content: buildVerifiedPrompt(watch, edition) }];
+      messages = [
+        ...(systemMsg ? [systemMsg] : []),
+        { role: "user", content: buildVerifiedPrompt(watch, edition) }
+      ];
     } else {
       console.log(`No reference or verification, using fallback for ${watch.brand} ${watch.model}`);
       messages = [{ role: "user", content: buildFallbackPrompt(watch) }];
