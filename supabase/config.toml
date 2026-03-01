@@ -4,5 +4,8 @@ project_id = "thrwpxiahqgubjkjnkgt"
 [functions.check-user-access]
 verify_jwt = false
 
+# Allow cron to call cleanup without JWT (auth handled in function code)
+[functions.cleanup-unused-images]
+verify_jwt = false
+
 # All other functions use default JWT verification (verify_jwt = true)
-# No need to explicitly set verify_jwt = true as it's the default
