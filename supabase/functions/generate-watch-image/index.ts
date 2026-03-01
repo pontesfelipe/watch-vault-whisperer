@@ -34,7 +34,7 @@ const COMPOSITION_RULES = [
   'STRAIGHT-ON front-facing view looking directly at the dial face - absolutely NO side angles',
   'Maximum 3-5 degree tilt for minimal depth perception - the full dial must be completely visible and readable',
   'The watch must be UPRIGHT with 12 o\'clock at the top and strap/bracelet running vertically (top-to-bottom), never horizontal/sideways',
-  'For rectangular watches, long axis must be vertical, crown at 3 o\'clock side, no 90° rotation',
+  'For rectangular watches, long axis must be vertical, crown at 3 o\'clock side, no 90-degree rotation',
   'Show a small portion of the bracelet/strap extending from both lugs (about 1-2 links or 2cm of strap)',
   'DARK background: smooth gradient from charcoal (#2a2a2a) at edges to near-black (#111111) at center',
   'Professional studio lighting: soft diffused main light from upper-left, subtle fill light from right',
@@ -96,16 +96,16 @@ function getIdentityProfile(brand: string, model: string, type?: string): Identi
   }
 
   if (brandLc.includes('trafford')) {
+    const cleanModel = normalizeModelForSearch(model);
     return {
-      officialName: `Trafford ${model}`,
-      requiredElements: 'Trafford Watches brand identity, round case with clean minimalist dial, applied indices or printed numerals, small brand logo at 12, slim dauphine or baton hands, date window at 3 or 6 if applicable, thin polished bezel, leather or NATO strap, upright portrait orientation with crown at 3 o’clock',
-      forbiddenElements: 'NO horizontal rotation, NO sideways dial, NO distorted case, NO dive bezel, NO chronograph subdials, NO digital display, NO oversized crown guards',
+      officialName: `Trafford ${cleanModel}`,
+      requiredElements: 'Trafford Watches brand identity: round stainless steel case, clean minimalist dial with applied indices or printed numerals, small Trafford logo text at 12, slim dauphine or baton hands, date window at 3 or 6 if applicable, thin polished bezel, leather strap or mesh bracelet typical of British microbrand dress watches, upright portrait orientation with crown at 3 position, understated elegant British design aesthetic',
+      forbiddenElements: 'NO horizontal or sideways rotation of the watch, NO dive bezel, NO chronograph subdials, NO digital display, NO oversized crown guards, NO sporty or tool watch elements, NO smart-watch features',
     };
   }
 
   if ((brandLc.includes('swatch') || brandLc.includes('omega')) && modelLc.includes('moonswatch')) {
-    // Extract edition name from quotes or after "MoonSwatch"
-    const editionMatch = model.match(/["“]([^"”]+)["”]/);
+    const editionMatch = model.match(/[""\u201C\u201D]([^""\u201C\u201D]+)[""\u201C\u201D]/);
     const editionName = editionMatch?.[1] || model.replace(/.*moonswatch\s*/i, '').trim();
     return {
       officialName: `Omega x Swatch MoonSwatch Mission to ${editionName || 'the Planet'}`,
@@ -175,85 +175,32 @@ function buildPureGenerationPrompt(
 
   return [
     `Create an ACCURATE photorealistic product photograph of the exact ${brand} ${canonicalModel} wristwatch`,
+    'This must look like a real catalog product photo taken by a professional photographer in a studio',
     'Render the exact real-world edition/reference when identifiable; avoid generic lookalikes',
+    `The watch MUST be recognizably a ${brand} ${canonicalModel} - get the dial layout, hand style, bezel, case shape, and branding exactly right`,
     cues,
     identity,
     COMPOSITION_RULES,
   ].filter(Boolean).join('. ');
 }
 
-async function findReferenceImageUrls(
-  brand: string,
-  model: string,
-  opts: { dialColor?: string; type?: string; caseSize?: string; movement?: string; bezelType?: string; strapType?: string; bracelet?: string; edition?: string; specialEditionHint?: string; year?: string | number },
-  LOVABLE_API_KEY: string
-): Promise<string[]> {
-  try {
-    const searchModel = normalizeModelForSearch(model);
-    const cueText = buildDetailCues(opts);
-    console.log(`Searching for reference images: ${brand} ${searchModel}`);
-
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          {
-            role: "system",
-            content: 'You are a watch reference image hunter. Return ONLY a JSON array of up to 4 URLs. Prioritize official brand product pages and direct catalog images for the EXACT edition. Prefer front-facing product shots. Avoid marketplaces, wrist shots, and lifestyle photos. No markdown, no commentary.'
-          },
-          {
-            role: "user",
-            content: `Find reference image URLs for: ${brand} ${searchModel}. ${cueText}. Return only JSON array of URLs.`
-          }
-        ],
-        temperature: 0.2,
-      }),
-    });
-
-    if (!response.ok) return [];
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content?.trim();
-    if (!content || content.length > 8000) return [];
-
-    const jsonMatch = content.match(/\[[\s\S]*\]/);
-    if (jsonMatch) {
-      const parsed = JSON.parse(jsonMatch[0]);
-      if (Array.isArray(parsed)) {
-        return parsed
-          .filter((entry) => typeof entry === 'string' && /^https?:\/\//i.test(entry))
-          .slice(0, 4);
-      }
-    }
-
-    const urlMatches = content.match(/https?:\/\/[^\s"'<>]+/gi) || [];
-    return urlMatches.slice(0, 4);
-  } catch {
-    return [];
-  }
-}
-
-async function resolveImageUrlFromHtmlPage(pageUrl: string): Promise<string | null> {
-  try {
-    const resp = await fetch(pageUrl, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; WatchVault/1.0)' } });
-    if (!resp.ok) return null;
-    const contentType = resp.headers.get('content-type') || '';
-    if (!contentType.toLowerCase().includes('text/html')) return null;
-    const html = await resp.text();
-    const metaMatch = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)
-      || html.match(/<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i);
-    if (!metaMatch?.[1]) return null;
-    return new URL(metaMatch[1], pageUrl).toString();
-  } catch { return null; }
-}
-
 async function fetchImageAsBase64(imageUrl: string): Promise<string | null> {
   try {
     let candidateUrl = imageUrl;
     if (!/\.(jpg|jpeg|png|webp)(\?|#|$)/i.test(candidateUrl)) {
-      const extracted = await resolveImageUrlFromHtmlPage(candidateUrl);
-      if (extracted) candidateUrl = extracted;
+      // Try to extract og:image from HTML pages
+      try {
+        const resp = await fetch(candidateUrl, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; WatchVault/1.0)' } });
+        if (resp.ok) {
+          const contentType = resp.headers.get('content-type') || '';
+          if (contentType.toLowerCase().includes('text/html')) {
+            const html = await resp.text();
+            const metaMatch = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)
+              || html.match(/<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i);
+            if (metaMatch?.[1]) candidateUrl = new URL(metaMatch[1], candidateUrl).toString();
+          }
+        }
+      } catch { /* ignore */ }
     }
 
     const resp = await fetch(candidateUrl, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; WatchVault/1.0)' } });
@@ -269,16 +216,6 @@ async function fetchImageAsBase64(imageUrl: string): Promise<string | null> {
     for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
     return `data:${ct};base64,${btoa(binary)}`;
   } catch { return null; }
-}
-
-async function collectReferenceImages(candidateUrls: string[], maxImages = 3): Promise<string[]> {
-  const references: string[] = [];
-  for (const url of candidateUrls) {
-    if (references.length >= maxImages) break;
-    const base64 = await fetchImageAsBase64(url);
-    if (base64) references.push(base64);
-  }
-  return references;
 }
 
 async function normalizeImageComposition(
@@ -363,13 +300,14 @@ serve(async (req) => {
 
     const identityProfile = getIdentityProfile(brand, model, type);
 
+    // Only use user-provided reference images (no LLM URL search - those hallucinate)
     let referenceImages: string[] = [];
-    let referenceSource: 'provided-url' | 'official-search' | 'uploaded-photo' | 'none' = 'none';
+    let referenceSource: 'provided-url' | 'uploaded-photo' | 'none' = 'none';
 
     if (referenceImageBase64) {
       referenceImages = [referenceImageBase64];
       referenceSource = 'uploaded-photo';
-      console.log('Using uploaded photo as reference (skipping reference search)');
+      console.log('Using uploaded photo as reference');
     } else if (referenceImageUrl) {
       const fromProvidedUrl = await fetchImageAsBase64(referenceImageUrl);
       if (fromProvidedUrl) {
@@ -378,21 +316,8 @@ serve(async (req) => {
       }
     }
 
-    if (referenceImages.length === 0) {
-      const foundUrls = await findReferenceImageUrls(
-        brand,
-        model,
-        { dialColor, type, caseSize, movement, bracelet, year, edition, bezelType, strapType, specialEditionHint },
-        LOVABLE_API_KEY
-      );
-      referenceImages = await collectReferenceImages(foundUrls, 3);
-      if (referenceImages.length > 0) {
-        referenceSource = 'official-search';
-      }
-    }
-
     if (referenceImages.length > 0) {
-      console.log(`Reference source selected: ${referenceSource} (${referenceImages.length} image(s))`);
+      console.log(`Reference source: ${referenceSource} (${referenceImages.length} image(s))`);
     }
 
     const identitySystemMessage = identityProfile
@@ -408,8 +333,7 @@ serve(async (req) => {
     if (referenceImages.length > 0) {
       generationMethod = 'reference-enhanced';
       const prompt = customPrompt || buildReferencePrompt(
-        brand,
-        model,
+        brand, model,
         { dialColor, type, caseSize, movement, bracelet, year, edition, bezelType, strapType, specialEditionHint },
         identityProfile
       );
@@ -426,8 +350,7 @@ serve(async (req) => {
     } else {
       generationMethod = 'pure-generation';
       const prompt = customPrompt || buildPureGenerationPrompt(
-        brand,
-        model,
+        brand, model,
         { dialColor, type, caseSize, movement, bracelet, year, edition, bezelType, strapType, specialEditionHint },
         identityProfile
       );
@@ -456,13 +379,10 @@ serve(async (req) => {
     const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
     if (!imageUrl) throw new Error('No image generated');
 
-    const normalizedImageUrl = await normalizeImageComposition(brand, model, edition, imageUrl, LOVABLE_API_KEY);
-    const finalImageData = normalizedImageUrl || imageUrl;
+    // Skip normalization pass to avoid identity drift (the second AI call was changing watch identity)
+    const finalImageData = imageUrl;
 
-    let base64Match = finalImageData.match(/^data:image\/(png|jpeg|webp);base64,(.+)$/);
-    if (!base64Match) {
-      base64Match = imageUrl.match(/^data:image\/(png|jpeg|webp);base64,(.+)$/);
-    }
+    const base64Match = finalImageData.match(/^data:image\/(png|jpeg|webp);base64,(.+)$/);
     if (!base64Match) throw new Error('Invalid image format from AI');
 
     const imageFormat = base64Match[1];
