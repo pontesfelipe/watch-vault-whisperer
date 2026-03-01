@@ -66,16 +66,23 @@ async function verifyEdition(watch: any, LOVABLE_API_KEY: string): Promise<Verif
         messages: [
           {
             role: "system",
-            content: `You are a watch identification expert. Given watch metadata from a collector, identify the EXACT edition/reference and describe its visual design elements precisely. You must be specific — not generic. For example, "Omega Seamaster 300" with blue dial is NOT the same as the Planet Ocean or the Seamaster Diver 300M. A "Breitling Navitimer GMT" with ice blue dial is a specific reference, not just any Navitimer. Use the owner's notes as critical clues for the exact edition.
+            content: `You are a horological identification expert with encyclopedic knowledge of every watch reference ever produced. Given watch metadata from a collector, identify the EXACT edition/reference and describe its visual design elements with absolute precision.
+
+CRITICAL RULES:
+- COMPLICATIONS MATTER: A "Navitimer GMT" is NOT a chronograph — it has a GMT hand and 24-hour bezel, NOT chronograph subdials. A chronograph has pushers and subdials. A GMT has a 4th hand. NEVER confuse them.
+- EDITION NAMES MATTER: "Seamaster 300" from 2023 is the heritage reissue with sandwich dial and rubber strap, NOT the Seamaster Diver 300M (which has a wave dial and helium escape valve). "Aqua Terra Beijing 2022" has a specific ice-crystal pattern dial — NOT a plain Aqua Terra.
+- DIAL COLOR IS SACRED: If the owner says "Black" dial, it MUST be black. If "Ice Blue", it must be ice blue. Never change the dial color.
+- Use the owner's "what_i_like" and "why_bought" notes as CRITICAL clues about which exact variant they own. These notes often contain edition-defining details.
+- The "type" field tells you the complication category. If it says "Pilot, GMT" — it's a GMT watch, NOT a chronograph. If it says "Digital, Fun" — it's a digital watch.
 
 Return ONLY valid JSON with these fields:
 {
-  "officialName": "The most precise official name for this exact edition (e.g., 'Omega Seamaster Diver 300M Co-Axial Master Chronometer' or 'Breitling Navitimer B04 Chronograph GMT 48 Ice Blue')",
-  "dialDescription": "Exact dial appearance: color, texture, indices style, subdial layout, any special markings or patterns",
-  "bezelDescription": "Bezel type and appearance: ceramic/steel, uni/bi-directional, markings, color",
-  "braceletOrStrap": "Exact bracelet or strap: type, material, clasp style",
-  "keyDesignElements": "Unique identifiers that distinguish THIS edition from similar models: crown guards, case shape, hand style, lume color, caseback details",
-  "complications": "List of complications: GMT, chronograph, date, moonphase, etc. Be specific about subdial positions"
+  "officialName": "The most precise official name including reference number if known (e.g., 'Omega Seamaster 300 Master Co-Axial 41mm' or 'Breitling Navitimer Automatic GMT 41 Ice Blue A32310171C1A1')",
+  "dialDescription": "EXACT dial appearance: color, texture (sunburst/matte/sandwich/patterned), indices style (applied/printed/lume plots), subdial layout if any, any special markings, patterns, or edition-specific details like ice crystal patterns",
+  "bezelDescription": "EXACT bezel: material (ceramic/steel/aluminum), type (dive/GMT 24hr/tachymeter/smooth), rotation (uni/bi/fixed), color(s), markings",
+  "braceletOrStrap": "EXACT bracelet or strap: type (rubber/nato/leather/mesh/metal bracelet), specific pattern, clasp style, color",
+  "keyDesignElements": "ALL distinguishing features: crown guards, case shape, hand style (sword/dauphine/arrow/skeleton), lume color, caseback (display/solid), pushers or lack thereof, any special edition engravings or markings",
+  "complications": "PRECISE list: ONLY the actual complications this specific model has. GMT = extra hand + 24hr scale. Chronograph = pushers + subdials. Date = date window. Do NOT add complications the watch doesn't have."
 }`
           },
           { role: "user", content: contextParts }
@@ -114,7 +121,8 @@ function buildVerifiedPrompt(watch: any, edition: VerifiedEdition): string {
     `BEZEL: ${edition.bezelDescription}`,
     `BRACELET/STRAP: ${edition.braceletOrStrap}`,
     `KEY DESIGN ELEMENTS: ${edition.keyDesignElements}`,
-    `COMPLICATIONS: ${edition.complications}`,
+    `COMPLICATIONS (ONLY THESE — do NOT add extra subdials or pushers): ${edition.complications}`,
+    `CRITICAL: If complications say "GMT" then show a GMT hand pointing to 24-hour markings — do NOT show chronograph subdials or pushers. If complications say "Digital" then show a digital LCD display, not an analog dial.`,
     `Render the exact real-world reference/edition; avoid generic lookalikes`,
     COMPOSITION_RULES,
   ].join('. ');
@@ -148,7 +156,8 @@ function buildVerifiedReferencePrompt(watch: any, edition: VerifiedEdition): str
     `BEZEL: ${edition.bezelDescription}`,
     `BRACELET/STRAP: ${edition.braceletOrStrap}`,
     `KEY DESIGN ELEMENTS: ${edition.keyDesignElements}`,
-    `COMPLICATIONS: ${edition.complications}`,
+    `COMPLICATIONS (ONLY THESE — do NOT add extra subdials or pushers): ${edition.complications}`,
+    `CRITICAL: If complications say "GMT" then show a GMT hand pointing to 24-hour markings — do NOT show chronograph subdials or pushers. If complications say "Digital" then show a digital LCD display, not an analog dial.`,
     `Never output a generic or placeholder-style watch`,
     `CRITICAL OVERRIDE - IGNORE THE REFERENCE IMAGE'S FRAMING: ${COMPOSITION_RULES}`,
   ].join('. ');
