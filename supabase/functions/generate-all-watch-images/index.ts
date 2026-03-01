@@ -46,6 +46,41 @@ interface VerifiedEdition {
   negativeElements: string;
 }
 
+function getEditionOverride(watch: any): VerifiedEdition | null {
+  const brand = (watch.brand || '').toLowerCase();
+  const model = normalizeModelForSearch(watch.model || '').toLowerCase();
+
+  // Hard override for Databank to prevent analog/round hallucinations
+  if (brand.includes('casio') && model.includes('databank')) {
+    return {
+      officialName: 'Casio Databank Telememo 30 Ref. DB-36-1AVCF',
+      dialDescription: 'Rectangular black/grey LCD digital display with segmented numerals and databank indicators; utilitarian digital face with no analog hands',
+      bezelDescription: 'Rectangular resin case with a simple utilitarian bezel/frame, no rotating bezel, no tachymeter, no dive markings',
+      braceletOrStrap: 'Black resin strap integrated into the rectangular digital case',
+      keyDesignElements: 'Classic 1990s Databank look, rectangular case silhouette, multi-function digital layout, side pushers sized for a compact digital watch',
+      complications: 'Digital-multifunction only: telememo/databank memory, alarm, stopwatch, timer, dual time/date display',
+      notThisWatch: 'NOT an analog Casio, NOT a G-Shock, NOT a round dive watch, NOT a smartwatch, NOT any watch with mechanical hands',
+      negativeElements: 'NO analog hands, NO round case, NO chronograph subdials, NO rotating dive bezel, NO tachymeter ring, NO smart watch UI',
+    };
+  }
+
+  // Hard override for Navitimer GMT to avoid wrong editions/styling
+  if (brand.includes('breitling') && model.includes('navitimer') && model.includes('gmt')) {
+    return {
+      officialName: 'Breitling Navitimer Automatic GMT 41 Ice Blue Ref. A32310171C1A1',
+      dialDescription: 'Ice blue dial with central hour/minute/seconds hands plus a distinct GMT hand and a date window, no chronograph subdials',
+      bezelDescription: 'Classic Navitimer circular slide-rule bezel architecture with fine markings, non-dive style',
+      braceletOrStrap: 'Stainless steel bracelet consistent with catalog product configuration',
+      keyDesignElements: 'Aviation Navitimer identity, circular slide-rule bezel, ice-blue dial tone, elegant polished case with no chronograph pushers',
+      complications: 'GMT and date only (plus standard time display), no chronograph',
+      notThisWatch: 'NOT a Navitimer chronograph (which has multiple subdials and pushers), NOT a diver, NOT a digital/smartwatch',
+      negativeElements: 'NO chronograph subdials, NO chronograph pushers, NO dive bezel, NO oversized fantasy lugs/case, NO digital display',
+    };
+  }
+
+  return null;
+}
+
 async function verifyEdition(watch: any, LOVABLE_API_KEY: string): Promise<VerifiedEdition | null> {
   try {
     const cleanModel = normalizeModelForSearch(watch.model);
@@ -174,6 +209,63 @@ function buildVerifiedReferencePrompt(watch: any, edition: VerifiedEdition): str
   ].join('. ');
 }
 
+async function normalizeImageComposition(
+  watch: any,
+  edition: VerifiedEdition | null,
+  imageDataUrl: string,
+  LOVABLE_API_KEY: string
+): Promise<string | null> {
+  try {
+    const identity = edition?.officialName || `${watch.brand} ${watch.model}`;
+
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "google/gemini-3-pro-image-preview",
+        messages: [
+          {
+            role: "system",
+            content: "You are a luxury watch catalog retoucher. Never redesign or change watch identity. You may ONLY reframe, recenter, and rescale the existing watch photo to match strict composition standards."
+          },
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: [
+                  `Retouch this image of ${identity} without changing model identity or design details.`,
+                  "DO NOT alter dial layout, hand style, bezel architecture, markers, case shape, bracelet type, or color palette.",
+                  "ONLY normalize composition.",
+                  COMPOSITION_RULES,
+                  "Absolute target: watch case (excluding strap) must occupy exactly 60% of image width and 50% of image height, perfectly centered.",
+                ].join(' ')
+              },
+              {
+                type: "image_url",
+                image_url: { url: imageDataUrl }
+              }
+            ]
+          }
+        ],
+        modalities: ["image", "text"],
+      }),
+    });
+
+    if (!response.ok) {
+      console.warn(`Composition normalization failed for ${identity}: ${response.status}`);
+      return null;
+    }
+
+    const data = await response.json();
+    const normalizedImageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    return normalizedImageUrl || null;
+  } catch (error) {
+    console.warn(`Composition normalization error for ${watch.brand} ${watch.model}:`, error);
+    return null;
+  }
+}
+
 async function findReferenceImageUrl(brand: string, model: string, edition: VerifiedEdition | null, LOVABLE_API_KEY: string): Promise<string | null> {
   try {
     const searchName = edition?.officialName || `${brand} ${normalizeModelForSearch(model)}`;
@@ -239,8 +331,12 @@ async function generateImageForWatch(
   try {
     console.log(`\n━━━ Processing: ${watch.brand} ${watch.model} (dial: ${watch.dial_color || 'unspecified'}) ━━━`);
 
-    // STEP 1: Verify the exact edition using AI
-    const edition = await verifyEdition(watch, LOVABLE_API_KEY);
+    // STEP 1: Verify the exact edition using AI (or use strict override for known problematic models)
+    const overrideEdition = getEditionOverride(watch);
+    const edition = overrideEdition || await verifyEdition(watch, LOVABLE_API_KEY);
+    if (overrideEdition) {
+      console.log(`  Using hard override edition: ${overrideEdition.officialName}`);
+    }
     if (edition) {
       console.log(`  Verified: ${edition.officialName}`);
       console.log(`  NOT this: ${edition.notThisWatch}`);
@@ -300,7 +396,14 @@ async function generateImageForWatch(
     const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
     if (!imageUrl) return { watchId: watch.id, success: false, error: 'No image generated' };
 
-    const base64Match = imageUrl.match(/^data:image\/(png|jpeg|webp);base64,(.+)$/);
+    // STEP 4: Normalize composition in a second pass to enforce strict case-size consistency
+    const normalizedImageUrl = await normalizeImageComposition(watch, edition, imageUrl, LOVABLE_API_KEY);
+    const finalImageUrl = normalizedImageUrl || imageUrl;
+
+    let base64Match = finalImageUrl.match(/^data:image\/(png|jpeg|webp);base64,(.+)$/);
+    if (!base64Match) {
+      base64Match = imageUrl.match(/^data:image\/(png|jpeg|webp);base64,(.+)$/);
+    }
     if (!base64Match) return { watchId: watch.id, success: false, error: 'Invalid image format' };
 
     const imageFormat = base64Match[1];
