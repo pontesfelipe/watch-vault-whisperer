@@ -16,6 +16,9 @@ const inputSchema = z.object({
   type: z.string().max(50).optional(),
   caseSize: z.string().max(20).optional(),
   movement: z.string().max(100).optional(),
+  bracelet: z.string().max(120).optional(),
+  year: z.union([z.string(), z.number()]).optional(),
+  edition: z.string().max(200).optional(),
   bezelType: z.string().max(120).optional(),
   strapType: z.string().max(120).optional(),
   specialEditionHint: z.string().max(500).optional(),
@@ -24,28 +27,34 @@ const inputSchema = z.object({
   customPrompt: z.string().max(2000).optional(),
 });
 
-// ─── STANDARDIZED PROMPT SYSTEM ───
-// These prompts enforce uniform composition across ALL watches:
-// - Exact same framing, angle, proportions, and background
-// - Dial color is ALWAYS explicitly mentioned and enforced
-// - Watch fills exactly 75% of a square frame, perfectly centered
-// - Straight-on front view, 0-5° tilt max
-// - Dark gradient background (charcoal to near-black)
-
 const COMPOSITION_RULES = [
   'SQUARE 1:1 aspect ratio composition',
   'The watch must be PERFECTLY CENTERED in the frame, both horizontally and vertically',
-  'CRITICAL SIZE RULE: Regardless of the actual case diameter of the watch, ALL watches must appear the SAME visual size in the image - the watch case (excluding strap) must fill exactly 60% of the image width and 50% of the image height. This is a normalized catalog view where a 44mm Panerai and a 40mm IWC must look the same size in the frame',
+  'CRITICAL SIZE RULE: Regardless of the actual case diameter of the watch, ALL watches must appear the SAME visual size in the image - the watch case (excluding strap) must fill exactly 60% of the image width and 50% of the image height',
   'STRAIGHT-ON front-facing view looking directly at the dial face - absolutely NO side angles',
   'Maximum 3-5 degree tilt for minimal depth perception - the full dial must be completely visible and readable',
-  'The watch must be UPRIGHT with 12 o\'clock at the top',
+  'The watch must be UPRIGHT with 12 o\'clock at the top and strap/bracelet running vertically (top-to-bottom), never horizontal/sideways',
+  'For rectangular watches, long axis must be vertical, crown at 3 o\'clock side, no 90° rotation',
   'Show a small portion of the bracelet/strap extending from both lugs (about 1-2 links or 2cm of strap)',
   'DARK background: smooth gradient from charcoal (#2a2a2a) at edges to near-black (#111111) at center',
   'Professional studio lighting: soft diffused main light from upper-left, subtle fill light from right',
-  'Sharp focus on entire dial face - every index, hand, and subdial must be crisp',
+  'Sharp focus on entire dial face - every index, hand, subdial, and logo must be crisp',
   'No reflections on crystal, no glare spots',
   'Ultra high resolution, photorealistic, luxury catalog quality',
 ].join('. ');
+
+type IdentityProfile = {
+  officialName: string;
+  requiredElements: string;
+  forbiddenElements: string;
+};
+
+function normalizeYear(year?: string | number): string | undefined {
+  if (year === undefined || year === null) return undefined;
+  const raw = String(year);
+  const match = raw.match(/\b(19|20)\d{2}\b/);
+  return match?.[0];
+}
 
 function normalizeModelForSearch(model: string): string {
   return model
@@ -65,69 +74,153 @@ function canonicalizeModelForPrompt(brand: string, model: string): string {
     .trim();
 }
 
+function getIdentityProfile(brand: string, model: string, type?: string): IdentityProfile | null {
+  const brandLc = brand.toLowerCase();
+  const modelLc = normalizeModelForSearch(model).toLowerCase();
+  const typeLc = (type || '').toLowerCase();
+
+  if (brandLc.includes('casio') && modelLc.includes('databank')) {
+    return {
+      officialName: 'Casio Databank',
+      requiredElements: 'Rectangular digital LCD face, segmented numerals, utility keypad/button aesthetic, compact resin case and strap',
+      forbiddenElements: 'NO analog hands, NO round case, NO dive bezel, NO chronograph subdials, NO smart-watch UI',
+    };
+  }
+
+  if (brandLc.includes('breitling') && modelLc.includes('navitimer') && (modelLc.includes('gmt') || typeLc.includes('gmt'))) {
+    return {
+      officialName: 'Breitling Navitimer GMT 41',
+      requiredElements: 'Navitimer slide-rule bezel architecture, GMT hand, date window, aviation dial language matching Navitimer GMT edition',
+      forbiddenElements: 'NO chronograph pushers, NO tri-compax chronograph subdials, NO diver bezel, NO fantasy oversized case',
+    };
+  }
+
+  if (brandLc.includes('trafford')) {
+    return {
+      officialName: `${brand} ${model}`,
+      requiredElements: 'Upright portrait orientation, crown aligned at 3 o’clock, dial text/logos readable upright, realistic Trafford case proportions',
+      forbiddenElements: 'NO horizontal rotation, NO sideways dial, NO distorted stretched case geometry',
+    };
+  }
+
+  return null;
+}
+
+function buildIdentityConstraint(profile: IdentityProfile | null): string {
+  if (!profile) return '';
+  return [
+    `EXACT IDENTITY: ${profile.officialName}`,
+    `MUST INCLUDE: ${profile.requiredElements}`,
+    `MUST NOT INCLUDE: ${profile.forbiddenElements}`,
+  ].join('. ');
+}
+
+function buildDetailCues(opts: { dialColor?: string; type?: string; caseSize?: string; movement?: string; bezelType?: string; strapType?: string; bracelet?: string; edition?: string; specialEditionHint?: string; year?: string | number }): string {
+  const normalizedYear = normalizeYear(opts.year);
+  return [
+    opts.edition ? `Exact edition/reference: ${opts.edition}` : '',
+    opts.specialEditionHint ? `Edition hint: ${opts.specialEditionHint}` : '',
+    opts.dialColor ? `Dial color/finish MUST match exactly: ${opts.dialColor}` : '',
+    opts.type ? `Complication/category cues: ${opts.type}` : '',
+    opts.caseSize ? `Case size cue: ${opts.caseSize}` : '',
+    opts.bracelet ? `Bracelet/strap cue: ${opts.bracelet}` : '',
+    opts.strapType ? `Strap type cue: ${opts.strapType}` : '',
+    opts.movement ? `Movement cue: ${opts.movement}` : '',
+    opts.bezelType ? `Bezel cue: ${opts.bezelType}` : '',
+    normalizedYear ? `Production era/year cue: ${normalizedYear}` : '',
+  ].filter(Boolean).join('. ');
+}
+
 function buildReferencePrompt(
   brand: string,
   model: string,
-  opts: { dialColor?: string; type?: string; caseSize?: string; movement?: string; bezelType?: string; strapType?: string; specialEditionHint?: string }
+  opts: { dialColor?: string; type?: string; caseSize?: string; movement?: string; bezelType?: string; strapType?: string; bracelet?: string; edition?: string; specialEditionHint?: string; year?: string | number },
+  identityProfile: IdentityProfile | null
 ): string {
   const canonicalModel = canonicalizeModelForPrompt(brand, model);
-  const specificCues = [
-    opts.dialColor ? `Dial color/finish MUST match exactly: ${opts.dialColor}` : '',
-    opts.type ? `Complication/category cues: ${opts.type}` : '',
-    opts.caseSize ? `Case size target: ${opts.caseSize}` : '',
-    opts.movement ? `Movement cue: ${opts.movement}` : '',
-    opts.bezelType ? `Bezel cue: ${opts.bezelType}` : '',
-    opts.strapType ? `Bracelet/strap cue: ${opts.strapType}` : '',
-    opts.specialEditionHint ? `Edition/reference cue: ${opts.specialEditionHint}` : '',
-  ].filter(Boolean).join('. ');
+  const cues = buildDetailCues(opts);
+  const identity = buildIdentityConstraint(identityProfile);
 
-  return `IMPORTANT: Use the reference image ONLY to identify design details (dial layout, hand style, bezel markings, bracelet pattern, crown shape). Do NOT copy the framing, zoom level, angle, or proportions from the reference photo. Never output a generic or placeholder-style watch; it must be recognizably the exact ${brand} ${canonicalModel} reference with accurate dial layout, bezel markings, hand set, indices, crown, and bracelet/strap architecture. Instead, generate a completely new studio product shot following these STRICT composition rules. This is a ${brand} ${canonicalModel}. ${specificCues}. CRITICAL OVERRIDE - IGNORE THE REFERENCE IMAGE'S FRAMING: ${COMPOSITION_RULES}`;
+  return [
+    'IMPORTANT: Use reference image(s) ONLY to identify design details (dial layout, hand style, bezel markings, bracelet pattern, crown shape)',
+    'Do NOT copy framing, zoom level, angle, or proportions from references',
+    `Never output a generic watch; this must be recognizably the exact ${brand} ${canonicalModel}`,
+    cues,
+    identity,
+    `This is a ${brand} ${canonicalModel}`,
+    `CRITICAL OVERRIDE - IGNORE REFERENCE IMAGE FRAMING: ${COMPOSITION_RULES}`,
+  ].filter(Boolean).join('. ');
 }
 
 function buildPureGenerationPrompt(
   brand: string,
   model: string,
-  opts: { dialColor?: string; type?: string; caseSize?: string; movement?: string; bezelType?: string; strapType?: string; specialEditionHint?: string }
+  opts: { dialColor?: string; type?: string; caseSize?: string; movement?: string; bezelType?: string; strapType?: string; bracelet?: string; edition?: string; specialEditionHint?: string; year?: string | number },
+  identityProfile: IdentityProfile | null
 ): string {
   const canonicalModel = canonicalizeModelForPrompt(brand, model);
-  const details = [
-    `Create an ACCURATE photorealistic product photograph of the ${brand} ${canonicalModel} wristwatch`,
-    opts.dialColor ? `Dial color/finish MUST be: ${opts.dialColor}` : 'Dial color must match the real production model',
-    opts.type ? `Complication/category: ${opts.type}` : '',
-    opts.caseSize ? `Case diameter cue: ${opts.caseSize}` : '',
-    opts.movement ? `Movement cue: ${opts.movement}` : '',
-    opts.bezelType ? `Bezel cue: ${opts.bezelType}` : '',
-    opts.strapType ? `Bracelet/strap cue: ${opts.strapType}` : '',
-    opts.specialEditionHint ? `Edition/reference cue: ${opts.specialEditionHint}` : '',
-    `Render the exact real-world reference/edition when identifiable; avoid generic lookalikes`,
+  const cues = buildDetailCues(opts);
+  const identity = buildIdentityConstraint(identityProfile);
+
+  return [
+    `Create an ACCURATE photorealistic product photograph of the exact ${brand} ${canonicalModel} wristwatch`,
+    'Render the exact real-world edition/reference when identifiable; avoid generic lookalikes',
+    cues,
+    identity,
     COMPOSITION_RULES,
-  ].filter(Boolean);
-  return details.join('. ');
+  ].filter(Boolean).join('. ');
 }
 
-async function findReferenceImageUrl(brand: string, model: string, LOVABLE_API_KEY: string): Promise<string | null> {
+async function findReferenceImageUrls(
+  brand: string,
+  model: string,
+  opts: { dialColor?: string; type?: string; caseSize?: string; movement?: string; bezelType?: string; strapType?: string; bracelet?: string; edition?: string; specialEditionHint?: string; year?: string | number },
+  LOVABLE_API_KEY: string
+): Promise<string[]> {
   try {
     const searchModel = normalizeModelForSearch(model);
-    console.log(`Searching for reference image: ${brand} ${searchModel}`);
+    const cueText = buildDetailCues(opts);
+    console.log(`Searching for reference images: ${brand} ${searchModel}`);
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         messages: [
-          { role: "system", content: "You are a watch reference image hunter. Return ONLY ONE URL. Prioritize official brand product pages or direct official studio product image URLs for the EXACT reference/edition requested. Strongly prefer front-facing catalog shots that clearly show dial layout, bezel text, and bracelet architecture. Avoid marketplace listings, user photos, wrist shots, and lifestyle/editorial images. If possible return a direct image URL; otherwise return the official product page URL containing hero images. No markdown, no commentary, no extra text. If not found, return NONE." },
-          { role: "user", content: `Find the best official reference image for the EXACT watch edition: ${brand} ${searchModel}. Must match dial color, bezel style, bracelet type, and complications; prioritize a straight-on product shot.` }
+          {
+            role: "system",
+            content: 'You are a watch reference image hunter. Return ONLY a JSON array of up to 4 URLs. Prioritize official brand product pages and direct catalog images for the EXACT edition. Prefer front-facing product shots. Avoid marketplaces, wrist shots, and lifestyle photos. No markdown, no commentary.'
+          },
+          {
+            role: "user",
+            content: `Find reference image URLs for: ${brand} ${searchModel}. ${cueText}. Return only JSON array of URLs.`
+          }
         ],
         temperature: 0.2,
       }),
     });
-    if (!response.ok) return null;
+
+    if (!response.ok) return [];
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content?.trim();
-    if (!content || content === 'NONE' || content.length > 2000) return null;
-    const urlMatch = content.match(/https?:\/\/[^\s"'<>]+/i);
-    return urlMatch ? urlMatch[0] : null;
-  } catch { return null; }
+    if (!content || content.length > 8000) return [];
+
+    const jsonMatch = content.match(/\[[\s\S]*\]/);
+    if (jsonMatch) {
+      const parsed = JSON.parse(jsonMatch[0]);
+      if (Array.isArray(parsed)) {
+        return parsed
+          .filter((entry) => typeof entry === 'string' && /^https?:\/\//i.test(entry))
+          .slice(0, 4);
+      }
+    }
+
+    const urlMatches = content.match(/https?:\/\/[^\s"'<>]+/gi) || [];
+    return urlMatches.slice(0, 4);
+  } catch {
+    return [];
+  }
 }
 
 async function resolveImageUrlFromHtmlPage(pageUrl: string): Promise<string | null> {
@@ -151,17 +244,78 @@ async function fetchImageAsBase64(imageUrl: string): Promise<string | null> {
       const extracted = await resolveImageUrlFromHtmlPage(candidateUrl);
       if (extracted) candidateUrl = extracted;
     }
+
     const resp = await fetch(candidateUrl, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; WatchVault/1.0)' } });
     if (!resp.ok) return null;
     const ct = (resp.headers.get('content-type') || '').toLowerCase();
     if (!ct.startsWith('image/')) return null;
+
     const buf = await resp.arrayBuffer();
     const bytes = new Uint8Array(buf);
-    if (bytes.length < 5000) return null;
+    if (bytes.length < 5000 || bytes.length > 15_000_000) return null;
+
     let binary = '';
     for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
     return `data:${ct};base64,${btoa(binary)}`;
   } catch { return null; }
+}
+
+async function collectReferenceImages(candidateUrls: string[], maxImages = 3): Promise<string[]> {
+  const references: string[] = [];
+  for (const url of candidateUrls) {
+    if (references.length >= maxImages) break;
+    const base64 = await fetchImageAsBase64(url);
+    if (base64) references.push(base64);
+  }
+  return references;
+}
+
+async function normalizeImageComposition(
+  brand: string,
+  model: string,
+  edition: string | undefined,
+  imageDataUrl: string,
+  LOVABLE_API_KEY: string
+): Promise<string | null> {
+  try {
+    const identity = edition || `${brand} ${model}`;
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "google/gemini-3-pro-image-preview",
+        messages: [
+          {
+            role: "system",
+            content: "You are a luxury watch catalog retoucher. Never redesign or change watch identity. You may ONLY reframe, recenter, and rescale the existing watch photo to strict composition standards."
+          },
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: [
+                  `Retouch this image of ${identity} without changing model identity or design details`,
+                  'DO NOT alter dial layout, hand style, bezel architecture, markers, case shape, bracelet type, or color palette',
+                  'ONLY normalize composition and orientation',
+                  COMPOSITION_RULES,
+                  'Absolute target: watch case (excluding strap) must occupy exactly 60% of image width and 50% of image height, perfectly centered',
+                ].join('. ')
+              },
+              { type: "image_url", image_url: { url: imageDataUrl } }
+            ]
+          }
+        ],
+        modalities: ["image", "text"],
+      }),
+    });
+
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data.choices?.[0]?.message?.images?.[0]?.image_url?.url || null;
+  } catch {
+    return null;
+  }
 }
 
 serve(async (req) => {
@@ -180,12 +334,11 @@ serve(async (req) => {
     }
 
     const {
-      watchId, brand, model, dialColor, type, caseSize, movement,
+      watchId, brand, model, dialColor, type, caseSize, movement, bracelet, year, edition,
       bezelType, strapType, specialEditionHint,
       referenceImageBase64, referenceImageUrl, customPrompt,
     } = parseResult.data;
 
-    // Rate limit: 5 per minute per IP
     const clientIp = req.headers.get("x-forwarded-for") || "unknown";
     const rlResponse = rateLimitResponse(clientIp, "generate-watch-image", corsHeaders, 5, 60_000);
     if (rlResponse) return rlResponse;
@@ -197,46 +350,80 @@ serve(async (req) => {
 
     const supabaseClient = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 
-    // Resolve reference image with quality priority
-    let resolvedBase64: string | null = null;
+    const identityProfile = getIdentityProfile(brand, model, type);
+
+    let referenceImages: string[] = [];
     let referenceSource: 'provided-url' | 'official-search' | 'uploaded-photo' | 'none' = 'none';
 
     if (referenceImageBase64) {
-      resolvedBase64 = referenceImageBase64;
+      referenceImages = [referenceImageBase64];
       referenceSource = 'uploaded-photo';
       console.log('Using uploaded photo as reference (skipping reference search)');
     } else if (referenceImageUrl) {
       const fromProvidedUrl = await fetchImageAsBase64(referenceImageUrl);
       if (fromProvidedUrl) {
-        resolvedBase64 = fromProvidedUrl;
+        referenceImages = [fromProvidedUrl];
         referenceSource = 'provided-url';
       }
     }
 
-    if (!resolvedBase64) {
-      const foundUrl = await findReferenceImageUrl(brand, model, LOVABLE_API_KEY);
-      if (foundUrl) {
-        const fromOfficialSearch = await fetchImageAsBase64(foundUrl);
-        if (fromOfficialSearch) {
-          resolvedBase64 = fromOfficialSearch;
-          referenceSource = 'official-search';
-        }
+    if (referenceImages.length === 0) {
+      const foundUrls = await findReferenceImageUrls(
+        brand,
+        model,
+        { dialColor, type, caseSize, movement, bracelet, year, edition, bezelType, strapType, specialEditionHint },
+        LOVABLE_API_KEY
+      );
+      referenceImages = await collectReferenceImages(foundUrls, 3);
+      if (referenceImages.length > 0) {
+        referenceSource = 'official-search';
       }
     }
 
-    if (resolvedBase64) console.log(`Reference source selected: ${referenceSource}`);
+    if (referenceImages.length > 0) {
+      console.log(`Reference source selected: ${referenceSource} (${referenceImages.length} image(s))`);
+    }
+
+    const identitySystemMessage = identityProfile
+      ? {
+          role: "system",
+          content: `You are generating a product photo of EXACTLY ${identityProfile.officialName}. MUST INCLUDE: ${identityProfile.requiredElements}. MUST NOT INCLUDE: ${identityProfile.forbiddenElements}.`
+        }
+      : null;
 
     let messages: any[];
     let generationMethod: string;
 
-    if (resolvedBase64) {
+    if (referenceImages.length > 0) {
       generationMethod = 'reference-enhanced';
-      const prompt = customPrompt || buildReferencePrompt(brand, model, { dialColor, type, caseSize, movement, bezelType, strapType, specialEditionHint });
-      messages = [{ role: "user", content: [{ type: "text", text: prompt }, { type: "image_url", image_url: { url: resolvedBase64 } }] }];
+      const prompt = customPrompt || buildReferencePrompt(
+        brand,
+        model,
+        { dialColor, type, caseSize, movement, bracelet, year, edition, bezelType, strapType, specialEditionHint },
+        identityProfile
+      );
+      messages = [
+        ...(identitySystemMessage ? [identitySystemMessage] : []),
+        {
+          role: "user",
+          content: [
+            { type: "text", text: prompt },
+            ...referenceImages.map((url) => ({ type: "image_url", image_url: { url } })),
+          ],
+        },
+      ];
     } else {
       generationMethod = 'pure-generation';
-      const prompt = customPrompt || buildPureGenerationPrompt(brand, model, { dialColor, type, caseSize, movement, bezelType, strapType, specialEditionHint });
-      messages = [{ role: "user", content: prompt }];
+      const prompt = customPrompt || buildPureGenerationPrompt(
+        brand,
+        model,
+        { dialColor, type, caseSize, movement, bracelet, year, edition, bezelType, strapType, specialEditionHint },
+        identityProfile
+      );
+      messages = [
+        ...(identitySystemMessage ? [identitySystemMessage] : []),
+        { role: "user", content: prompt },
+      ];
     }
 
     console.log(`Calling AI (method: ${generationMethod})...`);
@@ -258,7 +445,13 @@ serve(async (req) => {
     const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
     if (!imageUrl) throw new Error('No image generated');
 
-    const base64Match = imageUrl.match(/^data:image\/(png|jpeg|webp);base64,(.+)$/);
+    const normalizedImageUrl = await normalizeImageComposition(brand, model, edition, imageUrl, LOVABLE_API_KEY);
+    const finalImageData = normalizedImageUrl || imageUrl;
+
+    let base64Match = finalImageData.match(/^data:image\/(png|jpeg|webp);base64,(.+)$/);
+    if (!base64Match) {
+      base64Match = imageUrl.match(/^data:image\/(png|jpeg|webp);base64,(.+)$/);
+    }
     if (!base64Match) throw new Error('Invalid image format from AI');
 
     const imageFormat = base64Match[1];
@@ -278,7 +471,7 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, imageUrl: publicUrl, generationMethod, message: 'AI image generated successfully' }),
+      JSON.stringify({ success: true, imageUrl: publicUrl, generationMethod, referenceCount: referenceImages.length, message: 'AI image generated successfully' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error: unknown) {

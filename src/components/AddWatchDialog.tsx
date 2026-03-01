@@ -305,10 +305,13 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
               watchId: insertData.id,
               brand: data.brand,
               model: data.model,
+              edition: data.model,
               dialColor: data.dialColor,
               type: data.type,
               caseSize: formValues.caseSize || undefined,
               movement: formValues.movement || undefined,
+              year: purchaseDate ? format(purchaseDate, "yyyy") : undefined,
+              specialEditionHint: modelRef.trim() || undefined,
               referenceImageBase64: uploadedPhotoBase64 || undefined,
             }
           }).then(({ error: imgError }) => {
