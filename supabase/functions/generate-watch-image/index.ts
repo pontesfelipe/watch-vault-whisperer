@@ -291,12 +291,62 @@ serve(async (req) => {
     const rlResponse = rateLimitResponse(clientIp, "generate-watch-image", corsHeaders, 5, 60_000);
     if (rlResponse) return rlResponse;
 
+    // --- Per-user monthly limit: admins unlimited, regular users 1/month ---
+    const supabaseClient = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+
+    const authHeader = req.headers.get('authorization');
+    let userId: string | null = null;
+    let isAdmin = false;
+
+    if (authHeader) {
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user } } = await supabaseClient.auth.getUser(token);
+      if (user) {
+        userId = user.id;
+        const { data: roleData } = await supabaseClient
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('role', 'admin')
+          .maybeSingle();
+        isAdmin = !!roleData;
+      }
+    }
+
+    if (!userId) {
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!isAdmin) {
+      // Check monthly usage
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+
+      const { count } = await supabaseClient
+        .from('ai_feature_usage')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('feature_name', 'regenerate-watch-image')
+        .gte('used_at', startOfMonth.toISOString());
+
+      if ((count ?? 0) >= 1) {
+        return new Response(
+          JSON.stringify({ error: 'Monthly limit reached. You can regenerate 1 image per month.', code: 'MONTHLY_LIMIT' }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
     console.log(`Generating AI image for: ${brand} ${model} (dial: ${dialColor || 'unspecified'})`);
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY is not configured');
 
-    const supabaseClient = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+    // supabaseClient already created above
 
     const identityProfile = getIdentityProfile(brand, model, type);
 
@@ -400,6 +450,12 @@ serve(async (req) => {
       await supabaseClient.from('watches').update({ ai_image_url: publicUrl }).eq('id', watchId);
       console.log('Watch record updated with AI image URL');
     }
+
+    // Log usage for rate limiting
+    await supabaseClient.from('ai_feature_usage').insert({
+      user_id: userId,
+      feature_name: 'regenerate-watch-image',
+    });
 
     return new Response(
       JSON.stringify({ success: true, imageUrl: publicUrl, generationMethod, referenceCount: referenceImages.length, message: 'AI image generated successfully' }),
