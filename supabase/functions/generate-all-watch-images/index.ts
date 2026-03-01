@@ -22,33 +22,66 @@ const COMPOSITION_RULES = [
   'Ultra high resolution, photorealistic, luxury catalog quality',
 ].join('. ');
 
-function buildReferencePrompt(brand: string, model: string, dialColor?: string): string {
-  return `IMPORTANT: Recreate this EXACT watch as a studio product photo. This is a ${brand} ${model}${dialColor ? ` with a ${dialColor} dial - the dial color MUST be ${dialColor}, this is critical` : ''}. Keep EVERY design detail identical to the reference: dial layout, subdial positions, hand styles, bezel markings, case shape, crown, and pushers. ${COMPOSITION_RULES}`;
+function normalizeModelForSearch(model: string): string {
+  return model
+    .replace(/\(likely[^)]*\)/gi, '')
+    .replace(/\(reference[^)]*\)/gi, '')
+    .replace(/\([^)]*generation[^)]*\)/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
-function buildPureGenerationPrompt(brand: string, model: string, dialColor?: string, type?: string, caseSize?: string, movement?: string): string {
+/**
+ * Build edition-specific context from all available watch metadata.
+ * This ensures the AI knows the EXACT edition, not a generic version.
+ */
+function buildEditionContext(watch: any): string {
+  const hints: string[] = [];
+
+  // The model name itself is the primary edition identifier
+  hints.push(`EXACT model/edition: ${watch.brand} ${watch.model}`);
+
+  if (watch.dial_color) hints.push(`Dial color MUST be: ${watch.dial_color}`);
+  if (watch.type) hints.push(`Category/complication: ${watch.type}`);
+  if (watch.case_size) hints.push(`Case size: ${watch.case_size}`);
+  if (watch.movement) hints.push(`Movement: ${watch.movement}`);
+
+  // what_i_like and why_bought often contain critical edition details
+  if (watch.what_i_like) hints.push(`Owner notes (use for design cues): ${watch.what_i_like}`);
+  if (watch.why_bought) hints.push(`Purchase context (may contain edition info): ${watch.why_bought}`);
+
+  return hints.join('. ');
+}
+
+function buildReferencePrompt(watch: any): string {
+  const editionContext = buildEditionContext(watch);
+  return `IMPORTANT: Use the reference image ONLY to identify design details (dial layout, hand style, bezel markings, bracelet pattern, crown shape). Do NOT copy the framing, zoom level, angle, or proportions from the reference photo. Never output a generic or placeholder-style watch; it must be recognizably the EXACT ${watch.brand} ${watch.model} edition with accurate dial layout, bezel markings, hand set, indices, crown, and bracelet/strap architecture. Generate a completely new studio product shot following these STRICT composition rules. ${editionContext}. CRITICAL OVERRIDE - IGNORE THE REFERENCE IMAGE'S FRAMING: ${COMPOSITION_RULES}`;
+}
+
+function buildPureGenerationPrompt(watch: any): string {
+  const editionContext = buildEditionContext(watch);
   const details = [
-    `Create an ACCURATE photorealistic product photograph of the ${brand} ${model} wristwatch`,
-    `The dial color is ${dialColor || 'as per the original model'} - this MUST be accurately depicted`,
-    type ? `Watch style: ${type}` : '',
-    caseSize ? `Case diameter: ${caseSize}` : '',
-    movement ? `Movement type: ${movement}` : '',
-    `Research and accurately depict the real ${brand} ${model}: correct number of subdials, correct bezel style, correct hand design, correct hour markers`,
+    `Create an ACCURATE photorealistic product photograph of the EXACT ${watch.brand} ${watch.model} wristwatch`,
+    `CRITICAL: This is NOT a generic ${watch.brand} watch. It is specifically the "${watch.model}" edition/reference. Research and depict the EXACT model with its unique design elements`,
+    editionContext,
+    `Render the exact real-world reference/edition when identifiable; avoid generic lookalikes`,
     COMPOSITION_RULES,
-  ].filter(Boolean);
+  ];
   return details.join('. ');
 }
 
 async function findReferenceImageUrl(brand: string, model: string, LOVABLE_API_KEY: string): Promise<string | null> {
   try {
+    const searchModel = normalizeModelForSearch(model);
+    console.log(`Searching reference for: ${brand} ${searchModel}`);
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-3-flash-preview",
         messages: [
-          { role: "system", content: "You are a watch image search assistant. Return ONLY a direct image URL (ending in .jpg, .jpeg, .png, or .webp) from a reputable source. No markdown, no explanation, just the URL. If you cannot find one, return the word NONE." },
-          { role: "user", content: `Find a high-quality product photo URL of the ${brand} ${model} watch. Look on the official brand website first, then Hodinkee, Chrono24, or other reputable watch sites. Return ONLY the URL.` }
+          { role: "system", content: "You are a watch reference image hunter. Return ONLY ONE URL. Prioritize official brand product pages or direct official studio product image URLs for the EXACT reference/edition requested. Strongly prefer front-facing catalog shots that clearly show dial layout, bezel text, and bracelet architecture. Avoid marketplace listings, user photos, wrist shots, and lifestyle/editorial images. If possible return a direct image URL; otherwise return the official product page URL containing hero images. No markdown, no commentary, no extra text. If not found, return NONE." },
+          { role: "user", content: `Find the best official reference image for the EXACT watch edition: ${brand} ${searchModel}. Must match dial color, bezel style, bracelet type, and complications; prioritize a straight-on product shot.` }
         ],
         temperature: 0.2,
       }),
@@ -56,22 +89,42 @@ async function findReferenceImageUrl(brand: string, model: string, LOVABLE_API_K
     if (!response.ok) return null;
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content?.trim();
-    if (!content || content === 'NONE') return null;
-    const urlMatch = content.match(/https?:\/\/[^\s"'<>]+\.(jpg|jpeg|png|webp)[^\s"'<>]*/i);
-    return urlMatch ? urlMatch[0] : content.startsWith('http') ? content : null;
+    if (!content || content === 'NONE' || content.length > 2000) return null;
+    const urlMatch = content.match(/https?:\/\/[^\s"'<>]+/i);
+    return urlMatch ? urlMatch[0] : null;
+  } catch { return null; }
+}
+
+async function resolveImageUrlFromHtmlPage(pageUrl: string): Promise<string | null> {
+  try {
+    const resp = await fetch(pageUrl, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; WatchVault/1.0)' } });
+    if (!resp.ok) return null;
+    const contentType = resp.headers.get('content-type') || '';
+    if (!contentType.toLowerCase().includes('text/html')) return null;
+    const html = await resp.text();
+    const metaMatch = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)
+      || html.match(/<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i);
+    if (!metaMatch?.[1]) return null;
+    return new URL(metaMatch[1], pageUrl).toString();
   } catch { return null; }
 }
 
 async function fetchImageAsBase64(imageUrl: string): Promise<string | null> {
   try {
-    const resp = await fetch(imageUrl, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; WatchVault/1.0)' } });
+    let candidateUrl = imageUrl;
+    if (!/\.(jpg|jpeg|png|webp)(\?|#|$)/i.test(candidateUrl)) {
+      const extracted = await resolveImageUrlFromHtmlPage(candidateUrl);
+      if (extracted) candidateUrl = extracted;
+    }
+    const resp = await fetch(candidateUrl, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; WatchVault/1.0)' } });
     if (!resp.ok) return null;
+    const ct = (resp.headers.get('content-type') || '').toLowerCase();
+    if (!ct.startsWith('image/')) return null;
     const buf = await resp.arrayBuffer();
     const bytes = new Uint8Array(buf);
     if (bytes.length < 5000) return null;
     let binary = '';
     for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-    const ct = resp.headers.get('content-type') || 'image/jpeg';
     return `data:${ct};base64,${btoa(binary)}`;
   } catch { return null; }
 }
@@ -82,6 +135,7 @@ async function generateImageForWatch(
   try {
     console.log(`Generating image for: ${watch.brand} ${watch.model} (dial: ${watch.dial_color || 'unspecified'})`);
 
+    // Search for reference image using the full model name
     let referenceBase64: string | null = null;
     const foundUrl = await findReferenceImageUrl(watch.brand, watch.model, LOVABLE_API_KEY);
     if (foundUrl) referenceBase64 = await fetchImageAsBase64(foundUrl);
@@ -90,12 +144,12 @@ async function generateImageForWatch(
     if (referenceBase64) {
       console.log(`Using reference image for ${watch.brand} ${watch.model}`);
       messages = [{ role: "user", content: [
-        { type: "text", text: buildReferencePrompt(watch.brand, watch.model, watch.dial_color) },
+        { type: "text", text: buildReferencePrompt(watch) },
         { type: "image_url", image_url: { url: referenceBase64 } }
       ]}];
     } else {
       console.log(`No reference found for ${watch.brand} ${watch.model}, using pure generation`);
-      messages = [{ role: "user", content: buildPureGenerationPrompt(watch.brand, watch.model, watch.dial_color, watch.type, watch.case_size, watch.movement) }];
+      messages = [{ role: "user", content: buildPureGenerationPrompt(watch) }];
     }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -140,11 +194,29 @@ serve(async (req) => {
 
     const supabaseClient = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 
-    const { data: watches, error: fetchError } = await supabaseClient
+    // Parse optional watchIds from body to regenerate specific watches
+    let targetWatchIds: string[] | null = null;
+    try {
+      const body = await req.json();
+      if (body?.watchIds && Array.isArray(body.watchIds)) {
+        targetWatchIds = body.watchIds;
+      }
+    } catch { /* no body = process all missing */ }
+
+    let query = supabaseClient
       .from('watches')
-      .select('id, brand, model, dial_color, type, case_size, movement')
-      .is('ai_image_url', null)
+      .select('id, brand, model, dial_color, type, case_size, movement, what_i_like, why_bought')
       .order('brand', { ascending: true });
+
+    if (targetWatchIds && targetWatchIds.length > 0) {
+      // Regenerate specific watches (clear their URLs first)
+      await supabaseClient.from('watches').update({ ai_image_url: null }).in('id', targetWatchIds);
+      query = query.in('id', targetWatchIds);
+    } else {
+      query = query.is('ai_image_url', null);
+    }
+
+    const { data: watches, error: fetchError } = await query;
 
     if (fetchError) throw fetchError;
     if (!watches || watches.length === 0) {
