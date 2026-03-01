@@ -36,7 +36,9 @@ export function BottomNavigation() {
               key={item.title}
               to={item.url}
               onClick={handleNavClick}
-              className={`flex flex-col items-center justify-center flex-1 h-full py-2 transition-colors touch-target ${
+              aria-label={item.title}
+              aria-current={isActive ? "page" : undefined}
+              className={`flex flex-col items-center justify-center flex-1 h-full py-2 transition-colors touch-target focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
                 isActive
                   ? "text-accent"
                   : "text-textMuted"
@@ -46,8 +48,11 @@ export function BottomNavigation() {
               <div className="relative">
                 <item.icon className={`h-6 w-6 mb-1 ${isActive ? "text-accent" : ""}`} />
                 {showBadge && (
-                  <Badge className="absolute -top-1 -right-2 h-4 min-w-4 flex items-center justify-center text-[10px] p-0 bg-accent text-accent-foreground">
-                    {totalCount > 9 ? "9+" : totalCount}
+                  <Badge
+                    className="absolute -top-1 -right-2 h-4 min-w-4 flex items-center justify-center text-[10px] p-0 bg-accent text-accent-foreground"
+                    aria-label={`${totalCount} unread notifications`}
+                  >
+                    <span aria-hidden="true">{totalCount > 9 ? "9+" : totalCount}</span>
                   </Badge>
                 )}
               </div>
@@ -62,7 +67,8 @@ export function BottomNavigation() {
         <MobileMenuDrawer>
           <button
             onClick={handleMenuClick}
-            className="flex flex-col items-center justify-center flex-1 h-full py-2 transition-colors touch-target text-textMuted"
+            aria-label="Open menu"
+            className="flex flex-col items-center justify-center flex-1 h-full py-2 transition-colors touch-target text-textMuted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           >
             <Menu className="h-6 w-6 mb-1" />
             <span className="text-[10px] font-medium">More</span>

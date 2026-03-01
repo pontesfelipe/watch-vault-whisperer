@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Settings, HelpCircle, Info, Shield, Lightbulb, LogOut, Bot } from "lucide-react";
+import { Settings, HelpCircle, Info, Shield, Lightbulb, LogOut } from "lucide-react";
 import { motion } from "framer-motion";
 import {
   Drawer,
@@ -29,7 +29,6 @@ export function MobileMenuDrawer({ children }: MobileMenuDrawerProps) {
   const { watches } = useWatchData(selectedCollectionId);
 
   const menuItems = [
-    { title: "Vault Assistant", url: "/vault-pal", icon: Bot },
     { title: "Settings", url: "/settings", icon: Settings },
     { title: "FAQ", url: "/faq", icon: HelpCircle },
     { title: "About", url: "/about", icon: Info },
@@ -97,7 +96,8 @@ export function MobileMenuDrawer({ children }: MobileMenuDrawerProps) {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.04, duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
                 onClick={() => handleNavigation(item.url)}
-                className={`w-full flex items-center gap-3 rounded-xl px-4 py-3 text-base transition-colors touch-target ${
+                aria-label={item.title}
+                className={`w-full flex items-center gap-3 rounded-xl px-4 py-3 text-base transition-colors touch-target focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
                   isActive
                     ? "bg-accentSubtle text-textMain font-medium"
                     : "text-textMuted hover:bg-surfaceMuted hover:text-textMain active:bg-surfaceMuted"
