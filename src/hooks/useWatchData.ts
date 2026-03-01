@@ -69,11 +69,9 @@ export const useWatchData = (collectionId?: string | null) => {
       if (collectionId) {
         watchesQuery = watchesQuery.eq('collection_id', collectionId);
       } else {
-        // No collection selected - only show user's own watches as fallback
-        // (This shouldn't normally happen if CollectionProvider is working correctly)
-        if (!isAdmin) {
-          watchesQuery = watchesQuery.eq('user_id', user.id);
-        }
+        // No collection selected - always filter by user_id to prevent
+        // leaking other users' watches (even for admins in collection view)
+        watchesQuery = watchesQuery.eq('user_id', user.id);
       }
       
       // Sort by custom sort_order, then fall back to brand and model for new watches
