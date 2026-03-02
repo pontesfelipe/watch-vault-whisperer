@@ -1,26 +1,31 @@
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { WatchCard } from "@/components/WatchCard";
-import { StatsCard } from "@/components/StatsCard";
-import { TripTimeline } from "@/components/TripTimeline";
-import { UsageChart } from "@/components/UsageChart";
-import { AddWatchDialog } from "@/components/AddWatchDialog";
-import { AddTripDialog } from "@/components/AddTripDialog";
-import { AddEventDialog } from "@/components/AddEventDialog";
-import { AddWaterUsageDialog } from "@/components/AddWaterUsageDialog";
-import { WaterUsageList } from "@/components/WaterUsageList";
-import { AddWishlistDialog } from "@/components/AddWishlistDialog";
-import { WishlistTable } from "@/components/WishlistTable";
-import { TastePreferences } from "@/components/TastePreferences";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Watch, TrendingUp, Calendar, Search, Lock, Unlock } from "lucide-react";
-import { Trip, Event } from "@/types/watch";
-import { Button } from "@/components/ui/button";
-import { usePasscode } from "@/contexts/PasscodeContext";
-import { useToast } from "@/hooks/use-toast";
-import { BetaBadge } from "@/components/BetaBadge";
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { WatchCard } from '@/components/WatchCard';
+import { StatsCard } from '@/components/StatsCard';
+import { TripTimeline } from '@/components/TripTimeline';
+import { UsageChart } from '@/components/UsageChart';
+import { AddWatchDialog } from '@/components/AddWatchDialog';
+import { AddTripDialog } from '@/components/AddTripDialog';
+import { AddEventDialog } from '@/components/AddEventDialog';
+import { AddWaterUsageDialog } from '@/components/AddWaterUsageDialog';
+import { WaterUsageList } from '@/components/WaterUsageList';
+import { AddWishlistDialog } from '@/components/AddWishlistDialog';
+import { WishlistTable } from '@/components/WishlistTable';
+import { TastePreferences } from '@/components/TastePreferences';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Watch, TrendingUp, Calendar, Search, Lock, Unlock } from 'lucide-react';
+import { Trip, Event } from '@/types/watch';
+import { Button } from '@/components/ui/button';
+import { usePasscode } from '@/contexts/PasscodeContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface Watch {
   id: string;
@@ -64,8 +69,8 @@ const Index = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [waterUsages, setWaterUsages] = useState<WaterUsage[]>([]);
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedBrand, setSelectedBrand] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedBrand, setSelectedBrand] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const [generatingSuggestions, setGeneratingSuggestions] = useState(false);
   const [showAddEvent, setShowAddEvent] = useState(false);
@@ -76,25 +81,27 @@ const Index = () => {
   const { toast } = useToast();
 
   const fetchData = async () => {
-    const [watchesResult, wearResult, tripsResult, eventsResult, waterResult, wishlistResult] = await Promise.all([
-      supabase.from("watches").select("*"),
-      supabase.from("wear_entries").select("watch_id, wear_date, days, updated_at"),
-      supabase.from("trips").select("*").order("start_date"),
-      supabase.from("events").select("*").order("start_date"),
-      supabase.from("water_usage").select("*").order("activity_date", { ascending: false }),
-      supabase.from("wishlist").select("*").order("rank", { ascending: true }),
-    ]);
+    const [watchesResult, wearResult, tripsResult, eventsResult, waterResult, wishlistResult] =
+      await Promise.all([
+        supabase.from('watches').select('*'),
+        supabase.from('wear_entries').select('watch_id, wear_date, days, updated_at'),
+        supabase.from('trips').select('*').order('start_date'),
+        supabase.from('events').select('*').order('start_date'),
+        supabase.from('water_usage').select('*').order('activity_date', { ascending: false }),
+        supabase.from('wishlist').select('*').order('rank', { ascending: true }),
+      ]);
 
     if (watchesResult.data) setWatches(watchesResult.data);
-    if (wearResult.data) setWearEntries(wearResult.data.map(w => ({ ...w, days: Number(w.days) })));
+    if (wearResult.data)
+      setWearEntries(wearResult.data.map((w) => ({ ...w, days: Number(w.days) })));
     if (tripsResult.data) {
       setTrips(
         tripsResult.data.map((trip) => ({
           id: trip.id,
-          startDate: new Date(trip.start_date).toLocaleDateString("en-US", {
-            month: "numeric",
-            day: "numeric",
-            year: "2-digit"
+          startDate: new Date(trip.start_date).toLocaleDateString('en-US', {
+            month: 'numeric',
+            day: 'numeric',
+            year: '2-digit',
           }),
           location: trip.location,
           linkedWatches: [],
@@ -107,10 +114,10 @@ const Index = () => {
       setEvents(
         eventsResult.data.map((event) => ({
           id: event.id,
-          startDate: new Date(event.start_date).toLocaleDateString("en-US", {
-            month: "numeric",
-            day: "numeric",
-            year: "2-digit"
+          startDate: new Date(event.start_date).toLocaleDateString('en-US', {
+            month: 'numeric',
+            day: 'numeric',
+            year: '2-digit',
           }),
           location: event.location,
           linkedWatches: [],
@@ -131,15 +138,15 @@ const Index = () => {
   const handleGenerateSuggestions = async (tasteDescription: string) => {
     setGeneratingSuggestions(true);
     try {
-      const { data, error } = await supabase.functions.invoke("suggest-watches", {
-        body: { 
-          collection: watches.map(w => ({
+      const { data, error } = await supabase.functions.invoke('suggest-watches', {
+        body: {
+          collection: watches.map((w) => ({
             brand: w.brand,
             model: w.model,
             dial_color: w.dial_color,
             type: w.type,
           })),
-          tasteDescription 
+          tasteDescription,
         },
       });
 
@@ -148,41 +155,47 @@ const Index = () => {
       if (data?.suggestions) {
         // Clear old AI suggestions
         const { error: deleteError } = await supabase
-          .from("wishlist")
+          .from('wishlist')
           .delete()
-          .eq("is_ai_suggested", true);
+          .eq('is_ai_suggested', true);
 
         if (deleteError) throw deleteError;
 
         // Insert new AI suggestions
-        const { error: insertError } = await supabase
-          .from("wishlist")
-          .insert(
-            data.suggestions.map((s: any) => ({
+        const { error: insertError } = await supabase.from('wishlist').insert(
+          data.suggestions.map(
+            (s: {
+              brand: string;
+              model: string;
+              dial_colors: string;
+              rank: number;
+              notes: string;
+            }) => ({
               brand: s.brand,
               model: s.model,
               dial_colors: s.dial_colors,
               rank: s.rank,
               notes: s.notes,
               is_ai_suggested: true,
-            }))
-          );
+            })
+          )
+        );
 
         if (insertError) throw insertError;
 
         await fetchData();
-        
+
         toast({
-          title: "AI Suggestions Generated!",
+          title: 'AI Suggestions Generated!',
           description: `${data.suggestions.length} watches suggested based on your collection and taste`,
         });
       }
     } catch (error) {
-      console.error("Error generating suggestions:", error);
+      console.error('Error generating suggestions:', error);
       toast({
-        title: "Error",
-        description: "Failed to generate watch suggestions",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to generate watch suggestions',
+        variant: 'destructive',
       });
     } finally {
       setGeneratingSuggestions(false);
@@ -194,93 +207,94 @@ const Index = () => {
   }, []);
 
   // Get unique brands for filter
-  const uniqueBrands = Array.from(new Set(watches.map(w => w.brand))).sort();
+  const uniqueBrands = Array.from(new Set(watches.map((w) => w.brand))).sort();
 
-  const filteredWatches = watches.filter(
-    (watch) => {
-      const matchesSearch = watch.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        watch.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        watch.type.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesBrand = selectedBrand === "all" || watch.brand === selectedBrand;
-      return matchesSearch && matchesBrand;
-    }
-  );
+  const filteredWatches = watches.filter((watch) => {
+    const matchesSearch =
+      watch.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      watch.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      watch.type.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesBrand = selectedBrand === 'all' || watch.brand === selectedBrand;
+    return matchesSearch && matchesBrand;
+  });
 
   // Calculate stats
   const watchTotals = new Map<string, number>();
-  wearEntries.forEach(entry => {
+  wearEntries.forEach((entry) => {
     watchTotals.set(entry.watch_id, (watchTotals.get(entry.watch_id) || 0) + entry.days);
   });
 
   const totalWatches = watches.length;
   const totalDaysWorn = Array.from(watchTotals.values()).reduce((sum, days) => sum + days, 0);
-  
-  const mostWornWatchId = Array.from(watchTotals.entries())
-    .sort((a, b) => b[1] - a[1])[0]?.[0];
-  const mostWornWatch = watches.find(w => w.id === mostWornWatchId);
+
+  const mostWornWatchId = Array.from(watchTotals.entries()).sort((a, b) => b[1] - a[1])[0]?.[0];
+  const mostWornWatch = watches.find((w) => w.id === mostWornWatchId);
   const mostWornDays = mostWornWatchId ? watchTotals.get(mostWornWatchId) || 0 : 0;
-  
-  const avgDaysPerWatch = totalWatches > 0 ? (totalDaysWorn / totalWatches).toFixed(1) : "0";
+
+  const avgDaysPerWatch = totalWatches > 0 ? (totalDaysWorn / totalWatches).toFixed(1) : '0';
 
   // Calculate most worn color
   const colorTotals = new Map<string, number>();
-  wearEntries.forEach(entry => {
-    const watch = watches.find(w => w.id === entry.watch_id);
+  wearEntries.forEach((entry) => {
+    const watch = watches.find((w) => w.id === entry.watch_id);
     if (watch) {
       colorTotals.set(watch.dial_color, (colorTotals.get(watch.dial_color) || 0) + entry.days);
     }
   });
-  const mostWornColor = Array.from(colorTotals.entries())
-    .sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";
+  const mostWornColor =
+    Array.from(colorTotals.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A';
 
   // Calculate most worn style
   const styleTotals = new Map<string, number>();
-  wearEntries.forEach(entry => {
-    const watch = watches.find(w => w.id === entry.watch_id);
+  wearEntries.forEach((entry) => {
+    const watch = watches.find((w) => w.id === entry.watch_id);
     if (watch) {
       styleTotals.set(watch.type, (styleTotals.get(watch.type) || 0) + entry.days);
     }
   });
-  const mostWornStyle = Array.from(styleTotals.entries())
-    .sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";
+  const mostWornStyle =
+    Array.from(styleTotals.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A';
 
   // Calculate trending watch (last 3 months)
   const threeMonthsAgo = new Date();
   threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-  
+
   const recentWearTotals = new Map<string, number>();
-  wearEntries.forEach(entry => {
+  wearEntries.forEach((entry) => {
     const wearDate = new Date(entry.wear_date);
     if (wearDate >= threeMonthsAgo) {
-      recentWearTotals.set(entry.watch_id, (recentWearTotals.get(entry.watch_id) || 0) + entry.days);
+      recentWearTotals.set(
+        entry.watch_id,
+        (recentWearTotals.get(entry.watch_id) || 0) + entry.days
+      );
     }
   });
-  
-  const trendingWatchId = Array.from(recentWearTotals.entries())
-    .sort((a, b) => b[1] - a[1])[0]?.[0];
-  const trendingWatch = watches.find(w => w.id === trendingWatchId);
+
+  const trendingWatchId = Array.from(recentWearTotals.entries()).sort(
+    (a, b) => b[1] - a[1]
+  )[0]?.[0];
+  const trendingWatch = watches.find((w) => w.id === trendingWatchId);
   const trendingDays = trendingWatchId ? recentWearTotals.get(trendingWatchId) || 0 : 0;
 
   // Calculate #1 trip watch (most worn across all trips)
   const tripWatchTotals = new Map<string, number>();
-  trips.forEach(trip => {
+  trips.forEach((trip) => {
     trip.linkedWatches?.forEach((lw) => {
       tripWatchTotals.set(lw.watchId, (tripWatchTotals.get(lw.watchId) || 0) + lw.days);
     });
   });
-  const topTripWatchId = Array.from(tripWatchTotals.entries())
-    .sort((a, b) => b[1] - a[1])[0]?.[0];
-  const topTripWatch = topTripWatchId ? watches.find(w => w.id === topTripWatchId) : undefined;
+  const topTripWatchId = Array.from(tripWatchTotals.entries()).sort((a, b) => b[1] - a[1])[0]?.[0];
+  const topTripWatch = topTripWatchId ? watches.find((w) => w.id === topTripWatchId) : undefined;
 
   // Calculate #1 water usage watch (most used in water activities)
   const waterWatchCounts = new Map<string, number>();
-  waterUsages.forEach(usage => {
+  waterUsages.forEach((usage) => {
     waterWatchCounts.set(usage.watch_id, (waterWatchCounts.get(usage.watch_id) || 0) + 1);
   });
-  const topWaterWatchId = Array.from(waterWatchCounts.entries())
-    .sort((a, b) => b[1] - a[1])[0]?.[0];
-  const topWaterWatch = watches.find(w => w.id === topWaterWatchId);
-
+  const topWaterWatchId = Array.from(waterWatchCounts.entries()).sort(
+    (a, b) => b[1] - a[1]
+  )[0]?.[0];
+  const topWaterWatch = watches.find((w) => w.id === topWaterWatchId);
 
   if (loading) {
     return (
@@ -301,16 +315,17 @@ const Index = () => {
                 <Watch className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
               </div>
               <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground truncate">Watch Collection</h1>
-                  <BetaBadge />
-                </div>
-                <p className="text-xs sm:text-sm text-muted-foreground truncate">Track and manage your timepieces</p>
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground truncate">
+                  Watch Collection
+                </h1>
+                <p className="text-xs sm:text-sm text-muted-foreground truncate">
+                  Track and manage your timepieces
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
               <Button
-                variant={isVerified ? "default" : "outline"}
+                variant={isVerified ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => {
                   if (!isVerified) {
@@ -341,12 +356,7 @@ const Index = () => {
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8">
         {/* Stats Section */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
-          <StatsCard
-            title="Total"
-            value={totalWatches}
-            icon={Watch}
-            subtitle="in collection"
-          />
+          <StatsCard title="Total" value={totalWatches} icon={Watch} subtitle="in collection" />
           <StatsCard
             title="Days Worn"
             value={totalDaysWorn.toFixed(1)}
@@ -357,7 +367,7 @@ const Index = () => {
             title="Most Worn"
             value={mostWornDays.toFixed(1)}
             icon={TrendingUp}
-            subtitle={mostWornWatch ? mostWornWatch.brand : "N/A"}
+            subtitle={mostWornWatch ? mostWornWatch.brand : 'N/A'}
           />
           <StatsCard
             title="Average"
@@ -365,23 +375,13 @@ const Index = () => {
             icon={TrendingUp}
             subtitle="days per watch"
           />
-          <StatsCard
-            title="#1 Color"
-            value={mostWornColor}
-            icon={Watch}
-            subtitle="most worn"
-          />
-          <StatsCard
-            title="#1 Style"
-            value={mostWornStyle}
-            icon={Watch}
-            subtitle="most worn"
-          />
+          <StatsCard title="#1 Color" value={mostWornColor} icon={Watch} subtitle="most worn" />
+          <StatsCard title="#1 Style" value={mostWornStyle} icon={Watch} subtitle="most worn" />
           <StatsCard
             title="Trending"
             value={trendingDays.toFixed(1)}
             icon={TrendingUp}
-            subtitle={trendingWatch ? `${trendingWatch.model}` : "N/A"}
+            subtitle={trendingWatch ? `${trendingWatch.model}` : 'N/A'}
           />
         </div>
 
@@ -395,18 +395,32 @@ const Index = () => {
         {/* Main Content Tabs */}
         <Tabs defaultValue="collection" className="space-y-4 sm:space-y-6">
           <TabsList className="bg-card border border-border grid grid-cols-5 w-full max-w-2xl mx-auto h-auto p-1">
-            <TabsTrigger value="collection" className="text-xs sm:text-sm py-2 px-1 sm:px-3">Collection</TabsTrigger>
-            <TabsTrigger value="wishlist" className="text-xs sm:text-sm py-2 px-1 sm:px-3">Wishlist</TabsTrigger>
-            <TabsTrigger value="trips" className="text-xs sm:text-sm py-2 px-1 sm:px-3">Trips</TabsTrigger>
-            <TabsTrigger value="events" className="text-xs sm:text-sm py-2 px-1 sm:px-3">Events</TabsTrigger>
-            <TabsTrigger value="water" className="text-xs sm:text-sm py-2 px-1 sm:px-3">Water</TabsTrigger>
+            <TabsTrigger value="collection" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
+              Collection
+            </TabsTrigger>
+            <TabsTrigger value="wishlist" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
+              Wishlist
+            </TabsTrigger>
+            <TabsTrigger value="trips" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
+              Trips
+            </TabsTrigger>
+            <TabsTrigger value="events" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
+              Events
+            </TabsTrigger>
+            <TabsTrigger value="water" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
+              Water
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="collection" className="space-y-4 sm:space-y-6">
             {watches.length === 0 ? (
               <div className="text-center py-8 sm:py-12">
-                <p className="text-muted-foreground mb-4 text-sm sm:text-base">No watches in your collection yet.</p>
-                <p className="text-xs sm:text-sm text-muted-foreground">Click "Add Watch" to get started!</p>
+                <p className="text-muted-foreground mb-4 text-sm sm:text-base">
+                  No watches in your collection yet.
+                </p>
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  Click "Add Watch" to get started!
+                </p>
               </div>
             ) : (
               <>
@@ -450,7 +464,9 @@ const Index = () => {
 
                 {filteredWatches.length === 0 && (
                   <div className="text-center py-8 sm:py-12">
-                    <p className="text-muted-foreground text-sm sm:text-base">No watches found matching your search.</p>
+                    <p className="text-muted-foreground text-sm sm:text-base">
+                      No watches found matching your search.
+                    </p>
                   </div>
                 )}
               </>
@@ -459,13 +475,19 @@ const Index = () => {
 
           <TabsContent value="wishlist" className="space-y-4 sm:space-y-6">
             <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-2 sm:gap-4 mb-4">
-              <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-foreground">Your Wishlist</h2>
-              <Button onClick={() => setShowAddWishlist(true)} size="sm" className="w-full xs:w-auto h-9 sm:h-10 text-sm">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-foreground">
+                Your Wishlist
+              </h2>
+              <Button
+                onClick={() => setShowAddWishlist(true)}
+                size="sm"
+                className="w-full xs:w-auto h-9 sm:h-10 text-sm"
+              >
                 Add to Wishlist
               </Button>
             </div>
-            
-            <TastePreferences 
+
+            <TastePreferences
               onSuggest={handleGenerateSuggestions}
               isGenerating={generatingSuggestions}
             />
@@ -473,11 +495,7 @@ const Index = () => {
             <div className="space-y-4 sm:space-y-6">
               <div>
                 <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Your Wishlist</h3>
-                <WishlistTable 
-                  items={wishlist} 
-                  onDelete={fetchData}
-                  showAISuggested={false}
-                />
+                <WishlistTable items={wishlist} onDelete={fetchData} showAISuggested={false} />
               </div>
 
               <div>
@@ -489,24 +507,24 @@ const Index = () => {
                     onClick={async () => {
                       try {
                         const { error } = await supabase
-                          .from("wishlist")
+                          .from('wishlist')
                           .delete()
-                          .eq("is_ai_suggested", true);
+                          .eq('is_ai_suggested', true);
 
                         if (error) throw error;
 
                         toast({
-                          title: "Cleared",
-                          description: "AI suggestions have been cleared",
+                          title: 'Cleared',
+                          description: 'AI suggestions have been cleared',
                         });
 
                         await fetchData();
                       } catch (error) {
-                        console.error("Error clearing AI suggestions:", error);
+                        console.error('Error clearing AI suggestions:', error);
                         toast({
-                          title: "Error",
-                          description: "Failed to clear AI suggestions",
-                          variant: "destructive",
+                          title: 'Error',
+                          description: 'Failed to clear AI suggestions',
+                          variant: 'destructive',
                         });
                       }
                     }}
@@ -514,26 +532,34 @@ const Index = () => {
                     Clear AI Suggestions
                   </Button>
                 </div>
-                <WishlistTable 
-                  items={wishlist} 
-                  onDelete={fetchData}
-                  showAISuggested={true}
-                />
+                <WishlistTable items={wishlist} onDelete={fetchData} showAISuggested={true} />
               </div>
             </div>
           </TabsContent>
 
           <TabsContent value="trips" className="space-y-4 sm:space-y-6">
             <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
-              <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-foreground">Travel History</h2>
-              <Button onClick={() => setShowAddTrip(true)} size="sm" className="w-full xs:w-auto h-9 sm:h-10 text-sm">Add Trip</Button>
+              <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-foreground">
+                Travel History
+              </h2>
+              <Button
+                onClick={() => setShowAddTrip(true)}
+                size="sm"
+                className="w-full xs:w-auto h-9 sm:h-10 text-sm"
+              >
+                Add Trip
+              </Button>
             </div>
             {topTripWatch && (
               <div className="bg-card border border-border rounded-lg p-3 sm:p-4 mb-3 sm:mb-4">
                 <div className="flex items-center justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">#1 Trip Watch</p>
-                    <h3 className="text-base sm:text-lg font-semibold text-foreground truncate">{topTripWatch[0]}</h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">
+                      #1 Trip Watch
+                    </p>
+                    <h3 className="text-base sm:text-lg font-semibold text-foreground truncate">
+                      {topTripWatch[0]}
+                    </h3>
                   </div>
                   <div className="text-right flex-shrink-0">
                     <p className="text-xl sm:text-2xl font-bold text-primary">{topTripWatch[1]}</p>
@@ -543,8 +569,8 @@ const Index = () => {
               </div>
             )}
             <TripTimeline trips={trips} type="trip" watches={watches} onUpdate={fetchData} />
-            <AddTripDialog 
-              watches={watches} 
+            <AddTripDialog
+              watches={watches}
               onSuccess={fetchData}
               open={showAddTrip}
               onOpenChange={setShowAddTrip}
@@ -553,12 +579,20 @@ const Index = () => {
 
           <TabsContent value="events" className="space-y-4 sm:space-y-6">
             <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
-              <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-foreground">Special Events</h2>
-              <Button onClick={() => setShowAddEvent(true)} size="sm" className="w-full xs:w-auto h-9 sm:h-10 text-sm">Add Event</Button>
+              <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-foreground">
+                Special Events
+              </h2>
+              <Button
+                onClick={() => setShowAddEvent(true)}
+                size="sm"
+                className="w-full xs:w-auto h-9 sm:h-10 text-sm"
+              >
+                Add Event
+              </Button>
             </div>
             <TripTimeline trips={events} type="event" watches={watches} onUpdate={fetchData} />
-            <AddEventDialog 
-              watches={watches} 
+            <AddEventDialog
+              watches={watches}
               onSuccess={fetchData}
               open={showAddEvent}
               onOpenChange={setShowAddEvent}
@@ -567,33 +601,47 @@ const Index = () => {
 
           <TabsContent value="water" className="space-y-4 sm:space-y-6">
             <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
-              <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-foreground">Water Usage Tracking</h2>
-              <Button onClick={() => setShowAddWaterUsage(true)} size="sm" className="w-full xs:w-auto h-9 sm:h-10 text-sm">Add Water Usage</Button>
+              <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-foreground">
+                Water Usage Tracking
+              </h2>
+              <Button
+                onClick={() => setShowAddWaterUsage(true)}
+                size="sm"
+                className="w-full xs:w-auto h-9 sm:h-10 text-sm"
+              >
+                Add Water Usage
+              </Button>
             </div>
             {topWaterWatch && (
               <div className="bg-card border border-border rounded-lg p-3 sm:p-4 mb-3 sm:mb-4">
                 <div className="flex items-center justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">#1 Water Usage Watch</p>
-                    <h3 className="text-base sm:text-lg font-semibold text-foreground truncate">{topWaterWatch.brand} {topWaterWatch.model}</h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">
+                      #1 Water Usage Watch
+                    </p>
+                    <h3 className="text-base sm:text-lg font-semibold text-foreground truncate">
+                      {topWaterWatch.brand} {topWaterWatch.model}
+                    </h3>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className="text-xl sm:text-2xl font-bold text-primary">{waterWatchCounts.get(topWaterWatch.id)}</p>
+                    <p className="text-xl sm:text-2xl font-bold text-primary">
+                      {waterWatchCounts.get(topWaterWatch.id)}
+                    </p>
                     <p className="text-[10px] sm:text-xs text-muted-foreground">activities</p>
                   </div>
                 </div>
               </div>
             )}
             <WaterUsageList usages={waterUsages} watches={watches} onUpdate={fetchData} />
-            <AddWaterUsageDialog 
-              watches={watches} 
+            <AddWaterUsageDialog
+              watches={watches}
               onSuccess={fetchData}
               open={showAddWaterUsage}
               onOpenChange={setShowAddWaterUsage}
             />
           </TabsContent>
         </Tabs>
-        <AddWishlistDialog 
+        <AddWishlistDialog
           open={showAddWishlist}
           onOpenChange={setShowAddWishlist}
           onSuccess={fetchData}
