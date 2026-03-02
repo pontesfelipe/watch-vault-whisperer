@@ -25,6 +25,7 @@ const inputSchema = z.object({
   referenceImageBase64: z.string().max(15000000, 'Image too large (max 10MB)').optional(),
   referenceImageUrl: z.string().url().max(2000).optional(),
   customPrompt: z.string().max(2000).optional(),
+  force: z.boolean().optional(),
 });
 
 const COMPOSITION_RULES = [
@@ -284,7 +285,7 @@ serve(async (req) => {
     const {
       watchId, brand, model, dialColor, type, caseSize, movement, bracelet, year, edition,
       bezelType, strapType, specialEditionHint,
-      referenceImageBase64, referenceImageUrl, customPrompt,
+      referenceImageBase64, referenceImageUrl, customPrompt, force,
     } = parseResult.data;
 
     const clientIp = req.headers.get("x-forwarded-for") || "unknown";
@@ -337,6 +338,23 @@ serve(async (req) => {
         return new Response(
           JSON.stringify({ error: 'Monthly limit reached. You can regenerate 1 image per month.', code: 'MONTHLY_LIMIT' }),
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    // If not forced (i.e. not a regeneration), check if the watch already has an image
+    if (!force && watchId) {
+      const { data: existingWatch } = await supabaseClient
+        .from('watches')
+        .select('ai_image_url')
+        .eq('id', watchId)
+        .maybeSingle();
+
+      if (existingWatch?.ai_image_url) {
+        console.log(`Watch ${watchId} already has an AI image, skipping generation`);
+        return new Response(
+          JSON.stringify({ success: true, imageUrl: existingWatch.ai_image_url, skipped: true, message: 'Image already exists' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
     }
