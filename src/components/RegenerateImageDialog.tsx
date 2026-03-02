@@ -91,6 +91,7 @@ export function RegenerateImageDialog({ watch, onSuccess }: RegenerateImageDialo
         type: watch.type,
         caseSize: watch.case_size || undefined,
         movement: watch.movement || undefined,
+        force: true,
       };
 
       if (withPhoto && photoBase64) {
