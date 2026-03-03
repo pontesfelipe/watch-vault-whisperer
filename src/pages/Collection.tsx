@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Search, RefreshCw, History, ChevronDown, ChevronUp, Plus, Heart, Sparkles, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,7 @@ import { CreateFirstCollectionDialog } from "@/components/CreateFirstCollectionD
 import { CollectionSwitcher } from "@/components/CollectionSwitcher";
 import { AnalyzeWatchMetadataDialog } from "@/components/AnalyzeWatchMetadataDialog";
 import { ImportSpreadsheetDialog } from "@/components/ImportSpreadsheetDialog";
+import { PullToRefreshContainer } from "@/components/PullToRefreshContainer";
 
 import { WishlistTable } from "@/components/WishlistTable";
 import { TastePreferences } from "@/components/TastePreferences";
@@ -69,6 +70,10 @@ const Collection = () => {
   const [isGeneratingSuggestions, setIsGeneratingSuggestions] = useState(false);
   const [remainingWishlistUsage, setRemainingWishlistUsage] = useState<number | null>(null);
   const { toast } = useToast();
+
+  const handlePullRefresh = useCallback(async () => {
+    await Promise.all([refetch(), refetchPast(), refetchWishlist()]);
+  }, [refetch, refetchPast, refetchWishlist]);
 
   const handleRefetchAll = () => {
     refetch();
@@ -331,7 +336,10 @@ const Collection = () => {
   const userWishlistItems = wishlist.filter(item => !item.is_ai_suggested);
   const aiSuggestedItems = wishlist.filter(item => item.is_ai_suggested);
 
+  
+
   return (
+    <PullToRefreshContainer onRefresh={handlePullRefresh}>
     <div className="space-y-6">
       {/* Header */}
       <div className="space-y-4">
@@ -608,6 +616,7 @@ const Collection = () => {
 
       </Tabs>
     </div>
+    </PullToRefreshContainer>
   );
 };
 

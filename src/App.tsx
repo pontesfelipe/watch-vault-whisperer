@@ -10,6 +10,7 @@ import { CollectionProvider } from "@/contexts/CollectionContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AppLayout } from "@/components/AppLayout";
 import { SplashScreen } from "@/components/SplashScreen";
+import { useOfflineQueue } from "@/hooks/useOfflineQueue";
 import Dashboard from "./pages/Dashboard";
 import Collection from "./pages/Collection";
 
@@ -57,6 +58,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function AppContent() {
   const [showSplash, setShowSplash] = useState(true);
+  useOfflineQueue();
 
   return (
     <>
