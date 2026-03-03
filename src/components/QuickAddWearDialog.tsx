@@ -1,17 +1,19 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, Plus, Dumbbell } from "lucide-react";
+import { Calendar, Plus, Dumbbell, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCollection } from "@/contexts/CollectionContext";
 import { CollectionType, getCollectionConfig, isWatchCollection } from "@/types/collection";
+import { ResponsiveDialog } from "@/components/ResponsiveDialog";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const wearSchema = z.object({
   watchId: z.string().uuid(),
@@ -26,6 +28,7 @@ interface QuickAddWearDialogProps {
 }
 
 export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propType }: QuickAddWearDialogProps) => {
+  const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedWatchId, setSelectedWatchId] = useState("");
@@ -312,33 +315,59 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
     return `${year}-${month}-${day}`;
   };
 
+  const triggerButton = (
+    <Button className="gap-2">
+      <Plus className="w-4 h-4" />
+      Log {config.usageNoun.charAt(0).toUpperCase() + config.usageNoun.slice(1)}
+    </Button>
+  );
+
+  const usageLabel = config.usageNoun.charAt(0).toUpperCase() + config.usageNoun.slice(1);
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="gap-2">
-          <Plus className="w-4 h-4" />
-          Log {config.usageNoun.charAt(0).toUpperCase() + config.usageNoun.slice(1)}
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="bg-card border-border max-w-md max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-foreground">Quick Add {config.usageNoun.charAt(0).toUpperCase() + config.usageNoun.slice(1)} Entry</DialogTitle>
-        </DialogHeader>
+    <ResponsiveDialog
+      open={open}
+      onOpenChange={setOpen}
+      title={`Quick Add ${usageLabel} Entry`}
+      trigger={triggerButton}
+    >
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="watch">Select {config.singularLabel}</Label>
-            <Select value={selectedWatchId} onValueChange={setSelectedWatchId} required>
-              <SelectTrigger className="bg-background border-border">
-                <SelectValue placeholder={`Choose a ${config.singularLabel.toLowerCase()}...`} />
-              </SelectTrigger>
-              <SelectContent className="bg-popover border-border max-h-[300px]">
-                {sortedWatches.map((watch) => (
-                  <SelectItem key={watch.id} value={watch.id}>
-                    {watch.brand} - {watch.model}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {isMobile ? (
+              <ScrollArea className="max-h-[200px] border rounded-lg">
+                <div className="flex flex-col">
+                  {sortedWatches.map((watch) => (
+                    <button
+                      key={watch.id}
+                      type="button"
+                      onClick={() => setSelectedWatchId(watch.id)}
+                      className={`flex items-center justify-between px-4 py-3 text-sm text-left transition-colors ${
+                        selectedWatchId === watch.id
+                          ? "bg-primary/10 text-primary font-medium"
+                          : "text-foreground hover:bg-muted"
+                      }`}
+                    >
+                      <span>{watch.brand} - {watch.model}</span>
+                      {selectedWatchId === watch.id && <Check className="h-4 w-4 text-primary flex-shrink-0" />}
+                    </button>
+                  ))}
+                </div>
+              </ScrollArea>
+            ) : (
+              <Select value={selectedWatchId} onValueChange={setSelectedWatchId} required>
+                <SelectTrigger className="bg-background border-border">
+                  <SelectValue placeholder={`Choose a ${config.singularLabel.toLowerCase()}...`} />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border-border max-h-[300px]">
+                  {sortedWatches.map((watch) => (
+                    <SelectItem key={watch.id} value={watch.id}>
+                      {watch.brand} - {watch.model}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -632,7 +661,6 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
             </Button>
           </div>
         </form>
-      </DialogContent>
-    </Dialog>
+    </ResponsiveDialog>
   );
 };
