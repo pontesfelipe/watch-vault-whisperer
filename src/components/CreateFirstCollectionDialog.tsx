@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ResponsiveDialog } from "@/components/ResponsiveDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -125,14 +126,8 @@ export const CreateFirstCollectionDialog = ({ onSuccess }: CreateFirstCollection
   }
 
   return (
-    <Dialog open={true} onOpenChange={(open) => !open && window.history.back()}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>Welcome! Create Your First Collection</DialogTitle>
-          <DialogDescription>
-            Choose what type of collection you want to track and give it a name.
-          </DialogDescription>
-        </DialogHeader>
+    <ResponsiveDialog open={true} onOpenChange={(open) => !open && window.history.back()} title="Welcome! Create Your First Collection" className="sm:max-w-[500px]">
+        <p className="text-sm text-muted-foreground mb-4">Choose what type of collection you want to track and give it a name.</p>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-3">
             <Label>What would you like to collect?</Label>
@@ -186,7 +181,6 @@ export const CreateFirstCollectionDialog = ({ onSuccess }: CreateFirstCollection
             )}
           </Button>
         </form>
-      </DialogContent>
-    </Dialog>
+    </ResponsiveDialog>
   );
 };

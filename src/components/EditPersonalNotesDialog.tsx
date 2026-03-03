@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ResponsiveDialog } from "@/components/ResponsiveDialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -68,13 +68,7 @@ export function EditPersonalNotesDialog({ watch, onSuccess, onClose }: EditPerso
   };
 
   return (
-    <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
-            Edit Personal Notes: {watch.brand} {watch.model}
-          </DialogTitle>
-        </DialogHeader>
+    <ResponsiveDialog open={true} onOpenChange={(v) => { if (!v) onClose(); }} title={`Edit Personal Notes: ${watch.brand} ${watch.model}`} className="max-w-2xl">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="why_bought">Why I bought</Label>
@@ -158,7 +152,6 @@ export function EditPersonalNotesDialog({ watch, onSuccess, onClose }: EditPerso
             </Button>
           </div>
         </form>
-      </DialogContent>
-    </Dialog>
+    </ResponsiveDialog>
   );
 }

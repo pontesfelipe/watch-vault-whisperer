@@ -1,13 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { ResponsiveDialog } from "@/components/ResponsiveDialog";
 import { RefreshCw, Camera, Sparkles, Upload, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -124,20 +117,21 @@ export function RegenerateImageDialog({ watch, onSuccess }: RegenerateImageDialo
   };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) clearPhoto(); }}>
-      <DialogTrigger asChild>
+    <ResponsiveDialog
+      open={open}
+      onOpenChange={(v) => { setOpen(v); if (!v) clearPhoto(); }}
+      title="Regenerate AI Image"
+      trigger={
         <Button variant="outline" size="sm" className="gap-1.5">
           <RefreshCw className="w-3.5 h-3.5" />
           Regenerate Image
         </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Regenerate AI Image</DialogTitle>
-          <DialogDescription>
-            For best results with lesser-known brands, take or upload a photo of your watch — the AI will use it as a reference to create a standardized catalog image.
-          </DialogDescription>
-        </DialogHeader>
+      }
+      className="sm:max-w-md"
+    >
+        <p className="text-sm text-muted-foreground mb-4">
+          For best results with lesser-known brands, take or upload a photo of your watch — the AI will use it as a reference to create a standardized catalog image.
+        </p>
 
         {hasReachedLimit ? (
           <div className="py-6 text-center space-y-2">
@@ -239,7 +233,6 @@ export function RegenerateImageDialog({ watch, onSuccess }: RegenerateImageDialo
             </p>
           </div>
         )}
-      </DialogContent>
-    </Dialog>
+    </ResponsiveDialog>
   );
 }
