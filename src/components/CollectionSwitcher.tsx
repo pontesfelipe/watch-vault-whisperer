@@ -8,6 +8,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { Badge } from "@/components/ui/badge";
 import { useCollection } from "@/contexts/CollectionContext";
 import { useCollectionData } from "@/hooks/useCollectionData";
@@ -16,12 +22,15 @@ import { useState } from "react";
 import { CreateCollectionTypeDialog } from "./CreateCollectionTypeDialog";
 import { ItemTypeIcon } from "./ItemTypeIcon";
 import { getCollectionConfig } from "@/types/collection";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const CollectionSwitcher = () => {
   const { selectedCollectionId, setSelectedCollectionId, currentCollection, currentCollectionType } = useCollection();
   const { collections, refetch } = useCollectionData();
   const { isAdmin } = useAuth();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const getRoleIcon = (role: string) => {
     switch (role) {
@@ -41,81 +50,157 @@ export const CollectionSwitcher = () => {
     }
   };
 
-  // Count collections the user owns (created)
   const ownedCollections = collections.filter(c => c.role === 'owner');
   const canCreateCollection = isAdmin || ownedCollections.length === 0;
 
+  const triggerButton = (
+    <Button variant="outline" className="gap-2">
+      <ItemTypeIcon type={currentCollectionType} size="sm" />
+      {currentCollection?.name || "Select Collection"}
+      {currentCollection && (
+        <Badge variant={getRoleBadgeVariant(currentCollection.role || 'viewer')} className="gap-1">
+          {getRoleIcon(currentCollection.role)}
+          {currentCollection.role}
+        </Badge>
+      )}
+    </Button>
+  );
+
+  const collectionList = (
+    <>
+      {collections.map((collection) => {
+        const config = getCollectionConfig(collection.collection_type);
+        return (
+          <button
+            key={collection.id}
+            onClick={() => {
+              setSelectedCollectionId(collection.id);
+              setDrawerOpen(false);
+            }}
+            className="flex items-center justify-between w-full px-4 py-3 text-left transition-colors hover:bg-surfaceMuted"
+          >
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              {collection.id === selectedCollectionId && <Check className="w-4 h-4 flex-shrink-0 text-accent" />}
+              <ItemTypeIcon type={collection.collection_type} size="sm" className="flex-shrink-0" />
+              <div className="flex flex-col min-w-0">
+                <span className="text-sm font-medium truncate">{collection.name}</span>
+                <span className="text-xs text-muted-foreground truncate">
+                  {config.label}
+                  {isAdmin && (collection.ownerName || collection.ownerEmail) && (
+                    <> • by {collection.ownerName || collection.ownerEmail}</>
+                  )}
+                </span>
+              </div>
+            </div>
+            <Badge variant={getRoleBadgeVariant(collection.role || 'viewer')} className="gap-1 flex-shrink-0 ml-2">
+              {getRoleIcon(collection.role)}
+              {collection.role}
+            </Badge>
+          </button>
+        );
+      })}
+
+      {canCreateCollection && (
+        <>
+          <div className="h-px bg-borderSubtle mx-4" />
+          <button
+            onClick={() => {
+              setDrawerOpen(false);
+              setShowCreateDialog(true);
+            }}
+            className="flex items-center gap-2 w-full px-4 py-3 text-left text-sm transition-colors hover:bg-surfaceMuted"
+          >
+            <Plus className="w-4 h-4" />
+            Create New Collection
+          </button>
+        </>
+      )}
+
+      {!canCreateCollection && (
+        <>
+          <div className="h-px bg-borderSubtle mx-4" />
+          <div className="px-4 py-2 text-xs text-muted-foreground">
+            You can only create one collection. Ask others to share theirs with you.
+          </div>
+        </>
+      )}
+    </>
+  );
+
   return (
     <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="gap-2">
-            <ItemTypeIcon type={currentCollectionType} size="sm" />
-            {currentCollection?.name || "Select Collection"}
-            {currentCollection && (
-              <Badge variant={getRoleBadgeVariant(currentCollection.role || 'viewer')} className="gap-1">
-                {getRoleIcon(currentCollection.role)}
-                {currentCollection.role}
-              </Badge>
-            )}
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-72">
-          <DropdownMenuLabel>My Collections</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          
-          {collections.map((collection) => {
-            const config = getCollectionConfig(collection.collection_type);
-            return (
-              <DropdownMenuItem
-                key={collection.id}
-                onClick={() => setSelectedCollectionId(collection.id)}
-                className="flex items-center justify-between cursor-pointer"
-              >
-                <div className="flex items-center gap-2 min-w-0 flex-1">
-                  {collection.id === selectedCollectionId && <Check className="w-4 h-4 flex-shrink-0" />}
-                  <ItemTypeIcon type={collection.collection_type} size="sm" className="flex-shrink-0" />
-                  <div className="flex flex-col min-w-0">
-                    <span className="truncate">{collection.name}</span>
-                    <span className="text-xs text-muted-foreground truncate">
-                      {config.label}
-                      {isAdmin && (collection.ownerName || collection.ownerEmail) && (
-                        <> • by {collection.ownerName || collection.ownerEmail}</>
-                      )}
-                    </span>
-                  </div>
-                </div>
-                <Badge variant={getRoleBadgeVariant(collection.role || 'viewer')} className="gap-1 flex-shrink-0 ml-2">
-                  {getRoleIcon(collection.role)}
-                  {collection.role}
-                </Badge>
-              </DropdownMenuItem>
-            );
-          })}
-
-          {canCreateCollection && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => setShowCreateDialog(true)}
-                className="cursor-pointer"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Create New Collection
-              </DropdownMenuItem>
-            </>
-          )}
-          
-          {!canCreateCollection && (
-            <>
-              <DropdownMenuSeparator />
-              <div className="px-2 py-1.5 text-xs text-muted-foreground">
-                You can only create one collection. Ask others to share theirs with you.
+      {isMobile ? (
+        <>
+          <div onClick={() => setDrawerOpen(true)}>
+            {triggerButton}
+          </div>
+          <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
+            <DrawerContent className="pb-safe">
+              <DrawerHeader className="text-center pb-2">
+                <DrawerTitle>My Collections</DrawerTitle>
+              </DrawerHeader>
+              <div className="max-h-[60vh] overflow-y-auto">
+                {collectionList}
               </div>
-            </>
-          )}
-        </DropdownMenuContent>
-      </DropdownMenu>
+            </DrawerContent>
+          </Drawer>
+        </>
+      ) : (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            {triggerButton}
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-72">
+            <DropdownMenuLabel>My Collections</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {collections.map((collection) => {
+              const config = getCollectionConfig(collection.collection_type);
+              return (
+                <DropdownMenuItem
+                  key={collection.id}
+                  onClick={() => setSelectedCollectionId(collection.id)}
+                  className="flex items-center justify-between cursor-pointer"
+                >
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    {collection.id === selectedCollectionId && <Check className="w-4 h-4 flex-shrink-0" />}
+                    <ItemTypeIcon type={collection.collection_type} size="sm" className="flex-shrink-0" />
+                    <div className="flex flex-col min-w-0">
+                      <span className="truncate">{collection.name}</span>
+                      <span className="text-xs text-muted-foreground truncate">
+                        {config.label}
+                        {isAdmin && (collection.ownerName || collection.ownerEmail) && (
+                          <> • by {collection.ownerName || collection.ownerEmail}</>
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                  <Badge variant={getRoleBadgeVariant(collection.role || 'viewer')} className="gap-1 flex-shrink-0 ml-2">
+                    {getRoleIcon(collection.role)}
+                    {collection.role}
+                  </Badge>
+                </DropdownMenuItem>
+              );
+            })}
+            {canCreateCollection && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setShowCreateDialog(true)} className="cursor-pointer">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create New Collection
+                </DropdownMenuItem>
+              </>
+            )}
+            {!canCreateCollection && (
+              <>
+                <DropdownMenuSeparator />
+                <div className="px-2 py-1.5 text-xs text-muted-foreground">
+                  You can only create one collection. Ask others to share theirs with you.
+                </div>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
 
       {showCreateDialog && (
         <CreateCollectionTypeDialog
