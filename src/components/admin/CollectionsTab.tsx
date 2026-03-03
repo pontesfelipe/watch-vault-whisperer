@@ -365,6 +365,7 @@ export const CollectionsTab = () => {
                               size="icon"
                               className="h-6 w-6"
                               onClick={() => handleRemoveAccess(access.id, collection.id)}
+                              aria-label="Remove access"
                             >
                               <Trash2 className="h-3 w-3 text-destructive" />
                             </Button>
@@ -385,6 +386,7 @@ export const CollectionsTab = () => {
                           setEditingCollection(collection);
                           setNewName(collection.name);
                         }}
+                        aria-label="Edit collection"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -392,6 +394,7 @@ export const CollectionsTab = () => {
                         variant="ghost"
                         size="icon"
                         onClick={() => setAddingAccessTo(collection)}
+                        aria-label="Add user access"
                       >
                         <UserPlus className="h-4 w-4" />
                       </Button>
@@ -399,6 +402,7 @@ export const CollectionsTab = () => {
                         variant="ghost"
                         size="icon"
                         onClick={() => setDeletingCollection(collection)}
+                        aria-label="Delete collection"
                       >
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>

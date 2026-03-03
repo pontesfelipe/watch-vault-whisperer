@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { MessageCircle, Users, Bell, MessageSquare, Search, Loader2 } from "lucide-react";
+import { MessageCircle, Users, Bell, MessageSquare, Search } from "lucide-react";
+import { FeedItemSkeleton } from "@/components/social/FeedItemSkeleton";
 import { useMessaging, Conversation } from "@/hooks/useMessaging";
 import { useForumData, FORUM_CATEGORIES } from "@/hooks/useForumData";
 import { useAuth } from "@/contexts/AuthContext";
@@ -268,8 +269,10 @@ function ForumSection() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-textMuted" />
+        <div className="space-y-4 max-w-3xl">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <FeedItemSkeleton key={i} />
+          ))}
         </div>
       ) : posts.length === 0 ? (
         <div className="text-center py-12">
