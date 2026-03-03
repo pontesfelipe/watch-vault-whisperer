@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ResponsiveDialog } from "@/components/ResponsiveDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -430,11 +430,7 @@ export const EditWearEntryDialog = ({
   const entry = entries[0];
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Quick Add Wear Entry - {watchName}</DialogTitle>
-        </DialogHeader>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange} title={`Quick Add Wear Entry - ${watchName}`} className="max-w-2xl">
         
         <div className="space-y-4">
           <div>
@@ -739,7 +735,6 @@ export const EditWearEntryDialog = ({
             </AlertDialog>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+    </ResponsiveDialog>
   );
 };

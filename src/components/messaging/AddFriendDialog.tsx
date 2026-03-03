@@ -1,12 +1,6 @@
 import { useState } from "react";
 import { UserPlus } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { ResponsiveDialog } from "@/components/ResponsiveDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -46,17 +40,18 @@ export function AddFriendDialog({ onSendRequest }: AddFriendDialogProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+    <ResponsiveDialog
+      open={open}
+      onOpenChange={setOpen}
+      title="Add a Friend"
+      trigger={
         <Button size="sm" variant="outline">
           <UserPlus className="h-4 w-4 mr-2" />
           Add Friend
         </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Add a Friend</DialogTitle>
-        </DialogHeader>
+      }
+      className="sm:max-w-md"
+    >
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email Address</Label>
@@ -89,7 +84,6 @@ export function AddFriendDialog({ onSendRequest }: AddFriendDialogProps) {
             </Button>
           </div>
         </form>
-      </DialogContent>
-    </Dialog>
+    </ResponsiveDialog>
   );
 }

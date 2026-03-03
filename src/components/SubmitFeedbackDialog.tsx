@@ -2,14 +2,7 @@ import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { ResponsiveDialog } from "@/components/ResponsiveDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -67,15 +60,13 @@ export function SubmitFeedbackDialog({ children }: SubmitFeedbackDialogProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>Submit Feedback</DialogTitle>
-          <DialogDescription>
-            Share your ideas or report issues to help us improve.
-          </DialogDescription>
-        </DialogHeader>
+    <ResponsiveDialog
+      open={open}
+      onOpenChange={setOpen}
+      title="Submit Feedback"
+      trigger={children}
+      className="sm:max-w-[500px]"
+    >
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label>Type</Label>
@@ -137,7 +128,6 @@ export function SubmitFeedbackDialog({ children }: SubmitFeedbackDialogProps) {
             </Button>
           </div>
         </form>
-      </DialogContent>
-    </Dialog>
+    </ResponsiveDialog>
   );
 }

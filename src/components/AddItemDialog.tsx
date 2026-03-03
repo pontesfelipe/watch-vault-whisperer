@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ResponsiveDialog } from "@/components/ResponsiveDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -457,15 +457,12 @@ export const AddItemDialog = ({ onSuccess }: AddItemDialogProps) => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <>
       <Button onClick={() => setOpen(true)} className="gap-2">
         <Plus className="w-4 h-4" />
         Add {config.singularLabel}
       </Button>
-      <DialogContent className="bg-card border-border max-w-md max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-foreground">Add New {config.singularLabel}</DialogTitle>
-        </DialogHeader>
+      <ResponsiveDialog open={open} onOpenChange={setOpen} title={`Add New ${config.singularLabel}`} className="bg-card border-border max-w-md">
         
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Base fields */}
@@ -593,7 +590,7 @@ export const AddItemDialog = ({ onSuccess }: AddItemDialogProps) => {
             )}
           </Button>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialog>
+    </>
   );
 };

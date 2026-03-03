@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ResponsiveDialog } from "@/components/ResponsiveDialog";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -131,27 +131,20 @@ export const ImportSpreadsheetDialog = () => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+    <ResponsiveDialog
+      open={open}
+      onOpenChange={setOpen}
+      title="Import Spreadsheet Data"
+      trigger={
         <Button variant="outline" size="sm">
           <Upload className="h-4 w-4 mr-2" />
           Import Spreadsheet Data
         </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Import Spreadsheet Data</DialogTitle>
-          <DialogDescription>
-            This will import and synchronize all data from your Watch Track spreadsheet, including:
-            <ul className="list-disc list-inside mt-2 space-y-1">
-              <li>Wear entries (monthly data)</li>
-              <li>Watch specifications</li>
-              <li>Personal notes</li>
-              <li>Wishlist items</li>
-              <li>AI-powered rarity and historical analysis</li>
-            </ul>
-          </DialogDescription>
-        </DialogHeader>
+      }
+    >
+        <p className="text-sm text-muted-foreground mb-4">
+          This will import and synchronize all data from your Watch Track spreadsheet, including wear entries, watch specifications, personal notes, wishlist items, and AI-powered analysis.
+        </p>
 
         {importing && (
           <div className="space-y-4">
@@ -171,7 +164,7 @@ export const ImportSpreadsheetDialog = () => {
           </div>
         )}
 
-        <div className="flex justify-end gap-2">
+        <div className="flex justify-end gap-2 pt-4">
           <Button variant="outline" onClick={() => setOpen(false)} disabled={importing}>
             Cancel
           </Button>
@@ -179,7 +172,6 @@ export const ImportSpreadsheetDialog = () => {
             {importing ? "Importing..." : "Start Import"}
           </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+    </ResponsiveDialog>
   );
 };

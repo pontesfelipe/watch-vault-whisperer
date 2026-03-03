@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ResponsiveDialog } from "@/components/ResponsiveDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -124,21 +124,19 @@ export const EditSneakerSpecsDialog = ({ itemId, itemName, onSuccess }: EditSnea
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+    <ResponsiveDialog
+      open={open}
+      onOpenChange={setOpen}
+      title="Edit Sneaker Specs"
+      trigger={
         <Button variant="outline" size="sm" className="gap-1.5 border-borderSubtle h-9 sm:h-10 px-2 sm:px-3">
           <Footprints className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           <span className="hidden sm:inline text-xs">Specs</span>
         </Button>
-      </DialogTrigger>
-      <DialogContent className="bg-surface border-borderSubtle max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-textMain flex items-center gap-2">
-            <Footprints className="w-5 h-5 text-primary" />
-            Edit Sneaker Specs
-          </DialogTitle>
-          <p className="text-sm text-textMuted">{itemName}</p>
-        </DialogHeader>
+      }
+      className="bg-surface border-borderSubtle max-w-lg"
+    >
+          <p className="text-sm text-textMuted mb-4">{itemName}</p>
 
         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
           <div className="grid grid-cols-2 gap-4">
@@ -296,7 +294,6 @@ export const EditSneakerSpecsDialog = ({ itemId, itemName, onSuccess }: EditSnea
             </Button>
           </div>
         </form>
-      </DialogContent>
-    </Dialog>
+    </ResponsiveDialog>
   );
 };
