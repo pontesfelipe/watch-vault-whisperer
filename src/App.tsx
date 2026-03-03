@@ -10,6 +10,7 @@ import { CollectionProvider } from "@/contexts/CollectionContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AppLayout } from "@/components/AppLayout";
 import { SplashScreen } from "@/components/SplashScreen";
+import { PageTransition } from "@/components/PageTransition";
 import { useOfflineQueue } from "@/hooks/useOfflineQueue";
 import Dashboard from "./pages/Dashboard";
 import Collection from "./pages/Collection";
@@ -68,22 +69,22 @@ function AppContent() {
       <BrowserRouter>
         <Routes>
           <Route path="/auth" element={<Auth />} />
-          <Route path="/" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
-          <Route path="/vault-pal" element={<ProtectedRoute><AppLayout><VaultPal /></AppLayout></ProtectedRoute>} />
-          <Route path="/collection" element={<ProtectedRoute><AppLayout><Collection /></AppLayout></ProtectedRoute>} />
+          <Route path="/" element={<ProtectedRoute><AppLayout><PageTransition><Dashboard /></PageTransition></AppLayout></ProtectedRoute>} />
+          <Route path="/vault-pal" element={<ProtectedRoute><AppLayout><PageTransition><VaultPal /></PageTransition></AppLayout></ProtectedRoute>} />
+          <Route path="/collection" element={<ProtectedRoute><AppLayout><PageTransition><Collection /></PageTransition></AppLayout></ProtectedRoute>} />
           <Route path="/wishlist" element={<Navigate to="/collection" replace />} />
           <Route path="/trips" element={<Navigate to="/usage-details?tab=trips" replace />} />
-          <Route path="/usage-details" element={<ProtectedRoute><AppLayout><UsageDetails /></AppLayout></ProtectedRoute>} />
-          <Route path="/personal-notes" element={<ProtectedRoute><AppLayout><PersonalNotes /></AppLayout></ProtectedRoute>} />
-          <Route path="/social" element={<ProtectedRoute><AppLayout><Social /></AppLayout></ProtectedRoute>} />
+          <Route path="/usage-details" element={<ProtectedRoute><AppLayout><PageTransition><UsageDetails /></PageTransition></AppLayout></ProtectedRoute>} />
+          <Route path="/personal-notes" element={<ProtectedRoute><AppLayout><PageTransition><PersonalNotes /></PageTransition></AppLayout></ProtectedRoute>} />
+          <Route path="/social" element={<ProtectedRoute><AppLayout><PageTransition><Social /></PageTransition></AppLayout></ProtectedRoute>} />
           <Route path="/messages" element={<Navigate to="/social?tab=messages" replace />} />
           <Route path="/forum" element={<Navigate to="/social?tab=forum" replace />} />
-          <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
-          <Route path="/admin/wear-logs" element={<ProtectedRoute><WearLogsAdmin /></ProtectedRoute>} />
-          <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-          <Route path="/watch/:id" element={<ProtectedRoute><WatchDetail /></ProtectedRoute>} />
-          <Route path="/faq" element={<ProtectedRoute><FAQ /></ProtectedRoute>} />
-          <Route path="/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute><PageTransition><Admin /></PageTransition></ProtectedRoute>} />
+          <Route path="/admin/wear-logs" element={<ProtectedRoute><PageTransition><WearLogsAdmin /></PageTransition></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><PageTransition><Settings /></PageTransition></ProtectedRoute>} />
+          <Route path="/watch/:id" element={<ProtectedRoute><PageTransition><WatchDetail /></PageTransition></ProtectedRoute>} />
+          <Route path="/faq" element={<ProtectedRoute><PageTransition><FAQ /></PageTransition></ProtectedRoute>} />
+          <Route path="/about" element={<ProtectedRoute><PageTransition><About /></PageTransition></ProtectedRoute>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

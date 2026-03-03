@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Send, Trash2, Bot, Sparkles, Loader2, User, Plus, MessageSquare, Pencil, Search, X, ChevronDown, ChevronUp, RefreshCw, Mic, MicOff } from "lucide-react";
+import { Send, Trash2, Bot, Sparkles, Loader2, User, Plus, MessageSquare, Pencil, Search, X, ChevronDown, ChevronUp, RefreshCw, Mic, MicOff, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
@@ -62,6 +62,8 @@ const VaultPal = () => {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const bottomSentinelRef = useRef<HTMLDivElement>(null);
+  const [showScrollDown, setShowScrollDown] = useState(false);
   const isMobile = useIsMobile();
 
   // Voice input hook
@@ -181,6 +183,28 @@ const VaultPal = () => {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Scroll-to-latest indicator using IntersectionObserver
+  useEffect(() => {
+    const sentinel = bottomSentinelRef.current;
+    const container = scrollRef.current;
+    if (!sentinel || !container) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setShowScrollDown(!entry.isIntersecting);
+      },
+      { root: container, threshold: 0.1 }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, []);
+
+  const scrollToBottom = useCallback(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    }
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -458,7 +482,7 @@ const VaultPal = () => {
         )}
 
         {/* Chat Messages Area */}
-        <ScrollArea className="flex-1 px-4" ref={scrollRef}>
+        <div className="flex-1 overflow-y-auto px-4 relative" ref={scrollRef}>
           <div className="py-4 space-y-4 max-w-3xl mx-auto">
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -472,14 +496,14 @@ const VaultPal = () => {
                   I'm your personal collection expert. I know everything about your {itemLabel.toLowerCase()}, 
                   wear patterns, trips, events, and preferences. Ask me anything!
                 </p>
-                <div className="flex flex-wrap gap-2 justify-center max-w-lg">
+                <div className="flex overflow-x-auto flex-nowrap gap-2 justify-center max-w-lg scrollbar-hide pb-2">
                   {suggestedQuestions.map((question, idx) => (
                     <Button
                       key={idx}
                       variant="outline"
                       size="sm"
                       onClick={() => sendMessage(question)}
-                      className="text-xs"
+                      className="text-xs shrink-0"
                     >
                       {question}
                     </Button>
@@ -503,8 +527,20 @@ const VaultPal = () => {
                 </div>
               </div>
             )}
+            <div ref={bottomSentinelRef} className="h-1" />
           </div>
-        </ScrollArea>
+
+          {/* Scroll-to-latest floating button */}
+          {showScrollDown && messages.length > 0 && (
+            <button
+              onClick={scrollToBottom}
+              className="sticky bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent text-accent-foreground text-xs font-medium shadow-lg hover:bg-accent/90 transition-colors z-10"
+            >
+              <ArrowDown className="w-3.5 h-3.5" />
+              New messages
+            </button>
+          )}
+        </div>
 
         {/* Input Area */}
         <div className="shrink-0 border-t border-borderSubtle bg-surface px-4 py-3">
@@ -526,10 +562,16 @@ const VaultPal = () => {
               <Textarea
                 ref={textareaRef}
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={(e) => {
+                  setInput(e.target.value);
+                  // Auto-resize textarea
+                  const el = e.target;
+                  el.style.height = "auto";
+                  el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
+                }}
                 onKeyDown={handleKeyDown}
                 placeholder={isListening ? "Speak now..." : `Ask about your ${itemLabel.toLowerCase()}...`}
-                className="min-h-[44px] max-h-[120px] resize-none"
+                className="min-h-[44px] max-h-[120px] resize-none overflow-y-auto"
                 rows={1}
                 disabled={isLoading}
               />
