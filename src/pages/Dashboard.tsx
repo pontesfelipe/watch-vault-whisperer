@@ -4,6 +4,7 @@ import { UsageChart } from "@/components/UsageChart";
 import { QuickAddWearDialog } from "@/components/QuickAddWearDialog";
 import { DepreciationCard } from "@/components/DepreciationCard";
 import { DepreciationChart } from "@/components/DepreciationChart";
+import { WearCalendar } from "@/components/WearCalendar";
 
 import { MonthlyUsageTable } from "@/components/MonthlyUsageTable";
 import { CollectionSwitcher } from "@/components/CollectionSwitcher";
@@ -201,6 +202,14 @@ const Dashboard = () => {
           <PurseStatsCards stats={purseStats} totalPurses={stats.totalWatches} />
         </div>
       )}
+
+      {/* Wear Calendar */}
+      <section>
+        <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-textMuted mb-3">
+          Wear Calendar
+        </h3>
+        <WearCalendar watches={watches} wearEntries={wearEntries} />
+      </section>
 
       <UsageChart watches={watches} wearEntries={wearEntries} />
 

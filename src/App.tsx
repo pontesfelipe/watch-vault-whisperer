@@ -14,8 +14,11 @@ import { PageTransition } from "@/components/PageTransition";
 import { useOfflineQueue } from "@/hooks/useOfflineQueue";
 
 // Eagerly loaded (critical path)
-import Dashboard from "./pages/Dashboard";
+import Home from "./pages/Home";
 import Auth from "./pages/Auth";
+
+// Lazy-loaded
+const Dashboard = lazy(() => import("./pages/Dashboard"));
 
 // Lazy-loaded routes
 const Collection = lazy(() => import("./pages/Collection"));
@@ -81,7 +84,8 @@ function AppContent() {
         <Suspense fallback={<LazyFallback />}>
           <Routes>
             <Route path="/auth" element={<Auth />} />
-            <Route path="/" element={<ProtectedRoute><AppLayout><PageTransition><Dashboard /></PageTransition></AppLayout></ProtectedRoute>} />
+            <Route path="/" element={<ProtectedRoute><AppLayout><PageTransition><Home /></PageTransition></AppLayout></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute><AppLayout><PageTransition><Dashboard /></PageTransition></AppLayout></ProtectedRoute>} />
             <Route path="/vault-pal" element={<ProtectedRoute><AppLayout><PageTransition><VaultPal /></PageTransition></AppLayout></ProtectedRoute>} />
             <Route path="/collection" element={<ProtectedRoute><AppLayout><PageTransition><Collection /></PageTransition></AppLayout></ProtectedRoute>} />
             <Route path="/wishlist" element={<Navigate to="/collection" replace />} />

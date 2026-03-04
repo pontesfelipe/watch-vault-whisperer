@@ -1,4 +1,4 @@
-import { BarChart3, Watch, Bot, Users, Menu } from "lucide-react";
+import { Home, BarChart3, Watch, Bot, Users, Menu } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { triggerHaptic } from "@/utils/haptics";
@@ -7,9 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { MobileMenuDrawer } from "@/components/MobileMenuDrawer";
 
 const navItems = [
-  { title: "Home", url: "/", icon: BarChart3 },
+  { title: "Home", url: "/", icon: Home },
+  { title: "Dashboard", url: "/dashboard", icon: BarChart3 },
   { title: "Collection", url: "/collection", icon: Watch },
-  { title: "Assistant", url: "/vault-pal", icon: Bot },
   { title: "Social", url: "/social", icon: Users },
 ];
 
