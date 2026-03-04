@@ -1,4 +1,4 @@
-import { Watch, BarChart3, BookHeart, Shield, Settings, HelpCircle, Info, Lightbulb, Bot, ClipboardList, Users } from "lucide-react";
+import { Watch, BarChart3, BookHeart, Shield, Settings, HelpCircle, Info, Lightbulb, Bot, ClipboardList, Users, Home } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { SubmitFeedbackDialog } from "@/components/SubmitFeedbackDialog";
@@ -32,7 +32,8 @@ export function AppNavigation() {
   const isWatches = currentCollection ? isWatchCollection(currentCollection.collection_type) : true;
 
   const mainNavItems = [
-    { title: "Dashboard", url: "/", icon: BarChart3 },
+    { title: "Home", url: "/", icon: Home },
+    { title: "Dashboard", url: "/dashboard", icon: BarChart3 },
     { title: "My Vault Assistant", url: "/vault-pal", icon: Bot },
     { title: "Collection", url: "/collection", icon: Watch },
     { title: "Usage Details", url: "/usage-details", icon: ClipboardList },
