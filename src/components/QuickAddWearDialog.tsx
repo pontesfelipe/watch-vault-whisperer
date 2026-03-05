@@ -328,15 +328,16 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
       title={`Quick Add ${usageLabel} Entry`}
       trigger={triggerButton}
     >
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" data-vaul-no-drag>
           <div className="space-y-2">
             <Label htmlFor="watch">Select {config.singularLabel}</Label>
-            <div className="max-h-[200px] overflow-y-auto overscroll-contain border rounded-lg touch-pan-y">
+            <div data-vaul-no-drag className="max-h-[200px] overflow-y-auto overscroll-contain border rounded-lg touch-pan-y">
               <div className="flex flex-col">
                 {sortedWatches.map((watch) => (
                   <button
                     key={watch.id}
                     type="button"
+                    data-vaul-no-drag
                     onClick={() => setSelectedWatchId(watch.id)}
                     className={`flex items-center justify-between px-4 py-3 min-h-[44px] text-sm text-left transition-colors ${
                       selectedWatchId === watch.id
