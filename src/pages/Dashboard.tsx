@@ -72,7 +72,7 @@ const Dashboard = () => {
       <div className="flex flex-col md:hidden">
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-3xl font-semibold text-textMain">Dashboard</h1>
+            <h1 className="text-3xl font-semibold text-textMain">Canvas</h1>
             <p className="mt-1 text-sm text-textMuted">
               {currentCollection 
                 ? `Overview of ${currentCollection.name} statistics`
@@ -91,7 +91,7 @@ const Dashboard = () => {
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-3xl md:text-4xl font-semibold text-textMain">
-              Dashboard
+              Canvas
             </h1>
           </div>
           <p className="mt-1 text-sm text-textMuted">
