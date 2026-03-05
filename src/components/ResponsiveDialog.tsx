@@ -45,7 +45,7 @@ export function ResponsiveDialog({
           <DrawerHeader className="text-left">
             <DrawerTitle>{title}</DrawerTitle>
           </DrawerHeader>
-          <div className="px-4 pb-6 max-h-[80vh] overflow-y-auto">
+          <div data-vaul-no-drag className="px-4 pb-6 max-h-[80vh] overflow-y-auto overscroll-contain touch-pan-y">
             {children}
           </div>
         </DrawerContent>
