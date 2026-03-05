@@ -12,8 +12,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCollection } from "@/contexts/CollectionContext";
 import { CollectionType, getCollectionConfig, isWatchCollection } from "@/types/collection";
 import { ResponsiveDialog } from "@/components/ResponsiveDialog";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 const wearSchema = z.object({
   watchId: z.string().uuid(),
@@ -28,7 +26,6 @@ interface QuickAddWearDialogProps {
 }
 
 export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propType }: QuickAddWearDialogProps) => {
-  const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedWatchId, setSelectedWatchId] = useState("");
