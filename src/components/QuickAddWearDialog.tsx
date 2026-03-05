@@ -335,14 +335,14 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
           <div className="space-y-2">
             <Label htmlFor="watch">Select {config.singularLabel}</Label>
             {isMobile ? (
-              <ScrollArea className="max-h-[200px] border rounded-lg">
+              <div className="max-h-[200px] overflow-y-auto overscroll-contain border rounded-lg touch-pan-y">
                 <div className="flex flex-col">
                   {sortedWatches.map((watch) => (
                     <button
                       key={watch.id}
                       type="button"
                       onClick={() => setSelectedWatchId(watch.id)}
-                      className={`flex items-center justify-between px-4 py-3 text-sm text-left transition-colors ${
+                      className={`flex items-center justify-between px-4 py-3 min-h-[44px] text-sm text-left transition-colors ${
                         selectedWatchId === watch.id
                           ? "bg-primary/10 text-primary font-medium"
                           : "text-foreground hover:bg-muted"
@@ -353,7 +353,7 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
                     </button>
                   ))}
                 </div>
-              </ScrollArea>
+              </div>
             ) : (
               <Select value={selectedWatchId} onValueChange={setSelectedWatchId} required>
                 <SelectTrigger className="bg-background border-border">
