@@ -85,7 +85,7 @@ function AppContent() {
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route path="/" element={<ProtectedRoute><AppLayout><PageTransition><Home /></PageTransition></AppLayout></ProtectedRoute>} />
-            <Route path="/dashboard" element={<ProtectedRoute><AppLayout><PageTransition><Dashboard /></PageTransition></AppLayout></ProtectedRoute>} />
+            <Route path="/canvas" element={<ProtectedRoute><AppLayout><PageTransition><Dashboard /></PageTransition></AppLayout></ProtectedRoute>} />
             <Route path="/vault-pal" element={<ProtectedRoute><AppLayout><PageTransition><VaultPal /></PageTransition></AppLayout></ProtectedRoute>} />
             <Route path="/collection" element={<ProtectedRoute><AppLayout><PageTransition><Collection /></PageTransition></AppLayout></ProtectedRoute>} />
             <Route path="/wishlist" element={<Navigate to="/collection" replace />} />
