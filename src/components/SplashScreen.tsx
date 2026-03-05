@@ -1,116 +1,80 @@
 import { useEffect, useState } from "react";
-import { Watch, Footprints, ShoppingBag } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface SplashScreenProps {
   onComplete?: () => void;
   minDuration?: number;
 }
 
-export const SplashScreen = ({ onComplete, minDuration = 1500 }: SplashScreenProps) => {
+export const SplashScreen = ({ onComplete, minDuration = 1400 }: SplashScreenProps) => {
   const [isVisible, setIsVisible] = useState(true);
-  const [isFading, setIsFading] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setIsFading(true);
-      setTimeout(() => {
-        setIsVisible(false);
-        onComplete?.();
-      }, 500);
+      setIsVisible(false);
+      setTimeout(() => onComplete?.(), 400);
     }, minDuration);
-
     return () => clearTimeout(timer);
   }, [minDuration, onComplete]);
 
-  if (!isVisible) return null;
-
   return (
-    <div
-      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background transition-opacity duration-500 ${
-        isFading ? "opacity-0" : "opacity-100"
-      }`}
-    >
-      {/* Subtle background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-accent/10" />
-      
-      {/* Animated glow effect */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-accent/10 rounded-full blur-[100px] animate-pulse" />
-      </div>
-
-      {/* Content */}
-      <div className="relative flex flex-col items-center gap-8">
-        {/* Logo */}
-        <div className="relative">
-          <div 
-            className="flex h-28 w-28 items-center justify-center rounded-3xl bg-accent/15 text-5xl font-bold text-accent shadow-2xl shadow-accent/30 animate-scale-in"
-            style={{ animationDuration: '0.6s' }}
-          >
-            SV
-          </div>
-          {/* Decorative ring */}
-          <div className="absolute -inset-4 rounded-[2.5rem] border-2 border-accent/20 animate-pulse" />
-          <div className="absolute -inset-8 rounded-[3rem] border border-accent/10 animate-pulse" style={{ animationDelay: '0.2s' }} />
-        </div>
-
-        {/* Brand name */}
-        <div 
-          className="flex flex-col items-center gap-2 animate-fade-in"
-          style={{ animationDelay: '0.3s', animationFillMode: 'backwards' }}
+    <AnimatePresence>
+      {isVisible && (
+        <motion.div
+          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background"
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          <h1 className="text-4xl font-bold tracking-tight text-textMain">
-            Sora Vault
-          </h1>
-          <p className="text-sm text-textMuted tracking-widest uppercase">
-            Luxury Collection Studio
-          </p>
-        </div>
+          {/* Subtle glow */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-primary/5 rounded-full blur-[120px]" />
 
-        {/* Collection type icons */}
-        <div 
-          className="flex items-center gap-6 animate-fade-in"
-          style={{ animationDelay: '0.5s', animationFillMode: 'backwards' }}
-        >
-          <div className="flex flex-col items-center gap-2 group">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 transition-all group-hover:bg-accent/20">
-              <Watch className="h-6 w-6 text-accent" />
-            </div>
-            <span className="text-xs text-textMuted">Watches</span>
-          </div>
-          <div className="flex flex-col items-center gap-2 group">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 transition-all group-hover:bg-accent/20">
-              <Footprints className="h-6 w-6 text-accent" />
-            </div>
-            <span className="text-xs text-textMuted">Sneakers</span>
-          </div>
-          <div className="flex flex-col items-center gap-2 group">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 transition-all group-hover:bg-accent/20">
-              <ShoppingBag className="h-6 w-6 text-accent" />
-            </div>
-            <span className="text-xs text-textMuted">Purses</span>
-          </div>
-        </div>
+          <div className="relative flex flex-col items-center gap-6">
+            {/* Logo */}
+            <motion.div 
+              className="relative"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-primary/10 text-4xl font-bold text-primary">
+                SV
+              </div>
+              <div className="absolute -inset-3 rounded-[2rem] border border-primary/15 animate-pulse" />
+            </motion.div>
 
-        {/* Loading indicator */}
-        <div 
-          className="flex items-center gap-2 mt-4 animate-fade-in"
-          style={{ animationDelay: '0.7s', animationFillMode: 'backwards' }}
-        >
-          <div className="flex gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-accent animate-bounce" style={{ animationDelay: '0ms' }} />
-            <span className="w-2.5 h-2.5 rounded-full bg-accent animate-bounce" style={{ animationDelay: '150ms' }} />
-            <span className="w-2.5 h-2.5 rounded-full bg-accent animate-bounce" style={{ animationDelay: '300ms' }} />
-          </div>
-        </div>
-      </div>
+            {/* Brand */}
+            <motion.div 
+              className="flex flex-col items-center gap-1.5"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+                Sora Vault
+              </h1>
+              <p className="text-xs text-muted-foreground tracking-[0.2em] uppercase">
+                Luxury Collection Studio
+              </p>
+            </motion.div>
 
-      {/* Footer */}
-      <div 
-        className="absolute bottom-8 text-xs text-textMuted/50 animate-fade-in"
-        style={{ animationDelay: '0.9s', animationFillMode: 'backwards' }}
-      >
-        Premium Collection Management
-      </div>
-    </div>
+            {/* Loading dots */}
+            <motion.div 
+              className="flex gap-1.5 mt-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+            >
+              {[0, 1, 2].map((i) => (
+                <span
+                  key={i}
+                  className="w-1.5 h-1.5 rounded-full bg-primary/50 animate-bounce"
+                  style={{ animationDelay: `${i * 150}ms` }}
+                />
+              ))}
+            </motion.div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
