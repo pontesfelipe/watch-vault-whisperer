@@ -8,7 +8,7 @@ import { MobileMenuDrawer } from "@/components/MobileMenuDrawer";
 
 const navItems = [
   { title: "Home", url: "/", icon: Home },
-  { title: "Canvas", url: "/dashboard", icon: BarChart3 },
+  { title: "Canvas", url: "/canvas", icon: BarChart3 },
   { title: "Collection", url: "/collection", icon: Watch },
   { title: "Social", url: "/social", icon: Users },
 ];
