@@ -12,8 +12,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCollection } from "@/contexts/CollectionContext";
 import { CollectionType, getCollectionConfig, isWatchCollection } from "@/types/collection";
 import { ResponsiveDialog } from "@/components/ResponsiveDialog";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 const wearSchema = z.object({
   watchId: z.string().uuid(),
@@ -28,7 +26,6 @@ interface QuickAddWearDialogProps {
 }
 
 export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propType }: QuickAddWearDialogProps) => {
-  const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedWatchId, setSelectedWatchId] = useState("");
@@ -334,40 +331,25 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="watch">Select {config.singularLabel}</Label>
-            {isMobile ? (
-              <div className="max-h-[200px] overflow-y-auto overscroll-contain border rounded-lg touch-pan-y">
-                <div className="flex flex-col">
-                  {sortedWatches.map((watch) => (
-                    <button
-                      key={watch.id}
-                      type="button"
-                      onClick={() => setSelectedWatchId(watch.id)}
-                      className={`flex items-center justify-between px-4 py-3 min-h-[44px] text-sm text-left transition-colors ${
-                        selectedWatchId === watch.id
-                          ? "bg-primary/10 text-primary font-medium"
-                          : "text-foreground hover:bg-muted"
-                      }`}
-                    >
-                      <span>{watch.brand} - {watch.model}</span>
-                      {selectedWatchId === watch.id && <Check className="h-4 w-4 text-primary flex-shrink-0" />}
-                    </button>
-                  ))}
-                </div>
+            <div className="max-h-[200px] overflow-y-auto overscroll-contain border rounded-lg touch-pan-y">
+              <div className="flex flex-col">
+                {sortedWatches.map((watch) => (
+                  <button
+                    key={watch.id}
+                    type="button"
+                    onClick={() => setSelectedWatchId(watch.id)}
+                    className={`flex items-center justify-between px-4 py-3 min-h-[44px] text-sm text-left transition-colors ${
+                      selectedWatchId === watch.id
+                        ? "bg-primary/10 text-primary font-medium"
+                        : "text-foreground hover:bg-muted"
+                    }`}
+                  >
+                    <span>{watch.brand} - {watch.model}</span>
+                    {selectedWatchId === watch.id && <Check className="h-4 w-4 text-primary flex-shrink-0" />}
+                  </button>
+                ))}
               </div>
-            ) : (
-              <Select value={selectedWatchId} onValueChange={setSelectedWatchId} required>
-                <SelectTrigger className="bg-background border-border">
-                  <SelectValue placeholder={`Choose a ${config.singularLabel.toLowerCase()}...`} />
-                </SelectTrigger>
-                <SelectContent className="bg-popover border-border max-h-[300px]">
-                  {sortedWatches.map((watch) => (
-                    <SelectItem key={watch.id} value={watch.id}>
-                      {watch.brand} - {watch.model}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
+            </div>
           </div>
 
           <div className="space-y-2">
