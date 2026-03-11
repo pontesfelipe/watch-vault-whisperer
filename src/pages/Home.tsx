@@ -53,7 +53,7 @@ const Home = () => {
       {/* Wrist Check CTA */}
       <motion.div whileTap={{ scale: 0.98 }}>
         <Button
-          onClick={() => navigate("/collection")}
+          onClick={() => setWristCheckOpen(true)}
           className="w-full h-14 rounded-2xl text-base font-semibold gap-3 shadow-lg active:scale-[0.98] transition-transform"
           size="lg"
         >
