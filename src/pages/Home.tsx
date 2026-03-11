@@ -118,6 +118,14 @@ const Home = () => {
         </section>
       )}
 
+      <QuickAddWearDialog
+        watches={watches}
+        onSuccess={() => refetch?.()}
+        collectionType={currentCollectionType || 'watches'}
+        externalOpen={wristCheckOpen}
+        onExternalOpenChange={setWristCheckOpen}
+      />
+
       <QuickLogSheet
         open={quickLogOpen}
         onOpenChange={setQuickLogOpen}
