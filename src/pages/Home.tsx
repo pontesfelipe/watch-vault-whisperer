@@ -7,6 +7,7 @@ import { useCollection } from "@/contexts/CollectionContext";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
 import { QuickLogSheet } from "@/components/QuickLogSheet";
+import { QuickAddWearDialog } from "@/components/QuickAddWearDialog";
 import { WearCalendar } from "@/components/WearCalendar";
 import { CollectionSwitcher } from "@/components/CollectionSwitcher";
 import { getCollectionConfig } from "@/types/collection";
