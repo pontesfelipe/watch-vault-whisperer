@@ -7,6 +7,7 @@ import { useCollection } from "@/contexts/CollectionContext";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
 import { QuickLogSheet } from "@/components/QuickLogSheet";
+import { QuickAddWearDialog } from "@/components/QuickAddWearDialog";
 import { WearCalendar } from "@/components/WearCalendar";
 import { CollectionSwitcher } from "@/components/CollectionSwitcher";
 import { getCollectionConfig } from "@/types/collection";
@@ -17,6 +18,7 @@ const Home = () => {
   const { watches, wearEntries, loading, refetch } = useWatchData(selectedCollectionId);
   const [quickLogWatch, setQuickLogWatch] = useState<any>(null);
   const [quickLogOpen, setQuickLogOpen] = useState(false);
+  const [wristCheckOpen, setWristCheckOpen] = useState(false);
 
   const config = currentCollectionType ? getCollectionConfig(currentCollectionType) : getCollectionConfig('watches');
 
@@ -51,7 +53,7 @@ const Home = () => {
       {/* Wrist Check CTA */}
       <motion.div whileTap={{ scale: 0.98 }}>
         <Button
-          onClick={() => navigate("/collection")}
+          onClick={() => setWristCheckOpen(true)}
           className="w-full h-14 rounded-2xl text-base font-semibold gap-3 shadow-lg active:scale-[0.98] transition-transform"
           size="lg"
         >
@@ -115,6 +117,14 @@ const Home = () => {
           </div>
         </section>
       )}
+
+      <QuickAddWearDialog
+        watches={watches}
+        onSuccess={() => refetch?.()}
+        collectionType={currentCollectionType || 'watches'}
+        externalOpen={wristCheckOpen}
+        onExternalOpenChange={setWristCheckOpen}
+      />
 
       <QuickLogSheet
         open={quickLogOpen}

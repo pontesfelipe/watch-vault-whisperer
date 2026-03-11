@@ -23,10 +23,14 @@ interface QuickAddWearDialogProps {
   watches: Array<{ id: string; brand: string; model: string }>;
   onSuccess: () => void;
   collectionType?: CollectionType;
+  externalOpen?: boolean;
+  onExternalOpenChange?: (open: boolean) => void;
 }
 
-export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propType }: QuickAddWearDialogProps) => {
-  const [open, setOpen] = useState(false);
+export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propType, externalOpen, onExternalOpenChange }: QuickAddWearDialogProps) => {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setOpen = onExternalOpenChange || setInternalOpen;
   const [loading, setLoading] = useState(false);
   const [selectedWatchId, setSelectedWatchId] = useState("");
   const [isTrip, setIsTrip] = useState(false);
