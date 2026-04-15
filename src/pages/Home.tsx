@@ -1,16 +1,18 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, Watch } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWatchData } from "@/hooks/useWatchData";
 import { useCollection } from "@/contexts/CollectionContext";
-import { format } from "date-fns";
+import { format, startOfWeek, endOfWeek, isWithinInterval, parseISO } from "date-fns";
+import { enUS, es, fr, pt, ja, zhCN, type Locale } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { QuickLogSheet } from "@/components/QuickLogSheet";
 import { QuickAddWearDialog } from "@/components/QuickAddWearDialog";
 import { WearCalendar } from "@/components/WearCalendar";
 import { CollectionSwitcher } from "@/components/CollectionSwitcher";
 import { getCollectionConfig } from "@/types/collection";
+import { useTranslation } from "react-i18next";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -19,13 +21,48 @@ const Home = () => {
   const [quickLogWatch, setQuickLogWatch] = useState<any>(null);
   const [quickLogOpen, setQuickLogOpen] = useState(false);
   const [wristCheckOpen, setWristCheckOpen] = useState(false);
+  const { t, i18n } = useTranslation();
 
   const config = currentCollectionType ? getCollectionConfig(currentCollectionType) : getCollectionConfig('watches');
+
+  const dateLocale = useMemo(() => {
+    const localeMap: Record<string, Locale> = { en: enUS, es, fr, pt, ja, zh: zhCN };
+    return localeMap[i18n.language] || enUS;
+  }, [i18n.language]);
 
   const handleWatchCardTap = (watch: any) => {
     setQuickLogWatch(watch);
     setQuickLogOpen(true);
   };
+
+  // Filter most worn to current week only
+  const weekMostWorn = useMemo(() => {
+    const now = new Date();
+    const weekStart = startOfWeek(now, { weekStartsOn: 1 });
+    const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
+
+    const weekEntries = wearEntries.filter((e: any) => {
+      try {
+        const d = parseISO(e.wear_date);
+        return isWithinInterval(d, { start: weekStart, end: weekEnd });
+      } catch {
+        return false;
+      }
+    });
+
+    const counts: Record<string, number> = {};
+    weekEntries.forEach((e: any) => {
+      counts[e.watch_id] = (counts[e.watch_id] || 0) + e.days;
+    });
+
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .map(([id, count]) => ({
+        watch: watches.find((w: any) => w.id === id),
+        count,
+      }))
+      .filter((item) => item.watch);
+  }, [watches, wearEntries]);
 
   if (loading) {
     return (
@@ -34,6 +71,13 @@ const Home = () => {
       </div>
     );
   }
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return t("home.goodMorning");
+    if (hour < 17) return t("home.goodAfternoon");
+    return t("home.goodEvening");
+  };
 
   return (
     <div className="space-y-6 pb-4">
@@ -44,7 +88,7 @@ const Home = () => {
             {getGreeting()}
           </h1>
           <p className="text-sm text-textMuted mt-0.5">
-            {format(new Date(), "EEEE, MMMM d")}
+            {format(new Date(), "EEEE, MMMM d", { locale: dateLocale })}
           </p>
         </div>
         <CollectionSwitcher />
@@ -58,7 +102,7 @@ const Home = () => {
           size="lg"
         >
           <Plus className="h-5 w-5" />
-          Wrist Check
+          {t("home.wristCheck")}
         </Button>
       </motion.div>
 
@@ -71,25 +115,29 @@ const Home = () => {
         />
       </section>
 
-      {/* Most Worn */}
+      {/* Most Worn This Week */}
       {watches.length > 0 && (
         <section>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-textMuted">
-              Most {config.usageVerbPast.charAt(0).toUpperCase() + config.usageVerbPast.slice(1)}
+              {t("home.yourMostWornThisWeek")}
             </h2>
             <button
               onClick={() => navigate("/collection")}
               className="text-xs text-accent font-medium"
             >
-              View all
+              {t("home.viewAll")}
             </button>
           </div>
 
-          <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
-            {getMostWorn(watches, wearEntries)
-              .slice(0, 6)
-              .map(({ watch, count }) => (
+          {weekMostWorn.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-borderSubtle p-6 text-center">
+              <Watch className="h-8 w-8 text-textMuted mx-auto mb-2" />
+              <p className="text-sm text-textMuted">{t("home.noWearsThisWeek")}</p>
+            </div>
+          ) : (
+            <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
+              {weekMostWorn.slice(0, 6).map(({ watch, count }) => (
                 <motion.div
                   key={watch.id}
                   className="shrink-0 w-28 cursor-pointer"
@@ -111,10 +159,11 @@ const Home = () => {
                   </div>
                   <p className="text-xs font-medium text-textMain truncate">{watch.brand}</p>
                   <p className="text-[11px] text-textMuted truncate">{watch.model}</p>
-                  <p className="text-[10px] text-accent font-medium">{count} days</p>
+                  <p className="text-[10px] text-accent font-medium">{t("home.days", { count })}</p>
                 </motion.div>
               ))}
-          </div>
+            </div>
+          )}
         </section>
       )}
 
@@ -135,30 +184,5 @@ const Home = () => {
     </div>
   );
 };
-
-function getGreeting() {
-  const hour = new Date().getHours();
-  if (hour < 12) return "Good morning";
-  if (hour < 17) return "Good afternoon";
-  return "Good evening";
-}
-
-function getMostWorn(
-  watches: any[],
-  wearEntries: any[]
-): { watch: any; count: number }[] {
-  const counts: Record<string, number> = {};
-  wearEntries.forEach((e) => {
-    counts[e.watch_id] = (counts[e.watch_id] || 0) + e.days;
-  });
-
-  return Object.entries(counts)
-    .sort((a, b) => b[1] - a[1])
-    .map(([id, count]) => ({
-      watch: watches.find((w) => w.id === id),
-      count,
-    }))
-    .filter((item) => item.watch);
-}
 
 export default Home;

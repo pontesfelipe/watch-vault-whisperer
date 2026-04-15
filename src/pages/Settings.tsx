@@ -26,6 +26,7 @@ import { SessionManagementCard } from "@/components/SessionManagementCard";
 import { LoginHistoryCard } from "@/components/LoginHistoryCard";
 import { AccountLinkingCard } from "@/components/AccountLinkingCard";
 import { DefaultCollectionCard } from "@/components/DefaultCollectionCard";
+import { LanguageSelector } from "@/components/LanguageSelector";
 
 const Settings = () => {
   const { user, signOut } = useAuth();
@@ -206,6 +207,8 @@ const Settings = () => {
           <ProfileSettingsCard />
 
           <DefaultCollectionCard />
+
+          <LanguageSelector />
 
           <AccountLinkingCard />
 
