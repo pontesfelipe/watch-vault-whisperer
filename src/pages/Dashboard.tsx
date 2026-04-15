@@ -9,6 +9,7 @@ import { WearCalendar } from "@/components/WearCalendar";
 import { MonthlyUsageTable } from "@/components/MonthlyUsageTable";
 import { CollectionSwitcher } from "@/components/CollectionSwitcher";
 import { SneakerStatsCards } from "@/components/SneakerStatsCards";
+import { CanvasWidgetManager, useCanvasWidgets } from "@/components/CanvasWidgetManager";
 import { PurseStatsCards } from "@/components/PurseStatsCards";
 
 import { useWatchData } from "@/hooks/useWatchData";
@@ -24,6 +25,7 @@ const Dashboard = () => {
   const { selectedCollectionId, currentCollection, currentCollectionType, currentCollectionConfig } = useCollection();
   const { watches, wearEntries, loading: watchLoading, refetch } = useWatchData(selectedCollectionId);
   const { trips, loading: tripLoading } = useTripData();
+  const [widgets, setWidgets] = useCanvasWidgets();
   const { waterUsages, loading: waterLoading } = useWaterUsageData();
 
   const stats = useStatsCalculations(watches, wearEntries, trips, waterUsages);
@@ -101,6 +103,7 @@ const Dashboard = () => {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <CanvasWidgetManager widgets={widgets} onWidgetsChange={setWidgets} />
           <CollectionSwitcher />
           <QuickAddWearDialog watches={watches} onSuccess={refetch} collectionType={currentCollectionType} />
         </div>
