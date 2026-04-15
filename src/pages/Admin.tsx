@@ -17,6 +17,7 @@ import { CollectionsTab } from "@/components/admin/CollectionsTab";
 import { FeedbackTab } from "@/components/admin/FeedbackTab";
 import { FeatureMatrixTab } from "@/components/admin/FeatureMatrixTab";
 import { SecurityTab } from "@/components/admin/SecurityTab";
+import { PerformanceMetricsPanel } from "@/components/PerformanceMetricsPanel";
 import { ExportWearLogsDialog } from "@/components/admin/ExportWearLogsDialog";
 import { ExportWatchInventoryDialog } from "@/components/admin/ExportWatchInventoryDialog";
 import { ExportAllDataDialog } from "@/components/admin/ExportAllDataDialog";
@@ -235,6 +236,7 @@ export default function Admin() {
 
           <TabsContent value="security" className="space-y-4">
             <SecurityTab />
+            <PerformanceMetricsPanel />
           </TabsContent>
         </Tabs>
 
