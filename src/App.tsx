@@ -79,6 +79,7 @@ function AppContent() {
   const [showSplash, setShowSplash] = useState(true);
   const { user } = useAuth();
   useOfflineQueue();
+  usePushNotifications();
 
   return (
     <>
