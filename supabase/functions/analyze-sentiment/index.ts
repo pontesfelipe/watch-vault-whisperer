@@ -31,12 +31,21 @@ serve(async (req) => {
     }
 
     // Analyze sentiment using Lovable AI
-    const prompt = `Analyze the overall sentiment of these watch owner's notes and classify it into ONE of these categories: "Highly Positive", "Positive", "Neutral", "Negative", or "Highly Negative".
+    const prompt = `You are analyzing a watch owner's personal notes about their watch. The notes include several fields: "Why I bought it", "What I like", and "What I don't like".
+
+IMPORTANT INSTRUCTIONS:
+1. Compare the "What I like" section against the "What I don't like" section carefully.
+2. Count the number and strength of positive points vs negative points.
+3. If the positives clearly outweigh the negatives (more positive points, or stronger positive language), the sentiment should be Positive or Highly Positive.
+4. If the negatives clearly outweigh the positives, the sentiment should be Negative or Highly Negative.
+5. If they are roughly balanced, classify as Neutral.
+6. The "Why I bought it" section often adds emotional/positive context — factor that in as well.
+7. Minor or cosmetic complaints (e.g., "could be thinner", "water resistance") should NOT outweigh multiple strong positives like "perfect size", "beautiful dial", "comfortable".
 
 Notes:
 ${notes}
 
-Return ONLY the sentiment category, nothing else.`;
+Return ONLY the sentiment category: "Highly Positive", "Positive", "Neutral", "Negative", or "Highly Negative". Nothing else.`;
 
     console.log('Analyzing sentiment for watch:', watchId);
 
