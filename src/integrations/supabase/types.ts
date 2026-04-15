@@ -1314,9 +1314,11 @@ export type Database = {
       }
       user_preferences: {
         Row: {
+          canvas_widgets: Json | null
           created_at: string
           default_collection_id: string | null
           id: string
+          is_collection_public: boolean | null
           last_selected_collection_id: string | null
           taste_description: string | null
           trade_match_scope: string | null
@@ -1324,9 +1326,11 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          canvas_widgets?: Json | null
           created_at?: string
           default_collection_id?: string | null
           id?: string
+          is_collection_public?: boolean | null
           last_selected_collection_id?: string | null
           taste_description?: string | null
           trade_match_scope?: string | null
@@ -1334,9 +1338,11 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          canvas_widgets?: Json | null
           created_at?: string
           default_collection_id?: string | null
           id?: string
+          is_collection_public?: boolean | null
           last_selected_collection_id?: string | null
           taste_description?: string | null
           trade_match_scope?: string | null
@@ -1377,6 +1383,36 @@ export type Database = {
           created_at?: string | null
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_tags: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          name: string
+          sort_order: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          name: string
+          sort_order?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+          sort_order?: number
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -1440,6 +1476,59 @@ export type Database = {
           },
         ]
       }
+      watch_provenance: {
+        Row: {
+          additional_notes: string | null
+          created_at: string
+          has_original_box: boolean
+          has_original_papers: boolean
+          has_original_receipt: boolean
+          id: string
+          original_owner: string | null
+          purchase_year: number | null
+          service_history: string | null
+          updated_at: string
+          user_id: string
+          watch_id: string
+        }
+        Insert: {
+          additional_notes?: string | null
+          created_at?: string
+          has_original_box?: boolean
+          has_original_papers?: boolean
+          has_original_receipt?: boolean
+          id?: string
+          original_owner?: string | null
+          purchase_year?: number | null
+          service_history?: string | null
+          updated_at?: string
+          user_id: string
+          watch_id: string
+        }
+        Update: {
+          additional_notes?: string | null
+          created_at?: string
+          has_original_box?: boolean
+          has_original_papers?: boolean
+          has_original_receipt?: boolean
+          id?: string
+          original_owner?: string | null
+          purchase_year?: number | null
+          service_history?: string | null
+          updated_at?: string
+          user_id?: string
+          watch_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "watch_provenance_watch_id_fkey"
+            columns: ["watch_id"]
+            isOneToOne: true
+            referencedRelation: "watches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       watch_specs: {
         Row: {
           band: string | null
@@ -1495,6 +1584,42 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "watch_specs_watch_id_fkey"
+            columns: ["watch_id"]
+            isOneToOne: false
+            referencedRelation: "watches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      watch_tags: {
+        Row: {
+          created_at: string
+          id: string
+          tag_id: string
+          watch_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          tag_id: string
+          watch_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          tag_id?: string
+          watch_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "watch_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "user_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "watch_tags_watch_id_fkey"
             columns: ["watch_id"]
             isOneToOne: false
             referencedRelation: "watches"
@@ -1900,6 +2025,26 @@ export type Database = {
           last_used: string
           total_uses: number
           unique_users: number
+        }[]
+      }
+      get_friends_most_worn_this_week: {
+        Args: { _user_id: string }
+        Returns: {
+          ai_image_url: string
+          brand: string
+          model: string
+          user_count: number
+          wear_count: number
+        }[]
+      }
+      get_platform_most_worn_this_week: {
+        Args: never
+        Returns: {
+          ai_image_url: string
+          brand: string
+          model: string
+          user_count: number
+          wear_count: number
         }[]
       }
       get_profile_id_by_email: { Args: { _email: string }; Returns: string }
