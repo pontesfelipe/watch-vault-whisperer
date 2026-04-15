@@ -204,6 +204,13 @@ const Home = () => {
         onExternalOpenChange={setWristCheckOpen}
       />
 
+      <WristCheckDialog
+        open={shareDialogOpen}
+        onOpenChange={setShareDialogOpen}
+        watches={watches.filter((w: any) => w.status === 'current')}
+        username={username}
+      />
+
       <QuickLogSheet
         open={quickLogOpen}
         onOpenChange={setQuickLogOpen}
