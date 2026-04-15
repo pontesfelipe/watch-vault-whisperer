@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { validateEnv } from "./lib/env";
+import "./i18n/config";
 import App from "./App.tsx";
 import "./styles/theme.css";
 import "./index.css";
