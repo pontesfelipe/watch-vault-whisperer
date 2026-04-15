@@ -1476,6 +1476,59 @@ export type Database = {
           },
         ]
       }
+      watch_provenance: {
+        Row: {
+          additional_notes: string | null
+          created_at: string
+          has_original_box: boolean
+          has_original_papers: boolean
+          has_original_receipt: boolean
+          id: string
+          original_owner: string | null
+          purchase_year: number | null
+          service_history: string | null
+          updated_at: string
+          user_id: string
+          watch_id: string
+        }
+        Insert: {
+          additional_notes?: string | null
+          created_at?: string
+          has_original_box?: boolean
+          has_original_papers?: boolean
+          has_original_receipt?: boolean
+          id?: string
+          original_owner?: string | null
+          purchase_year?: number | null
+          service_history?: string | null
+          updated_at?: string
+          user_id: string
+          watch_id: string
+        }
+        Update: {
+          additional_notes?: string | null
+          created_at?: string
+          has_original_box?: boolean
+          has_original_papers?: boolean
+          has_original_receipt?: boolean
+          id?: string
+          original_owner?: string | null
+          purchase_year?: number | null
+          service_history?: string | null
+          updated_at?: string
+          user_id?: string
+          watch_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "watch_provenance_watch_id_fkey"
+            columns: ["watch_id"]
+            isOneToOne: true
+            referencedRelation: "watches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       watch_specs: {
         Row: {
           band: string | null
