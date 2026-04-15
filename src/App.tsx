@@ -76,6 +76,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function AppContent() {
   const [showSplash, setShowSplash] = useState(true);
+  const { user } = useAuth();
   useOfflineQueue();
 
   return (
@@ -120,15 +121,26 @@ const App = () => (
     <ThemeProvider>
       <AuthProvider>
         <PasscodeProvider>
-          <CollectionProvider>
-            <TooltipProvider>
-              <AppContent />
-            </TooltipProvider>
-          </CollectionProvider>
+          <ImpersonationProviderWrapper>
+            <CollectionProvider>
+              <TooltipProvider>
+                <AppContent />
+              </TooltipProvider>
+            </CollectionProvider>
+          </ImpersonationProviderWrapper>
         </PasscodeProvider>
       </AuthProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );
+
+function ImpersonationProviderWrapper({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  return (
+    <ImpersonationProvider realUserId={user?.id ?? null}>
+      {children}
+    </ImpersonationProvider>
+  );
+}
 
 export default App;
