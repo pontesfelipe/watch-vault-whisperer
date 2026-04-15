@@ -20,12 +20,21 @@ import { useTranslation } from "react-i18next";
 
 const Home = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { selectedCollectionId, currentCollectionType } = useCollection();
   const { watches, wearEntries, loading, refetch } = useWatchData(selectedCollectionId);
   const [quickLogWatch, setQuickLogWatch] = useState<any>(null);
   const [quickLogOpen, setQuickLogOpen] = useState(false);
   const [wristCheckOpen, setWristCheckOpen] = useState(false);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [username, setUsername] = useState<string | undefined>();
   const { t, i18n } = useTranslation();
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('profiles').select('username').eq('id', user.id).maybeSingle()
+      .then(({ data }) => { if (data?.username) setUsername(data.username); });
+  }, [user]);
 
   const config = currentCollectionType ? getCollectionConfig(currentCollectionType) : getCollectionConfig('watches');
 
