@@ -9,6 +9,7 @@ import { enUS, es, fr, pt, ja, zhCN, type Locale } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { QuickLogSheet } from "@/components/QuickLogSheet";
 import { QuickAddWearDialog } from "@/components/QuickAddWearDialog";
+import { TrendingWatchesSection } from "@/components/TrendingWatchesSection";
 import { WearCalendar } from "@/components/WearCalendar";
 import { CollectionSwitcher } from "@/components/CollectionSwitcher";
 import { getCollectionConfig } from "@/types/collection";
@@ -166,6 +167,9 @@ const Home = () => {
           )}
         </section>
       )}
+
+      {/* Trending This Week */}
+      <TrendingWatchesSection />
 
       <QuickAddWearDialog
         watches={watches}

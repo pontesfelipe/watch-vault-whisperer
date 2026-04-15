@@ -1902,6 +1902,26 @@ export type Database = {
           unique_users: number
         }[]
       }
+      get_friends_most_worn_this_week: {
+        Args: { _user_id: string }
+        Returns: {
+          ai_image_url: string
+          brand: string
+          model: string
+          user_count: number
+          wear_count: number
+        }[]
+      }
+      get_platform_most_worn_this_week: {
+        Args: never
+        Returns: {
+          ai_image_url: string
+          brand: string
+          model: string
+          user_count: number
+          wear_count: number
+        }[]
+      }
       get_profile_id_by_email: { Args: { _email: string }; Returns: string }
       get_public_profile: {
         Args: { _user_id: string }

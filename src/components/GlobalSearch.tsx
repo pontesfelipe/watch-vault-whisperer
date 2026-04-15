@@ -115,7 +115,7 @@ export function GlobalSearch() {
     if (result.type === "watch") {
       navigate(`/watch/${result.id}`);
     } else if (result.type === "user") {
-      navigate(`/social`);
+      navigate(`/user/${result.id}`);
     }
     setIsOpen(false);
     setQuery("");

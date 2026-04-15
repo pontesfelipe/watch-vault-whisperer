@@ -32,6 +32,7 @@ const Settings = lazy(() => import("./pages/Settings"));
 const FAQ = lazy(() => import("./pages/FAQ"));
 const About = lazy(() => import("./pages/About"));
 const VaultPal = lazy(() => import("./pages/VaultPal"));
+const UserProfile = lazy(() => import("./pages/UserProfile"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -101,6 +102,7 @@ function AppContent() {
             <Route path="/watch/:id" element={<ProtectedRoute><PageTransition><WatchDetail /></PageTransition></ProtectedRoute>} />
             <Route path="/faq" element={<ProtectedRoute><PageTransition><FAQ /></PageTransition></ProtectedRoute>} />
             <Route path="/about" element={<ProtectedRoute><PageTransition><About /></PageTransition></ProtectedRoute>} />
+            <Route path="/user/:id" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
