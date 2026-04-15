@@ -108,16 +108,29 @@ const Home = () => {
       </div>
 
       {/* Wrist Check CTA */}
-      <motion.div whileTap={{ scale: 0.98 }}>
-        <Button
-          onClick={() => setWristCheckOpen(true)}
-          className="w-full h-14 rounded-2xl text-base font-semibold gap-3 shadow-lg active:scale-[0.98] transition-transform"
-          size="lg"
-        >
-          <Plus className="h-5 w-5" />
-          {t("home.wristCheck")}
-        </Button>
-      </motion.div>
+      <div className="flex gap-2">
+        <motion.div whileTap={{ scale: 0.98 }} className="flex-1">
+          <Button
+            onClick={() => setWristCheckOpen(true)}
+            className="w-full h-14 rounded-2xl text-base font-semibold gap-3 shadow-lg active:scale-[0.98] transition-transform"
+            size="lg"
+          >
+            <Plus className="h-5 w-5" />
+            {t("home.wristCheck")}
+          </Button>
+        </motion.div>
+        <motion.div whileTap={{ scale: 0.98 }}>
+          <Button
+            onClick={() => setShareDialogOpen(true)}
+            variant="outline"
+            className="h-14 w-14 rounded-2xl shadow-lg"
+            size="icon"
+            disabled={watches.length === 0}
+          >
+            <Share2 className="h-5 w-5" />
+          </Button>
+        </motion.div>
+      </div>
 
       {/* Wear Calendar */}
       <section>
