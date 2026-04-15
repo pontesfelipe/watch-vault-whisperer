@@ -2066,6 +2066,25 @@ export type Database = {
           username: string
         }[]
       }
+      get_public_trust_level: {
+        Args: { _user_id: string }
+        Returns: {
+          completed_trades: number
+          trust_level: string
+          verified_at: string
+        }[]
+      }
+      get_reputation_score: {
+        Args: { _user_id: string }
+        Returns: {
+          account_age_days: number
+          completed_trades: number
+          friend_count: number
+          post_count: number
+          reputation_score: number
+          trust_level: string
+        }[]
+      }
       get_usage_metrics: {
         Args: never
         Returns: {
