@@ -6,6 +6,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { PasscodeProvider } from "@/contexts/PasscodeContext";
+import { ImpersonationProvider } from "@/contexts/ImpersonationContext";
+import { ImpersonationBanner } from "@/components/ImpersonationBanner";
 import { CollectionProvider } from "@/contexts/CollectionContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AppLayout } from "@/components/AppLayout";
@@ -74,11 +76,13 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function AppContent() {
   const [showSplash, setShowSplash] = useState(true);
+  const { user } = useAuth();
   useOfflineQueue();
 
   return (
     <>
       {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
+      <ImpersonationBanner />
       <Toaster />
       <Sonner />
       <BrowserRouter>
@@ -117,15 +121,26 @@ const App = () => (
     <ThemeProvider>
       <AuthProvider>
         <PasscodeProvider>
-          <CollectionProvider>
-            <TooltipProvider>
-              <AppContent />
-            </TooltipProvider>
-          </CollectionProvider>
+          <ImpersonationProviderWrapper>
+            <CollectionProvider>
+              <TooltipProvider>
+                <AppContent />
+              </TooltipProvider>
+            </CollectionProvider>
+          </ImpersonationProviderWrapper>
         </PasscodeProvider>
       </AuthProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );
+
+function ImpersonationProviderWrapper({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  return (
+    <ImpersonationProvider realUserId={user?.id ?? null}>
+      {children}
+    </ImpersonationProvider>
+  );
+}
 
 export default App;
