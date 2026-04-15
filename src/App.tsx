@@ -14,6 +14,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { SplashScreen } from "@/components/SplashScreen";
 import { PageTransition } from "@/components/PageTransition";
 import { useOfflineQueue } from "@/hooks/useOfflineQueue";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 // Eagerly loaded (critical path)
 import Home from "./pages/Home";
