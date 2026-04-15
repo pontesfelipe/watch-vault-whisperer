@@ -3,6 +3,8 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppNavigation } from "./AppNavigation";
 import { BottomNavigation } from "./BottomNavigation";
 import { WarrantyNotifications } from "./WarrantyNotifications";
+import { NotificationBell } from "./NotificationBell";
+import { GlobalSearch } from "./GlobalSearch";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { AnimatePresence, motion } from "framer-motion";
 import { WifiOff } from "lucide-react";
@@ -40,21 +42,28 @@ export function AppLayout({ children }: AppLayoutProps) {
               </motion.div>
             )}
           </AnimatePresence>
-          {/* Desktop header with sidebar trigger */}
+          {/* Desktop header with sidebar trigger + search + notifications */}
           <div className="sticky top-0 z-10 hidden md:flex items-center justify-between h-14 border-b border-borderSubtle bg-background px-4">
             <SidebarTrigger />
-            <WarrantyNotifications />
+            <GlobalSearch />
+            <div className="flex items-center gap-2">
+              <NotificationBell />
+              <WarrantyNotifications />
+            </div>
           </div>
           
-          {/* Mobile header - simpler without sidebar trigger */}
-          <div className="sticky top-0 z-10 flex md:hidden items-center justify-between h-14 border-b border-borderSubtle bg-background px-4">
-            <div className="flex items-center gap-2">
+          {/* Mobile header */}
+          <div className="sticky top-0 z-10 flex md:hidden items-center justify-between gap-3 h-14 border-b border-borderSubtle bg-background px-4">
+            <div className="flex items-center gap-2 shrink-0">
               <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-accentSubtle text-xs font-semibold text-accent">
                 SV
               </div>
-              <span className="text-sm font-semibold text-textMain">Sora Vault</span>
             </div>
-            <WarrantyNotifications />
+            <GlobalSearch />
+            <div className="flex items-center gap-1 shrink-0">
+              <NotificationBell />
+              <WarrantyNotifications />
+            </div>
           </div>
           
           <div className="p-4 md:p-6 max-w-[1800px] mx-auto w-full">
