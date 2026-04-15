@@ -16,10 +16,11 @@ import { UsageMetricsTab } from "@/components/admin/UsageMetricsTab";
 import { CollectionsTab } from "@/components/admin/CollectionsTab";
 import { FeedbackTab } from "@/components/admin/FeedbackTab";
 import { FeatureMatrixTab } from "@/components/admin/FeatureMatrixTab";
+import { SecurityTab } from "@/components/admin/SecurityTab";
 import { ExportWearLogsDialog } from "@/components/admin/ExportWearLogsDialog";
 import { ExportWatchInventoryDialog } from "@/components/admin/ExportWatchInventoryDialog";
 import { ExportAllDataDialog } from "@/components/admin/ExportAllDataDialog";
-import { Shield, Users, UserCog, FileCheck, Calendar, RefreshCw, Moon, Sun, BookOpen, FileText, Activity, BarChart3, FolderOpen, MessageSquarePlus, ToggleRight } from "lucide-react";
+import { Shield, Users, UserCog, FileCheck, Calendar, RefreshCw, Moon, Sun, BookOpen, FileText, Activity, BarChart3, FolderOpen, MessageSquarePlus, ToggleRight, ShieldAlert } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -97,7 +98,7 @@ export default function Admin() {
         </div>
 
         <Tabs defaultValue="requests" className="w-full">
-          <TabsList className="grid w-full max-w-7xl grid-cols-11">
+          <TabsList className="grid w-full max-w-7xl grid-cols-12">
             <TabsTrigger value="requests" className="flex items-center gap-1 text-xs">
               <UserCog className="h-3 w-3" />
               Requests
@@ -141,6 +142,10 @@ export default function Admin() {
             <TabsTrigger value="metrics" className="flex items-center gap-1 text-xs">
               <BarChart3 className="h-3 w-3" />
               Metrics
+            </TabsTrigger>
+            <TabsTrigger value="security" className="flex items-center gap-1 text-xs">
+              <ShieldAlert className="h-3 w-3" />
+              Security
             </TabsTrigger>
           </TabsList>
 
@@ -226,6 +231,10 @@ export default function Admin() {
 
           <TabsContent value="metrics" className="space-y-4">
             <UsageMetricsTab />
+          </TabsContent>
+
+          <TabsContent value="security" className="space-y-4">
+            <SecurityTab />
           </TabsContent>
         </Tabs>
 
