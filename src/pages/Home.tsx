@@ -1,14 +1,17 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Watch } from "lucide-react";
+import { Plus, Watch, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWatchData } from "@/hooks/useWatchData";
 import { useCollection } from "@/contexts/CollectionContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { format, startOfWeek, endOfWeek, isWithinInterval, parseISO } from "date-fns";
 import { enUS, es, fr, pt, ja, zhCN, type Locale } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { QuickLogSheet } from "@/components/QuickLogSheet";
 import { QuickAddWearDialog } from "@/components/QuickAddWearDialog";
+import { WristCheckDialog } from "@/components/WristCheckDialog";
 import { TrendingWatchesSection } from "@/components/TrendingWatchesSection";
 import { WearCalendar } from "@/components/WearCalendar";
 import { CollectionSwitcher } from "@/components/CollectionSwitcher";
@@ -17,12 +20,21 @@ import { useTranslation } from "react-i18next";
 
 const Home = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { selectedCollectionId, currentCollectionType } = useCollection();
   const { watches, wearEntries, loading, refetch } = useWatchData(selectedCollectionId);
   const [quickLogWatch, setQuickLogWatch] = useState<any>(null);
   const [quickLogOpen, setQuickLogOpen] = useState(false);
   const [wristCheckOpen, setWristCheckOpen] = useState(false);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [username, setUsername] = useState<string | undefined>();
   const { t, i18n } = useTranslation();
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('profiles').select('username').eq('id', user.id).maybeSingle()
+      .then(({ data }) => { if (data?.username) setUsername(data.username); });
+  }, [user]);
 
   const config = currentCollectionType ? getCollectionConfig(currentCollectionType) : getCollectionConfig('watches');
 
@@ -96,16 +108,29 @@ const Home = () => {
       </div>
 
       {/* Wrist Check CTA */}
-      <motion.div whileTap={{ scale: 0.98 }}>
-        <Button
-          onClick={() => setWristCheckOpen(true)}
-          className="w-full h-14 rounded-2xl text-base font-semibold gap-3 shadow-lg active:scale-[0.98] transition-transform"
-          size="lg"
-        >
-          <Plus className="h-5 w-5" />
-          {t("home.wristCheck")}
-        </Button>
-      </motion.div>
+      <div className="flex gap-2">
+        <motion.div whileTap={{ scale: 0.98 }} className="flex-1">
+          <Button
+            onClick={() => setWristCheckOpen(true)}
+            className="w-full h-14 rounded-2xl text-base font-semibold gap-3 shadow-lg active:scale-[0.98] transition-transform"
+            size="lg"
+          >
+            <Plus className="h-5 w-5" />
+            {t("home.wristCheck")}
+          </Button>
+        </motion.div>
+        <motion.div whileTap={{ scale: 0.98 }}>
+          <Button
+            onClick={() => setShareDialogOpen(true)}
+            variant="outline"
+            className="h-14 w-14 rounded-2xl shadow-lg"
+            size="icon"
+            disabled={watches.length === 0}
+          >
+            <Share2 className="h-5 w-5" />
+          </Button>
+        </motion.div>
+      </div>
 
       {/* Wear Calendar */}
       <section>
@@ -177,6 +202,13 @@ const Home = () => {
         collectionType={currentCollectionType || 'watches'}
         externalOpen={wristCheckOpen}
         onExternalOpenChange={setWristCheckOpen}
+      />
+
+      <WristCheckDialog
+        open={shareDialogOpen}
+        onOpenChange={setShareDialogOpen}
+        watches={watches.filter((w: any) => w.status === 'current')}
+        username={username}
       />
 
       <QuickLogSheet
