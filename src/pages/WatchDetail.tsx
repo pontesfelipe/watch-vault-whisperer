@@ -10,6 +10,9 @@ import { RegenerateImageDialog } from "@/components/RegenerateImageDialog";
 import { AddWearDialog } from "@/components/AddWearDialog";
 import { EditWatchDialog } from "@/components/EditWatchDialog";
 import { EditWearEntryDialog } from "@/components/EditWearEntryDialog";
+import { WatchProvenanceCard } from "@/components/WatchProvenanceCard";
+import { ShareWristCheckCard } from "@/components/ShareWristCheckCard";
+import { ShareButton } from "@/components/ShareButton";
 import { useToast } from "@/hooks/use-toast";
 import { usePasscode } from "@/contexts/PasscodeContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -410,6 +413,22 @@ const WatchDetail = () => {
                 </div>
               )}
             </Card>
+
+            {/* Provenance Card */}
+            <WatchProvenanceCard watchId={watch.id} isOwner={true} />
+
+            {/* Share Actions */}
+            <div className="flex items-center gap-2">
+              <ShareWristCheckCard
+                watch={watch}
+                date={new Date().toLocaleDateString()}
+              />
+              <ShareButton
+                url={`/watch/${watch.id}`}
+                title={`${watch.brand} ${watch.model}`}
+                label="Copy Link"
+              />
+            </div>
           </TabsContent>
 
           {/* Statistics Tab */}
