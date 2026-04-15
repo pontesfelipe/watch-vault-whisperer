@@ -68,9 +68,8 @@ export function SecurityTab() {
             type: "multiple_failures",
             severity: entries.length >= 5 ? "high" : "medium",
             title: `${entries.length} failed login attempts`,
-            description: `User ${entries[0].user_email || userId} had ${entries.length} failed logins in the last 24h`,
+            description: `User ${userId} had ${entries.length} failed logins in the last 24h`,
             userId,
-            email: entries[0].user_email || undefined,
             timestamp: entries[0].login_at,
           });
         }
@@ -91,9 +90,8 @@ export function SecurityTab() {
             type: "rapid_logins",
             severity: "medium",
             title: `Rapid login activity`,
-            description: `User ${entries[0].user_email || userId} logged in ${entries.length} times in the last hour`,
+            description: `User ${userId} logged in ${entries.length} times in the last hour`,
             userId,
-            email: entries[0].user_email || undefined,
             timestamp: entries[0].login_at,
           });
         }
