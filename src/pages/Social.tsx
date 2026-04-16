@@ -24,7 +24,7 @@ import { useSearchParams } from "react-router-dom";
 
 export default function Social() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialTab = searchParams.get("tab") || "messages";
+  const initialTab = searchParams.get("tab") || "forum";
   const [mainTab, setMainTab] = useState(initialTab);
 
   const handleMainTabChange = (value: string) => {
@@ -36,22 +36,22 @@ export default function Social() {
     <div className="container mx-auto px-4 py-6">
       <Tabs value={mainTab} onValueChange={handleMainTabChange} className="w-full">
         <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsTrigger value="forum" className="flex items-center gap-2">
+            <MessageSquare className="h-4 w-4" />
+            Posts
+          </TabsTrigger>
           <TabsTrigger value="messages" className="flex items-center gap-2">
             <MessageCircle className="h-4 w-4" />
             Messages
           </TabsTrigger>
-          <TabsTrigger value="forum" className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4" />
-            Forum
-          </TabsTrigger>
         </TabsList>
-
-        <TabsContent value="messages" className="mt-0">
-          <MessagesSection />
-        </TabsContent>
 
         <TabsContent value="forum" className="mt-0">
           <ForumSection />
+        </TabsContent>
+
+        <TabsContent value="messages" className="mt-0">
+          <MessagesSection />
         </TabsContent>
       </Tabs>
     </div>
