@@ -417,6 +417,13 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
             </div>
           </div>
 
+          <div className="border-t pt-4">
+            <WearTagSelector
+              selectedTagIds={selectedTagIds}
+              onChange={setSelectedTagIds}
+            />
+          </div>
+
           <div className="space-y-4 border-t pt-4">
             <div className="flex items-center gap-2">
               <input
