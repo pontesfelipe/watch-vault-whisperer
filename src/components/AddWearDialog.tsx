@@ -455,6 +455,13 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
             />
           </div>
 
+          <div className="pt-2 border-t border-border">
+            <WearTagSelector
+              selectedTagIds={selectedTagIds}
+              onChange={setSelectedTagIds}
+            />
+          </div>
+
           <div className="space-y-4 pt-2 border-t border-border">
             <Label className="text-sm font-semibold">Link to Activity (Optional)</Label>
             
