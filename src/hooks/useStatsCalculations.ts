@@ -111,6 +111,26 @@ export const useStatsCalculations = (
     )[0]?.[0];
     const trendingWatch = watches.find((w) => w.id === trendingWatchId);
 
+    // Most worn this year (year-to-date) - sum days worn per watch since Jan 1
+    const startOfYear = new Date(new Date().getFullYear(), 0, 1);
+    const yearWears = wearEntries.filter(
+      (entry) => new Date(entry.wear_date) >= startOfYear
+    );
+    const yearWearCounts = yearWears.reduce(
+      (acc, entry) => {
+        acc[entry.watch_id] = (acc[entry.watch_id] || 0) + (entry.days || 1);
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+    const mostWornThisYearEntry = Object.entries(yearWearCounts).sort(
+      ([, a], [, b]) => b - a
+    )[0];
+    const mostWornThisYearWatch = mostWornThisYearEntry
+      ? watches.find((w) => w.id === mostWornThisYearEntry[0])
+      : undefined;
+    const mostWornThisYearDays = mostWornThisYearEntry ? mostWornThisYearEntry[1] : 0;
+
     // Top trip watch - count from linkedWatches, only for watches in current collection
     const tripWatchCounts = trips.reduce(
       (acc, trip) => {
