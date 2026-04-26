@@ -13,6 +13,8 @@ import { z } from "zod";
 import { useAuth } from "@/contexts/AuthContext";
 import { format, subDays, parseISO } from "date-fns";
 import { toast as sonnerToast } from "sonner";
+import { WearTagSelector } from "@/components/WearTagSelector";
+import { syncWearEntryTags } from "@/utils/wearEntryTags";
 
 
 const wearSchema = z.object({
@@ -35,6 +37,7 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
   const [sportLocation, setSportLocation] = useState("");
   const [wearDate, setWearDate] = useState(new Date().toISOString().split('T')[0]);
   const [userProfileLocation, setUserProfileLocation] = useState("");
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -306,6 +309,7 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
       }
 
       let error;
+      let savedEntryId: string | null = null;
       if (existing) {
         // Update existing entry
         const result = await supabase
@@ -318,8 +322,11 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
             water_usage_id: waterUsageId,
             sport_id: sportId,
           } as any)
-          .eq("id", existing.id);
+          .eq("id", existing.id)
+          .select("id")
+          .single();
         error = result.error;
+        savedEntryId = (result.data as any)?.id ?? existing.id;
       } else {
         // Insert new entry
         const result = await supabase.from("wear_entries").insert({
@@ -332,11 +339,16 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
           water_usage_id: waterUsageId,
           sport_id: sportId,
           user_id: user?.id,
-        } as any);
+        } as any).select("id").single();
         error = result.error;
+        savedEntryId = (result.data as any)?.id ?? null;
       }
 
       if (error) throw error;
+
+      if (savedEntryId) {
+        await syncWearEntryTags(savedEntryId, selectedTagIds);
+      }
 
       toast({
         title: "Success",
@@ -353,6 +365,7 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
       setEventLocation(userProfileLocation);
       setSportLocation(userProfileLocation);
       setWearDate(new Date().toISOString().split('T')[0]);
+      setSelectedTagIds([]);
       onSuccess();
       (e.target as HTMLFormElement).reset();
     } catch (error) {
