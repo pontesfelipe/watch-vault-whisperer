@@ -11,6 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { Trash2, MapPin, Flag, Droplets, Dumbbell } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { WearTagSelector } from "@/components/WearTagSelector";
+import { syncWearEntryTags, fetchWearEntryTagIds } from "@/utils/wearEntryTags";
 
 import {
   AlertDialog,
@@ -85,6 +87,9 @@ export const EditWearEntryDialog = ({
   const [sportDuration, setSportDuration] = useState<number | null>(null);
   const [sportNotes, setSportNotes] = useState("");
 
+  // Tag selection
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+
   // Load entry data when dialog opens
   useEffect(() => {
     const loadEntryData = async () => {
@@ -94,6 +99,10 @@ export const EditWearEntryDialog = ({
       setWearDate(entry.wear_date);
       setDays(entry.days);
       setNotes(entry.notes || "");
+
+      // Load existing tags for this entry
+      const tagIds = await fetchWearEntryTagIds(entry.id);
+      setSelectedTagIds(tagIds);
       
       // Load trip data if exists
       if (entry.trip_id) {
@@ -362,6 +371,8 @@ export const EditWearEntryDialog = ({
         .eq("id", entry.id);
 
       if (error) throw error;
+
+      await syncWearEntryTags(entry.id, selectedTagIds);
 
       toast({
         title: "Entry updated",
