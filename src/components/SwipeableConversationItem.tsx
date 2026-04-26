@@ -76,6 +76,16 @@ export const SwipeableConversationItem = ({
         }`}
         onClick={onSelect}
       >
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 shrink-0 text-textMuted hover:text-destructive hover:bg-surfaceMuted"
+          onClick={handleDeleteClick}
+          aria-label="Delete conversation"
+          title="Delete"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+        </Button>
         <MessageSquare className="w-4 h-4 shrink-0 text-textMuted" />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-textMain truncate">
@@ -95,16 +105,6 @@ export const SwipeableConversationItem = ({
             title="Rename"
           >
             <Pencil className="w-3.5 h-3.5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 text-textMuted hover:text-destructive hover:bg-surfaceMuted"
-            onClick={handleDeleteClick}
-            aria-label="Delete conversation"
-            title="Delete"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
           </Button>
         </div>
       </div>
