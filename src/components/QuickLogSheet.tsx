@@ -6,6 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { WearTagSelector } from "@/components/WearTagSelector";
+import { syncWearEntryTags } from "@/utils/wearEntryTags";
 
 interface QuickLogSheetProps {
   open: boolean;
@@ -16,6 +18,7 @@ interface QuickLogSheetProps {
 
 export function QuickLogSheet({ open, onOpenChange, watch, onSuccess }: QuickLogSheetProps) {
   const [loading, setLoading] = useState(false);
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -35,21 +38,29 @@ export function QuickLogSheet({ open, onOpenChange, watch, onSuccess }: QuickLog
         .maybeSingle();
 
       if (existing) {
+        if (selectedTagIds.length > 0) {
+          await syncWearEntryTags(existing.id, selectedTagIds);
+        }
         toast({ title: "Already logged", description: `${watch.brand} ${watch.model} is already logged for today.` });
         onOpenChange(false);
         return;
       }
 
-      const { error } = await supabase.from("wear_entries").insert({
+      const { data: inserted, error } = await supabase.from("wear_entries").insert({
         watch_id: watch.id,
         wear_date: today,
         days: 1,
         user_id: user.id,
-      });
+      }).select("id").single();
 
       if (error) throw error;
 
+      if (inserted?.id && selectedTagIds.length > 0) {
+        await syncWearEntryTags(inserted.id, selectedTagIds);
+      }
+
       toast({ title: "Wrist check logged!", description: `${watch.brand} ${watch.model} — ${format(new Date(), "EEEE, MMM d")}` });
+      setSelectedTagIds([]);
       onSuccess();
       onOpenChange(false);
     } catch {
@@ -87,6 +98,13 @@ export function QuickLogSheet({ open, onOpenChange, watch, onSuccess }: QuickLog
           <p className="text-sm text-textMuted">
             {format(new Date(), "EEEE, MMMM d")}
           </p>
+
+          <div className="w-full">
+            <WearTagSelector
+              selectedTagIds={selectedTagIds}
+              onChange={setSelectedTagIds}
+            />
+          </div>
 
           <Button
             onClick={handleLogToday}

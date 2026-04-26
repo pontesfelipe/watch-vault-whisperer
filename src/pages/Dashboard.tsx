@@ -11,6 +11,8 @@ import { CollectionSwitcher } from "@/components/CollectionSwitcher";
 import { SneakerStatsCards } from "@/components/SneakerStatsCards";
 import { CanvasWidgetManager, useCanvasWidgets } from "@/components/CanvasWidgetManager";
 import { PurseStatsCards } from "@/components/PurseStatsCards";
+import { TagWearWidget } from "@/components/TagWearWidget";
+import { useUserTags } from "@/hooks/useUserTags";
 
 import { useWatchData } from "@/hooks/useWatchData";
 import { useTripData } from "@/hooks/useTripData";
@@ -27,6 +29,8 @@ const Dashboard = () => {
   const { trips, loading: tripLoading } = useTripData();
   const [widgets, setWidgets] = useCanvasWidgets();
   const { waterUsages, loading: waterLoading } = useWaterUsageData();
+  const { tags: userTags } = useUserTags();
+  const enabledTagWidgets = userTags.filter((t) => widgets[`tag_${t.id}`]);
 
   const stats = useStatsCalculations(watches, wearEntries, trips, waterUsages);
   
@@ -217,6 +221,19 @@ const Dashboard = () => {
       <UsageChart watches={watches} wearEntries={wearEntries} />
 
       <MonthlyUsageTable watches={watches} wearEntries={wearEntries} />
+
+      {enabledTagWidgets.length > 0 && (
+        <section className="space-y-3">
+          <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-textMuted">
+            Tag Insights
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {enabledTagWidgets.map((tag) => (
+              <TagWearWidget key={tag.id} tagId={tag.id} tagName={tag.name} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {stats.watchesWithResaleDataCount > 0 && (
         <div className="space-y-6">
