@@ -12,6 +12,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCollection } from "@/contexts/CollectionContext";
 import { CollectionType, getCollectionConfig, isWatchCollection } from "@/types/collection";
 import { ResponsiveDialog } from "@/components/ResponsiveDialog";
+import { WearTagSelector } from "@/components/WearTagSelector";
+import { syncWearEntryTags } from "@/utils/wearEntryTags";
 
 const wearSchema = z.object({
   watchId: z.string().uuid(),
@@ -39,6 +41,7 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
   const [isSport, setIsSport] = useState(false);
   const [tripNotes, setTripNotes] = useState("");
   const [sportLocation, setSportLocation] = useState("");
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const { toast } = useToast();
   const { user } = useAuth();
   const { currentCollectionType } = useCollection();
@@ -238,6 +241,7 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
       }
 
       let error;
+      let savedEntryId: string | null = null;
       if (existing) {
         // Update existing entry
         const result = await supabase
@@ -249,8 +253,11 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
             water_usage_id: waterUsageId,
             sport_id: sportId,
           } as any)
-          .eq("id", existing.id);
+          .eq("id", existing.id)
+          .select("id")
+          .single();
         error = result.error;
+        savedEntryId = (result.data as any)?.id ?? existing.id;
       } else {
         // Insert new entry
         const result = await supabase.from("wear_entries").insert({
@@ -262,11 +269,16 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
           water_usage_id: waterUsageId,
           sport_id: sportId,
           user_id: user?.id,
-        } as any);
+        } as any).select("id").single();
         error = result.error;
+        savedEntryId = (result.data as any)?.id ?? null;
       }
 
       if (error) throw error;
+
+      if (savedEntryId) {
+        await syncWearEntryTags(savedEntryId, selectedTagIds);
+      }
 
       toast({
         title: "Success",
@@ -280,6 +292,7 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
       setIsWaterActivity(false);
       setIsSport(false);
       setSportLocation("");
+      setSelectedTagIds([]);
       onSuccess();
       (e.target as HTMLFormElement).reset();
     } catch (error) {
