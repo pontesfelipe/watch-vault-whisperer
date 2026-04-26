@@ -505,6 +505,13 @@ export const EditWearEntryDialog = ({
             />
           </div>
 
+          <div className="border-t border-border pt-4">
+            <WearTagSelector
+              selectedTagIds={selectedTagIds}
+              onChange={setSelectedTagIds}
+            />
+          </div>
+
           {/* Trip Section */}
           <div className="space-y-3 border-t border-border pt-4">
             <div className="flex items-center space-x-2">
