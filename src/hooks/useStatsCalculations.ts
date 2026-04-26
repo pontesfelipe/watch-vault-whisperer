@@ -266,6 +266,8 @@ export const useStatsCalculations = (
       topWaterWatch,
       trendingDownWatch: topTrendingDownWatch,
       trendingDownCount: trendingDownWatches.length,
+      mostWornThisYearWatch,
+      mostWornThisYearDays,
       // Depreciation stats
       totalMSRP,
       totalCollectionValue,
