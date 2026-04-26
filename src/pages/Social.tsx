@@ -269,7 +269,7 @@ function ForumSection() {
       </div>
 
       {loading ? (
-        <div className="space-y-4 max-w-3xl">
+        <div className="space-y-4">
           {Array.from({ length: 3 }).map((_, i) => (
             <FeedItemSkeleton key={i} />
           ))}
@@ -290,7 +290,7 @@ function ForumSection() {
           </p>
         </div>
       ) : (
-        <div className="space-y-4 max-w-3xl">
+        <div className="space-y-4">
           {posts.map(post => (
             <PostCard
               key={post.id}
