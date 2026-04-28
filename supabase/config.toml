@@ -1,26 +1,19 @@
 project_id = "thrwpxiahqgubjkjnkgt"
 
-# Only check-user-access needs to be public (pre-login access check)
-[functions.check-user-access]
-verify_jwt = false
-
-# Allow cron to call cleanup without JWT (auth handled in function code)
-[functions.cleanup-unused-images]
-verify_jwt = false
-
-# All other functions use default JWT verification (verify_jwt = true)
-
-[functions.process-email-queue]
-verify_jwt = true
-
-[functions.send-transactional-email]
-verify_jwt = true
-
-[functions.preview-transactional-email]
-verify_jwt = false
-
-[functions.handle-email-unsubscribe]
-verify_jwt = false
-
-[functions.handle-email-suppression]
-verify_jwt = false
+[functions]
+  [functions.auth-email-hook]
+    verify_jwt = false
+  [functions.check-user-access]
+    verify_jwt = false
+  [functions.cleanup-unused-images]
+    verify_jwt = false
+  [functions.handle-email-suppression]
+    verify_jwt = false
+  [functions.handle-email-unsubscribe]
+    verify_jwt = false
+  [functions.preview-transactional-email]
+    verify_jwt = false
+  [functions.process-email-queue]
+    verify_jwt = true
+  [functions.send-transactional-email]
+    verify_jwt = true
