@@ -110,6 +110,16 @@ export default function Auth() {
         if (error) {
           toast.error(error.message);
         } else {
+          // Send branded welcome email (fire-and-forget; do not block signup UX)
+          supabase.functions.invoke('send-transactional-email', {
+            body: {
+              templateName: 'welcome',
+              recipientEmail: email,
+              idempotencyKey: `welcome-${email.toLowerCase()}`,
+              templateData: { firstName: firstName.trim() },
+            },
+          }).catch((err) => console.error('Welcome email failed', err));
+
           toast.success("Account created! You can now sign in.");
           setIsSignUp(false);
           setAcceptedTerms(false);
