@@ -1317,6 +1317,68 @@ export type Database = {
           },
         ]
       }
+      user_group_members: {
+        Row: {
+          added_at: string
+          added_by: string | null
+          group_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          added_at?: string
+          added_by?: string | null
+          group_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          added_at?: string
+          added_by?: string | null
+          group_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "user_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_groups: {
+        Row: {
+          color: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_lists: {
         Row: {
           created_at: string
@@ -2223,6 +2285,14 @@ export type Database = {
       is_allowed_user: { Args: { _user_id: string }; Returns: boolean }
       is_collection_owner: {
         Args: { _collection_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_group_member: {
+        Args: { _group_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_group_owner: {
+        Args: { _group_id: string; _user_id: string }
         Returns: boolean
       }
       mark_messages_as_read: {

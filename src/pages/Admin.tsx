@@ -17,11 +17,13 @@ import { CollectionsTab } from "@/components/admin/CollectionsTab";
 import { FeedbackTab } from "@/components/admin/FeedbackTab";
 import { FeatureMatrixTab } from "@/components/admin/FeatureMatrixTab";
 import { SecurityTab } from "@/components/admin/SecurityTab";
+import { UserGroupsTab } from "@/components/admin/UserGroupsTab";
+import { EmailDispatchPanel } from "@/components/admin/EmailDispatchPanel";
 import { PerformanceMetricsPanel } from "@/components/PerformanceMetricsPanel";
 import { ExportWearLogsDialog } from "@/components/admin/ExportWearLogsDialog";
 import { ExportWatchInventoryDialog } from "@/components/admin/ExportWatchInventoryDialog";
 import { ExportAllDataDialog } from "@/components/admin/ExportAllDataDialog";
-import { Shield, Users, UserCog, FileCheck, Calendar, RefreshCw, Moon, Sun, BookOpen, FileText, Activity, BarChart3, FolderOpen, MessageSquarePlus, ToggleRight, ShieldAlert } from "lucide-react";
+import { Shield, Users, UserCog, FileCheck, Calendar, RefreshCw, Moon, Sun, BookOpen, FileText, Activity, BarChart3, FolderOpen, MessageSquarePlus, ToggleRight, ShieldAlert, UsersRound, Mail } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -99,7 +101,7 @@ export default function Admin() {
         </div>
 
         <Tabs defaultValue="requests" className="w-full">
-          <TabsList className="grid w-full max-w-7xl grid-cols-12">
+          <TabsList className="grid w-full max-w-7xl grid-cols-7 lg:grid-cols-14">
             <TabsTrigger value="requests" className="flex items-center gap-1 text-xs">
               <UserCog className="h-3 w-3" />
               Requests
@@ -111,6 +113,14 @@ export default function Admin() {
             <TabsTrigger value="registered" className="flex items-center gap-1 text-xs">
               <Users className="h-3 w-3" />
               Users
+            </TabsTrigger>
+            <TabsTrigger value="groups" className="flex items-center gap-1 text-xs">
+              <UsersRound className="h-3 w-3" />
+              Groups
+            </TabsTrigger>
+            <TabsTrigger value="email" className="flex items-center gap-1 text-xs">
+              <Mail className="h-3 w-3" />
+              Email
             </TabsTrigger>
             <TabsTrigger value="collections" className="flex items-center gap-1 text-xs">
               <FolderOpen className="h-3 w-3" />
@@ -190,6 +200,14 @@ export default function Admin() {
                 <RegisteredUsersTable />
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="groups" className="space-y-4">
+            <UserGroupsTab />
+          </TabsContent>
+
+          <TabsContent value="email" className="space-y-4">
+            <EmailDispatchPanel />
           </TabsContent>
 
           <TabsContent value="collections" className="space-y-4">
