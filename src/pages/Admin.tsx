@@ -101,7 +101,7 @@ export default function Admin() {
         </div>
 
         <Tabs defaultValue="requests" className="w-full">
-          <TabsList className="grid w-full max-w-7xl grid-cols-14">
+          <TabsList className="grid w-full max-w-7xl grid-cols-7 lg:grid-cols-14">
             <TabsTrigger value="requests" className="flex items-center gap-1 text-xs">
               <UserCog className="h-3 w-3" />
               Requests
