@@ -31,6 +31,7 @@ const Social = lazy(() => import("./pages/Social"));
 const WatchDetail = lazy(() => import("./pages/WatchDetail"));
 const Admin = lazy(() => import("./pages/Admin"));
 const WearLogsAdmin = lazy(() => import("./pages/WearLogsAdmin"));
+const AdminSecurity = lazy(() => import("./pages/AdminSecurity"));
 const Settings = lazy(() => import("./pages/Settings"));
 const FAQ = lazy(() => import("./pages/FAQ"));
 const About = lazy(() => import("./pages/About"));
@@ -104,6 +105,7 @@ function AppContent() {
             <Route path="/messages" element={<Navigate to="/social?tab=messages" replace />} />
             <Route path="/forum" element={<Navigate to="/social?tab=forum" replace />} />
             <Route path="/admin" element={<ProtectedRoute><PageTransition><Admin /></PageTransition></ProtectedRoute>} />
+            <Route path="/admin/security" element={<ProtectedRoute><PageTransition><AdminSecurity /></PageTransition></ProtectedRoute>} />
             <Route path="/admin/wear-logs" element={<ProtectedRoute><PageTransition><WearLogsAdmin /></PageTransition></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><PageTransition><Settings /></PageTransition></ProtectedRoute>} />
             <Route path="/watch/:id" element={<ProtectedRoute><PageTransition><WatchDetail /></PageTransition></ProtectedRoute>} />
