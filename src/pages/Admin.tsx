@@ -101,64 +101,66 @@ export default function Admin() {
         </div>
 
         <Tabs defaultValue="requests" className="w-full">
-          <TabsList className="grid w-full max-w-7xl grid-cols-7 lg:grid-cols-14">
-            <TabsTrigger value="requests" className="flex items-center gap-1 text-xs">
-              <UserCog className="h-3 w-3" />
+          <div className="w-full overflow-x-auto scrollbar-hide -mx-2 px-2">
+          <TabsList className="inline-flex w-max min-w-full gap-1 h-auto p-1">
+            <TabsTrigger value="requests" className="flex items-center gap-1.5 text-xs px-3 py-2 whitespace-nowrap">
+              <UserCog className="h-3.5 w-3.5" />
               Requests
             </TabsTrigger>
-            <TabsTrigger value="allowed" className="flex items-center gap-1 text-xs">
-              <UserCog className="h-3 w-3" />
+            <TabsTrigger value="allowed" className="flex items-center gap-1.5 text-xs px-3 py-2 whitespace-nowrap">
+              <UserCog className="h-3.5 w-3.5" />
               Allowed
             </TabsTrigger>
-            <TabsTrigger value="registered" className="flex items-center gap-1 text-xs">
-              <Users className="h-3 w-3" />
+            <TabsTrigger value="registered" className="flex items-center gap-1.5 text-xs px-3 py-2 whitespace-nowrap">
+              <Users className="h-3.5 w-3.5" />
               Users
             </TabsTrigger>
-            <TabsTrigger value="groups" className="flex items-center gap-1 text-xs">
-              <UsersRound className="h-3 w-3" />
+            <TabsTrigger value="groups" className="flex items-center gap-1.5 text-xs px-3 py-2 whitespace-nowrap">
+              <UsersRound className="h-3.5 w-3.5" />
               Groups
             </TabsTrigger>
-            <TabsTrigger value="email" className="flex items-center gap-1 text-xs">
-              <Mail className="h-3 w-3" />
+            <TabsTrigger value="email" className="flex items-center gap-1.5 text-xs px-3 py-2 whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Mail className="h-3.5 w-3.5" />
               Email
             </TabsTrigger>
-            <TabsTrigger value="collections" className="flex items-center gap-1 text-xs">
-              <FolderOpen className="h-3 w-3" />
+            <TabsTrigger value="collections" className="flex items-center gap-1.5 text-xs px-3 py-2 whitespace-nowrap">
+              <FolderOpen className="h-3.5 w-3.5" />
               Collections
             </TabsTrigger>
-            <TabsTrigger value="features" className="flex items-center gap-1 text-xs">
-              <ToggleRight className="h-3 w-3" />
+            <TabsTrigger value="features" className="flex items-center gap-1.5 text-xs px-3 py-2 whitespace-nowrap">
+              <ToggleRight className="h-3.5 w-3.5" />
               Features
             </TabsTrigger>
-            <TabsTrigger value="feedback" className="flex items-center gap-1 text-xs">
-              <MessageSquarePlus className="h-3 w-3" />
+            <TabsTrigger value="feedback" className="flex items-center gap-1.5 text-xs px-3 py-2 whitespace-nowrap">
+              <MessageSquarePlus className="h-3.5 w-3.5" />
               Feedback
             </TabsTrigger>
-            <TabsTrigger value="acceptances" className="flex items-center gap-1 text-xs">
-              <FileCheck className="h-3 w-3" />
+            <TabsTrigger value="acceptances" className="flex items-center gap-1.5 text-xs px-3 py-2 whitespace-nowrap">
+              <FileCheck className="h-3.5 w-3.5" />
               Terms
             </TabsTrigger>
-            <TabsTrigger value="methodology" className="flex items-center gap-1 text-xs">
-              <BookOpen className="h-3 w-3" />
+            <TabsTrigger value="methodology" className="flex items-center gap-1.5 text-xs px-3 py-2 whitespace-nowrap">
+              <BookOpen className="h-3.5 w-3.5" />
               Methodology
             </TabsTrigger>
-            <TabsTrigger value="documentation" className="flex items-center gap-1 text-xs">
-              <FileText className="h-3 w-3" />
+            <TabsTrigger value="documentation" className="flex items-center gap-1.5 text-xs px-3 py-2 whitespace-nowrap">
+              <FileText className="h-3.5 w-3.5" />
               Docs
             </TabsTrigger>
-            <TabsTrigger value="logs" className="flex items-center gap-1 text-xs">
-              <Activity className="h-3 w-3" />
+            <TabsTrigger value="logs" className="flex items-center gap-1.5 text-xs px-3 py-2 whitespace-nowrap">
+              <Activity className="h-3.5 w-3.5" />
               Logs
             </TabsTrigger>
-            <TabsTrigger value="metrics" className="flex items-center gap-1 text-xs">
-              <BarChart3 className="h-3 w-3" />
+            <TabsTrigger value="metrics" className="flex items-center gap-1.5 text-xs px-3 py-2 whitespace-nowrap">
+              <BarChart3 className="h-3.5 w-3.5" />
               Metrics
             </TabsTrigger>
-            <TabsTrigger value="security" className="flex items-center gap-1 text-xs">
-              <ShieldAlert className="h-3 w-3" />
+            <TabsTrigger value="security" className="flex items-center gap-1.5 text-xs px-3 py-2 whitespace-nowrap">
+              <ShieldAlert className="h-3.5 w-3.5" />
               Security
             </TabsTrigger>
           </TabsList>
+          </div>
 
           <TabsContent value="requests" className="space-y-4">
             <Card>
