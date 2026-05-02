@@ -21,12 +21,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     // Check for existing session FIRST
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        checkAdminStatus(session.user.id);
+        await checkAdminStatus(session.user.id);
+      } else {
+        setIsAdmin(false);
       }
       setLoading(false);
     });
@@ -44,18 +46,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
 
         if (session) {
+          setLoading(true);
           setSession(session);
           setUser(session.user);
           
-          setTimeout(() => {
-            checkAdminStatus(session.user.id);
+          setTimeout(async () => {
+            await checkAdminStatus(session.user.id);
+            setLoading(false);
           }, 0);
+          return;
         }
 
-        // Set loading false on initial session event
-        if (event === 'INITIAL_SESSION') {
-          setLoading(false);
-        }
+        setSession(null);
+        setUser(null);
+        setIsAdmin(false);
+        setLoading(false);
       }
     );
 
@@ -64,14 +69,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const checkAdminStatus = async (userId: string) => {
     try {
-      const { data, error } = await supabase
-        .from('user_roles' as any)
-        .select('role')
-        .eq('user_id', userId)
-        .eq('role', 'admin')
-        .maybeSingle();
+      const { data, error } = await supabase.rpc('has_role', {
+        _user_id: userId,
+        _role: 'admin',
+      });
 
-      if (!error && data) {
+      if (!error && data === true) {
         setIsAdmin(true);
       } else {
         setIsAdmin(false);
