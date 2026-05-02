@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { verifyUser, unauthorizedResponse } from "../_shared/auth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,6 +12,11 @@ serve(async (req) => {
   }
 
   try {
+    const auth = await verifyUser(req);
+    if (!auth.user) {
+      return unauthorizedResponse(corsHeaders, auth.error);
+    }
+
     const { watches } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
