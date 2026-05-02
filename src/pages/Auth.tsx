@@ -23,6 +23,8 @@ export default function Auth() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, loading } = useAuth();
+  const redirectToParam = searchParams.get("redirectTo");
+  const redirectTo = redirectToParam?.startsWith("/") ? redirectToParam : "/";
   const [signingIn, setSigningIn] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,10 +42,9 @@ export default function Auth() {
 
   useEffect(() => {
     if (!loading && user) {
-      const redirectTo = searchParams.get("redirectTo") || "/";
-      navigate(redirectTo.startsWith("/") ? redirectTo : "/", { replace: true });
+      navigate(redirectTo, { replace: true });
     }
-  }, [user, loading, navigate, searchParams]);
+  }, [user, loading, navigate, redirectTo]);
 
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -160,7 +161,7 @@ export default function Auth() {
     setSigningIn(true);
     try {
       const { error } = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+        redirect_uri: `${window.location.origin}/auth?redirectTo=${encodeURIComponent(redirectTo)}`,
         extraParams: { prompt: "select_account" },
       });
       if (error) {
@@ -178,7 +179,7 @@ export default function Auth() {
     setSigningIn(true);
     try {
       const { error } = await lovable.auth.signInWithOAuth("apple", {
-        redirect_uri: window.location.origin,
+        redirect_uri: `${window.location.origin}/auth?redirectTo=${encodeURIComponent(redirectTo)}`,
       });
       if (error) {
         toast.error(error.message);
