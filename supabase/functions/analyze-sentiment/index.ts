@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { verifyUser, unauthorizedResponse, forbiddenResponse } from "../_shared/auth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,6 +13,11 @@ serve(async (req) => {
   }
 
   try {
+    const auth = await verifyUser(req);
+    if (!auth.user) {
+      return unauthorizedResponse(corsHeaders, auth.error);
+    }
+
     const { watchId, notes } = await req.json();
     
     if (!watchId || !notes) {
@@ -19,6 +25,26 @@ serve(async (req) => {
         JSON.stringify({ error: 'Missing required fields' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    // Verify the caller owns this watch before letting service role write to it.
+    const adminClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+    const { data: watchRow, error: watchErr } = await adminClient
+      .from('watches')
+      .select('user_id')
+      .eq('id', watchId)
+      .maybeSingle();
+    if (watchErr || !watchRow) {
+      return new Response(JSON.stringify({ error: 'Watch not found' }), {
+        status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    if (watchRow.user_id !== auth.user.id) {
+      return forbiddenResponse(corsHeaders, 'Not the owner of this watch');
     }
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
