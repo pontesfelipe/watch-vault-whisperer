@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useRef } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -18,6 +18,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const initialized = useRef(false);
 
   useEffect(() => {
     // Check for existing session FIRST
@@ -46,21 +47,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
 
         if (session) {
-          setLoading(true);
           setSession(session);
           setUser(session.user);
           
           setTimeout(async () => {
             await checkAdminStatus(session.user.id);
-            setLoading(false);
+            if (!initialized.current) {
+              initialized.current = true;
+              setLoading(false);
+            }
           }, 0);
           return;
         }
 
-        setSession(null);
-        setUser(null);
-        setIsAdmin(false);
-        setLoading(false);
+        // Set loading false on initial session event
+        if (event === 'INITIAL_SESSION') {
+          initialized.current = true;
+          setLoading(false);
+        }
       }
     );
 
