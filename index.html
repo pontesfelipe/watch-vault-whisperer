@@ -35,7 +35,7 @@
     <script>
       (() => {
         if (!("serviceWorker" in navigator)) return;
-        const cleanupKey = "sora-vault-sw-cleanup-v2";
+        const cleanupKey = "sora-vault-sw-cleanup-v3";
         const cleanup = async () => {
           const registrations = await navigator.serviceWorker.getRegistrations();
           await Promise.all(registrations.map((registration) => registration.unregister()));
@@ -51,6 +51,7 @@
         window.addEventListener("load", () => cleanup().catch(() => undefined));
       })();
     </script>
+    <script src="/registerSW.js"></script>
   </head>
 
   <body>
