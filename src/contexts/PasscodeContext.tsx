@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useAllowedUserCheck } from "@/hooks/useAllowedUserCheck";
 
 const CORRECT_PASSCODE = "8595";
