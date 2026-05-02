@@ -9,6 +9,26 @@ import "./index.css";
 
 validateEnv();
 
+const cleanupLegacyServiceWorkers = () => {
+  if (!("serviceWorker" in navigator)) return;
+
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .getRegistrations()
+      .then((registrations) => Promise.all(registrations.map((registration) => registration.unregister())))
+      .catch(() => undefined);
+
+    if ("caches" in window) {
+      caches
+        .keys()
+        .then((names) => Promise.all(names.map((name) => caches.delete(name))))
+        .catch(() => undefined);
+    }
+  });
+};
+
+cleanupLegacyServiceWorkers();
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ErrorBoundary>
