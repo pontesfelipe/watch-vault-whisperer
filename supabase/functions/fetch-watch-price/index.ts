@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { verifyUser, userHasRole, unauthorizedResponse, forbiddenResponse } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,6 +13,11 @@ serve(async (req) => {
   }
 
   try {
+    const auth = await verifyUser(req);
+    if (!auth.user) {
+      return unauthorizedResponse(corsHeaders, auth.error);
+    }
+
     const { brand, model, watchId, dialColor, year, caseSize, movement, hasSapphire } = await req.json();
 
     if (!brand || !model) {
@@ -19,6 +25,32 @@ serve(async (req) => {
         JSON.stringify({ error: "Brand and model are required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    // If watchId is provided, verify the caller owns the watch (or is admin) before proceeding.
+    let isAdmin = false;
+    if (watchId) {
+      isAdmin = await userHasRole(auth.user.id, 'admin');
+      if (!isAdmin) {
+        const adminClient = createClient(
+          Deno.env.get("SUPABASE_URL") ?? "",
+          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+        );
+        const { data: watchRow } = await adminClient
+          .from("watches")
+          .select("user_id")
+          .eq("id", watchId)
+          .maybeSingle();
+        if (!watchRow) {
+          return new Response(JSON.stringify({ error: "Watch not found" }), {
+            status: 404,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        if (watchRow.user_id !== auth.user.id) {
+          return forbiddenResponse(corsHeaders, "Not the owner of this watch");
+        }
+      }
     }
 
     // Build detailed watch description
