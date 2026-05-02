@@ -18,7 +18,7 @@ import { EmailDispatchPanel } from "@/components/admin/EmailDispatchPanel";
 import { ExportWearLogsDialog } from "@/components/admin/ExportWearLogsDialog";
 import { ExportWatchInventoryDialog } from "@/components/admin/ExportWatchInventoryDialog";
 import { ExportAllDataDialog } from "@/components/admin/ExportAllDataDialog";
-import { Shield, Users, UserCog, Calendar, RefreshCw, Moon, Sun, BookOpen, FileText, FolderOpen, MessageSquarePlus, ToggleRight, ShieldAlert, UsersRound, Mail, Wrench } from "lucide-react";
+import { Shield, Users, UserCog, Calendar, RefreshCw, Moon, Sun, BookOpen, FileText, FolderOpen, MessageSquarePlus, ToggleRight, ShieldAlert, UsersRound, Mail, Wrench, Trash2 } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,6 +29,7 @@ export default function Admin() {
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const [isUpdatingPrices, setIsUpdatingPrices] = useState(false);
+  const [isPurging, setIsPurging] = useState(false);
   const goToWearLogs = () => navigate("/admin/wear-logs");
 
   const handleUpdateMarketPrices = async () => {
@@ -47,6 +48,33 @@ export default function Admin() {
     }
   };
 
+  const handlePurgeAndReload = async () => {
+    if (!confirm("This will unregister service workers, clear all caches, and reload the app. Continue?")) return;
+    setIsPurging(true);
+    try {
+      if ("serviceWorker" in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map((r) => r.unregister()));
+      }
+      if ("caches" in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      }
+      try {
+        localStorage.removeItem("sora-vault-legacy-pwa-cleanup-v3");
+      } catch {}
+      toast.success("Caches purged. Reloading…");
+      setTimeout(() => {
+        const url = new URL(window.location.href);
+        url.searchParams.set("purge", Date.now().toString());
+        window.location.replace(url.toString());
+      }, 400);
+    } catch (err) {
+      console.error("Purge failed:", err);
+      toast.error("Failed to purge caches");
+      setIsPurging(false);
+    }
+  };
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) {
@@ -94,6 +122,10 @@ export default function Admin() {
             <Button onClick={() => navigate("/admin/security")} variant="outline">
               <ShieldAlert className="w-4 h-4 mr-2" />
               Security
+            </Button>
+            <Button onClick={handlePurgeAndReload} variant="outline" disabled={isPurging}>
+              <Trash2 className={`w-4 h-4 mr-2 ${isPurging ? "animate-pulse" : ""}`} />
+              {isPurging ? "Purging…" : "Purge Cache & Reload"}
             </Button>
             <ManageCollectionsDialog />
           </div>
