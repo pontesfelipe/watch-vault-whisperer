@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +21,7 @@ import heroImage from "@/assets/hero-collection.jpg";
 
 export default function Auth() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, loading } = useAuth();
   const [signingIn, setSigningIn] = useState(false);
   const [email, setEmail] = useState("");
@@ -39,9 +40,10 @@ export default function Auth() {
 
   useEffect(() => {
     if (!loading && user) {
-      navigate("/");
+      const redirectTo = searchParams.get("redirectTo") || "/";
+      navigate(redirectTo.startsWith("/") ? redirectTo : "/", { replace: true });
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, searchParams]);
 
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
