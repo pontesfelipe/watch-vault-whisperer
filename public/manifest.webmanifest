@@ -1,0 +1,9 @@
+{
+  "name": "Sora Vault",
+  "short_name": "Sora Vault",
+  "display": "browser",
+  "start_url": "/",
+  "scope": "/",
+  "theme_color": "#3A7AFE",
+  "background_color": "#F5F6F8"
+}
