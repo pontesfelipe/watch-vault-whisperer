@@ -38,16 +38,17 @@ const checkForStaleBuild = () => {
 
   const probe = async () => {
     try {
-      const url = new URL(window.location.origin);
+      const url = new URL(window.location.href);
       url.searchParams.set("__build_probe", Date.now().toString());
       const res = await fetch(url.toString(), { cache: "no-store" });
       if (!res.ok) return;
       const html = await res.text();
 
-      const moduleEntryRegex = /<script[^>]*type=["']module["'][^>]*src=["']([^"']+)["']/i;
-      const deployedMatch = html.match(moduleEntryRegex);
-      if (!deployedMatch) return;
-      const deployedEntry = deployedMatch[1];
+      const moduleEntryRegex = /<script(?=[^>]*type=["']module["'])[^>]*src=["']([^"']+)["']/gi;
+      const deployedEntry = Array.from(html.matchAll(moduleEntryRegex))
+        .map((m) => m[1])
+        .find((src) => src.includes("main") || src.includes("index"));
+      if (!deployedEntry) return;
 
       const runningEntry = Array.from(
         document.querySelectorAll<HTMLScriptElement>('script[type="module"][src]'),
