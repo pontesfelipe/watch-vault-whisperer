@@ -155,3 +155,13 @@ function ImpersonationProviderWrapper({ children }: { children: React.ReactNode 
 }
 
 export default App;
+
+function RouteLogger() {
+  const location = useLocation();
+  const { user } = useAuth();
+  useEffect(() => {
+    if (!user) return;
+    logAccess('page_view', { page: location.pathname });
+  }, [location.pathname, user?.id]);
+  return null;
+}
