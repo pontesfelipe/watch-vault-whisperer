@@ -74,6 +74,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Set loading false on initial session event
         if (event === 'INITIAL_SESSION') {
           initialized.current = true;
+          setAdminChecked(true);
           setLoading(false);
         }
       }
