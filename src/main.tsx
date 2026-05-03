@@ -7,6 +7,17 @@ import App from "./App.tsx";
 import "./styles/theme.css";
 import "./index.css";
 
+const APP_BUILD_MARKER = "sora-vault-auth-role-gate-2026-05-03-0026";
+
+declare global {
+  interface Window {
+    __SORA_VAULT_BUILD_MARKER__?: string;
+  }
+}
+
+window.__SORA_VAULT_BUILD_MARKER__ = APP_BUILD_MARKER;
+console.info(`[Sora Vault] build marker: ${APP_BUILD_MARKER}`);
+
 validateEnv();
 
 const cleanupLegacyServiceWorkers = () => {
