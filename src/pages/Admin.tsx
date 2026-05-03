@@ -15,10 +15,11 @@ import { FeedbackTab } from "@/components/admin/FeedbackTab";
 import { FeatureMatrixTab } from "@/components/admin/FeatureMatrixTab";
 import { UserGroupsTab } from "@/components/admin/UserGroupsTab";
 import { EmailDispatchPanel } from "@/components/admin/EmailDispatchPanel";
+import { EmailSuppressionsTab } from "@/components/admin/EmailSuppressionsTab";
 import { ExportWearLogsDialog } from "@/components/admin/ExportWearLogsDialog";
 import { ExportWatchInventoryDialog } from "@/components/admin/ExportWatchInventoryDialog";
 import { ExportAllDataDialog } from "@/components/admin/ExportAllDataDialog";
-import { Shield, Users, UserCog, Calendar, RefreshCw, Moon, Sun, BookOpen, FileText, FolderOpen, MessageSquarePlus, ToggleRight, ShieldAlert, UsersRound, Mail, Wrench, Trash2 } from "lucide-react";
+import { Shield, Users, UserCog, Calendar, RefreshCw, Moon, Sun, BookOpen, FileText, FolderOpen, MessageSquarePlus, ToggleRight, ShieldAlert, UsersRound, Mail, Wrench, Trash2, ShieldOff } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -208,6 +209,10 @@ export default function Admin() {
               <Mail className="h-3.5 w-3.5" />
               Email
             </TabsTrigger>
+            <TabsTrigger value="suppressions" className="flex items-center gap-1.5 text-xs px-3 py-2 whitespace-nowrap">
+              <ShieldOff className="h-3.5 w-3.5" />
+              Suppressions
+            </TabsTrigger>
             <TabsTrigger value="collections" className="flex items-center gap-1.5 text-xs px-3 py-2 whitespace-nowrap">
               <FolderOpen className="h-3.5 w-3.5" />
               Collections
@@ -233,6 +238,10 @@ export default function Admin() {
 
           <TabsContent value="email" className="space-y-4">
             <EmailDispatchPanel />
+          </TabsContent>
+
+          <TabsContent value="suppressions" className="space-y-4">
+            <EmailSuppressionsTab />
           </TabsContent>
 
           <TabsContent value="collections" className="space-y-4">
