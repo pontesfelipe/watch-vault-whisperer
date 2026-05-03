@@ -261,7 +261,7 @@ export function EmailDispatchPanel() {
                       <User className="h-4 w-4 mr-2" />Single user
                     </Button>
                     <Button variant={recipientType === "group" ? "default" : "outline"} size="sm"
-                      onClick={() => setRecipientType("group")} className="justify-start">
+                      onClick={() => { setRecipientType("group"); fetchData(); }} className="justify-start">
                       <Users className="h-4 w-4 mr-2" />Group
                     </Button>
                   </div>
@@ -285,9 +285,14 @@ export function EmailDispatchPanel() {
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      <Label>Group</Label>
+                      <div className="flex items-center justify-between">
+                        <Label>Group</Label>
+                        <Button type="button" variant="ghost" size="sm" onClick={fetchData} disabled={loading}>
+                          Refresh
+                        </Button>
+                      </div>
                       <Select value={selectedGroupId} onValueChange={setSelectedGroupId}>
-                        <SelectTrigger><SelectValue placeholder="Select a group…" /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder={groups.length === 0 ? "No groups yet — create one in User Groups" : "Select a group…"} /></SelectTrigger>
                         <SelectContent className="z-[60]">
                           {groups.map((g) => (
                             <SelectItem key={g.id} value={g.id}>
