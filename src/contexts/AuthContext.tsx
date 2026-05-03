@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode, useRef } fro
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { logAccess } from "@/utils/accessLog";
 
 interface AuthContextType {
   user: User | null;
@@ -44,6 +45,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       (event, session) => {
         // Only clear user on explicit sign out, not on transient events
         if (event === 'SIGNED_OUT') {
+          logAccess('logout');
           setSession(null);
           setUser(null);
           setIsAdmin(false);
@@ -53,6 +55,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
 
         if (session) {
+          if (event === 'SIGNED_IN') {
+            logAccess('login', { userId: session.user.id, userEmail: session.user.email ?? undefined });
+          }
           // Keep protected/admin routes in a loading state until the role check
           // finishes. Otherwise an admin can be redirected away while isAdmin is
           // still temporarily false immediately after sign-in/OAuth restore.
