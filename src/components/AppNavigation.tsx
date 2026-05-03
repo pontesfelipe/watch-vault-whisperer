@@ -1,4 +1,4 @@
-import { Watch, BarChart3, BookHeart, Shield, Settings, HelpCircle, Info, Lightbulb, Bot, ClipboardList, Users, Home } from "lucide-react";
+import { Watch, BarChart3, BookHeart, Shield, Settings, HelpCircle, Info, Lightbulb, Bot, ClipboardList, Users, Home, Lock } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { SubmitFeedbackDialog } from "@/components/SubmitFeedbackDialog";
@@ -45,7 +45,12 @@ export function AppNavigation() {
     { title: "Settings", url: "/settings", icon: Settings },
     { title: "FAQ", url: "/faq", icon: HelpCircle },
     { title: "About", url: "/about", icon: Info },
-    ...(isAdmin ? [{ title: "Admin", url: "/admin", icon: Shield }] : []),
+    ...(isAdmin
+      ? [
+          { title: "Admin", url: "/admin", icon: Shield },
+          { title: "Security", url: "/admin/security", icon: Lock },
+        ]
+      : []),
   ];
 
   return (
