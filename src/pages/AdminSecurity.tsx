@@ -13,16 +13,16 @@ import { PerformanceMetricsPanel } from "@/components/PerformanceMetricsPanel";
 import { ShieldAlert, ArrowLeft, Activity, BarChart3, FileCheck, ShieldCheck, Gauge } from "lucide-react";
 
 export default function AdminSecurity() {
-  const { user, isAdmin, loading } = useAuth();
+  const { user, isAdmin, loading, adminChecked } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && (!user || !isAdmin)) {
+    if (!loading && adminChecked && (!user || !isAdmin)) {
       navigate("/");
     }
-  }, [user, isAdmin, loading, navigate]);
+  }, [user, isAdmin, loading, adminChecked, navigate]);
 
-  if (loading) {
+  if (loading || !adminChecked) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
