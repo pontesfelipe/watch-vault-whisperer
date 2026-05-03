@@ -15,6 +15,8 @@ import { SplashScreen } from "@/components/SplashScreen";
 import { PageTransition } from "@/components/PageTransition";
 import { useOfflineQueue } from "@/hooks/useOfflineQueue";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { useEffect } from "react";
+import { logAccess } from "@/utils/accessLog";
 
 // Eagerly loaded (critical path)
 import Home from "./pages/Home";
@@ -93,6 +95,7 @@ function AppContent() {
       <Sonner />
       <BrowserRouter>
         <Suspense fallback={<LazyFallback />}>
+          <RouteLogger />
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route path="/" element={<ProtectedRoute><AppLayout><PageTransition><Home /></PageTransition></AppLayout></ProtectedRoute>} />
@@ -152,3 +155,13 @@ function ImpersonationProviderWrapper({ children }: { children: React.ReactNode 
 }
 
 export default App;
+
+function RouteLogger() {
+  const location = useLocation();
+  const { user } = useAuth();
+  useEffect(() => {
+    if (!user) return;
+    logAccess('page_view', { page: location.pathname });
+  }, [location.pathname, user?.id]);
+  return null;
+}
