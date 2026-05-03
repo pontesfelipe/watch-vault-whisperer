@@ -85,7 +85,7 @@ export default function Admin() {
   return (
     <AppLayout>
       <div className="space-y-6">
-        <div className="flex justify-between items-start">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Shield className="h-8 w-8 text-primary" />
@@ -95,7 +95,7 @@ export default function Admin() {
               Manage user access and view registered users
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2 lg:justify-end">
             <ExportAllDataDialog />
             <ExportWearLogsDialog />
             <ExportWatchInventoryDialog />
