@@ -23,6 +23,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { purgeBrowserCachesAndReload } from "@/utils/cacheReset";
 
 export default function Admin() {
   const { user, isAdmin, loading } = useAuth();
@@ -52,22 +53,9 @@ export default function Admin() {
     if (!confirm("This will unregister service workers, clear all caches, and reload the app. Continue?")) return;
     setIsPurging(true);
     try {
-      if ("serviceWorker" in navigator) {
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        await Promise.all(registrations.map((r) => r.unregister()));
-      }
-      if ("caches" in window) {
-        const keys = await caches.keys();
-        await Promise.all(keys.map((k) => caches.delete(k)));
-      }
-      try {
-        localStorage.removeItem("sora-vault-legacy-pwa-cleanup-v3");
-      } catch {}
       toast.success("Caches purged. Reloading…");
       setTimeout(() => {
-        const url = new URL(window.location.href);
-        url.searchParams.set("purge", Date.now().toString());
-        window.location.replace(url.toString());
+        purgeBrowserCachesAndReload({ queryKey: "purge" });
       }, 400);
     } catch (err) {
       console.error("Purge failed:", err);
