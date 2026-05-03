@@ -7,7 +7,7 @@ import App from "./App.tsx";
 import "./styles/theme.css";
 import "./index.css";
 
-const APP_BUILD_MARKER = "sora-vault-auth-role-gate-2026-05-03-0026";
+const APP_BUILD_MARKER = "sora-vault-2026-05-03-publish-unstick";
 
 declare global {
   interface Window {
