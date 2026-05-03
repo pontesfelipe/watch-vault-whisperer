@@ -48,6 +48,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
 
         if (session) {
+          // Keep protected/admin routes in a loading state until the role check
+          // finishes. Otherwise an admin can be redirected away while isAdmin is
+          // still temporarily false immediately after sign-in/OAuth restore.
+          setLoading(true);
           setSession(session);
           setUser(session.user);
           
@@ -55,8 +59,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             await checkAdminStatus(session.user.id);
             if (!initialized.current) {
               initialized.current = true;
-              setLoading(false);
             }
+            setLoading(false);
           }, 0);
           return;
         }

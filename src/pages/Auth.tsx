@@ -210,7 +210,7 @@ export default function Auth() {
           <MfaVerification
             onSuccess={() => {
               setShowMfaVerification(false);
-              navigate("/");
+              navigate(redirectTo, { replace: true });
             }}
             onCancel={async () => {
               await supabase.auth.signOut();
