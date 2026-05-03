@@ -26,7 +26,7 @@ import { toast } from "sonner";
 import { purgeBrowserCachesAndReload } from "@/utils/cacheReset";
 
 export default function Admin() {
-  const { user, isAdmin, loading } = useAuth();
+  const { user, isAdmin, loading, adminChecked } = useAuth();
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const [isUpdatingPrices, setIsUpdatingPrices] = useState(false);
@@ -65,12 +65,12 @@ export default function Admin() {
   };
 
   useEffect(() => {
-    if (!loading && (!user || !isAdmin)) {
+    if (!loading && adminChecked && (!user || !isAdmin)) {
       navigate("/");
     }
-  }, [user, isAdmin, loading, navigate]);
+  }, [user, isAdmin, loading, adminChecked, navigate]);
 
-  if (loading) {
+  if (loading || !adminChecked) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>

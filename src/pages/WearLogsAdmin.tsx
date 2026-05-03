@@ -42,7 +42,7 @@ interface Watch {
 }
 
 export default function WearLogsAdmin() {
-  const { user, isAdmin, loading } = useAuth();
+  const { user, isAdmin, loading, adminChecked } = useAuth();
   const { selectedCollectionId } = useCollection();
   const navigate = useNavigate();
   const [wearLogs, setWearLogs] = useState<WearLog[]>([]);
@@ -64,10 +64,10 @@ export default function WearLogsAdmin() {
   const [isWaterActivity, setIsWaterActivity] = useState(false);
 
   useEffect(() => {
-    if (!loading && (!user || !isAdmin)) {
+    if (!loading && adminChecked && (!user || !isAdmin)) {
       navigate("/");
     }
-  }, [user, isAdmin, loading, navigate]);
+  }, [user, isAdmin, loading, adminChecked, navigate]);
 
   useEffect(() => {
     if (isAdmin) {
@@ -375,7 +375,7 @@ export default function WearLogsAdmin() {
   const monthEntriesCount = filteredWearLogs.length;
   const monthDaysTotal = filteredWearLogs.reduce((sum, l) => sum + (l.days || 0), 0);
 
-  if (loading || !isAdmin) {
+  if (loading || !adminChecked || !isAdmin) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>

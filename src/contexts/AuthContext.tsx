@@ -8,6 +8,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   isAdmin: boolean;
+  adminChecked: boolean;
   signOut: () => Promise<void>;
 }
 
@@ -18,6 +19,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [adminChecked, setAdminChecked] = useState(false);
   const initialized = useRef(false);
 
   useEffect(() => {
@@ -27,9 +29,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(session?.user ?? null);
       
       if (session?.user) {
+        setAdminChecked(false);
         await checkAdminStatus(session.user.id);
       } else {
         setIsAdmin(false);
+        setAdminChecked(true);
       }
       initialized.current = true;
       setLoading(false);
@@ -43,6 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setSession(null);
           setUser(null);
           setIsAdmin(false);
+          setAdminChecked(true);
           setLoading(false);
           return;
         }
@@ -52,6 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           // finishes. Otherwise an admin can be redirected away while isAdmin is
           // still temporarily false immediately after sign-in/OAuth restore.
           setLoading(true);
+          setAdminChecked(false);
           setSession(session);
           setUser(session.user);
           
@@ -68,6 +74,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Set loading false on initial session event
         if (event === 'INITIAL_SESSION') {
           initialized.current = true;
+          setAdminChecked(true);
           setLoading(false);
         }
       }
@@ -91,6 +98,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error("Error checking admin status:", error);
       setIsAdmin(false);
+    } finally {
+      setAdminChecked(true);
     }
   };
 
@@ -99,10 +108,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     setSession(null);
     setIsAdmin(false);
+    setAdminChecked(true);
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, isAdmin, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, isAdmin, adminChecked, signOut }}>
       {children}
     </AuthContext.Provider>
   );
