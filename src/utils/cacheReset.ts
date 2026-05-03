@@ -31,6 +31,8 @@ export async function purgeBrowserCachesAndReload(options: CacheResetOptions = {
   try {
     sessionStorage.removeItem("sora-vault-sw-cleanup-v3");
     sessionStorage.removeItem("sora-vault-legacy-pwa-cleanup-v3");
+    sessionStorage.removeItem("sora-vault-legacy-pwa-cleanup-v4");
+    sessionStorage.removeItem("sora-vault-stale-build-reload-v1");
     localStorage.removeItem("sora-vault-legacy-pwa-cleanup-v3");
   } catch {
     // Storage may be unavailable in private browsing or restricted contexts.
