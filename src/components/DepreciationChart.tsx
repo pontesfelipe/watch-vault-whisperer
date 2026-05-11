@@ -20,9 +20,13 @@ export const DepreciationChart = ({ watches }: DepreciationChartProps) => {
   const [selectedWatch, setSelectedWatch] = useState<string>("");
   const [comparisonMode, setComparisonMode] = useState<"price_paid" | "msrp">("price_paid");
 
-  const watchesWithResale = watches.filter(
-    (w) => w.average_resale_price != null && w.average_resale_price > 0
-  );
+  // Include every watch with a cost. If no resale price is recorded yet,
+  // fall back to cost so newly added watches appear immediately (zero change).
+  const watchesWithResale = watches.filter((w) => (w.cost || 0) > 0);
+  const getCurrentValue = (watch: Watch) =>
+    watch.average_resale_price != null && watch.average_resale_price > 0
+      ? watch.average_resale_price
+      : watch.cost || 0;
 
   // Get unique brands and individual watches
   const brands = useMemo(() => {
@@ -59,7 +63,7 @@ export const DepreciationChart = ({ watches }: DepreciationChartProps) => {
           };
         }
         acc[watch.brand].invested += getInvestedValue(watch);
-        acc[watch.brand].current += watch.average_resale_price || 0;
+        acc[watch.brand].current += getCurrentValue(watch);
         acc[watch.brand].count += 1;
         return acc;
       }, {} as Record<string, { invested: number; current: number; count: number }>);
@@ -85,8 +89,8 @@ export const DepreciationChart = ({ watches }: DepreciationChartProps) => {
         brand: watch.brand,
         model: watch.model,
         invested,
-        current: watch.average_resale_price || 0,
-        change: (watch.average_resale_price || 0) - invested,
+        current: getCurrentValue(watch),
+        change: getCurrentValue(watch) - invested,
       }];
     } else {
       // Show all watches with abbreviated names
@@ -101,8 +105,8 @@ export const DepreciationChart = ({ watches }: DepreciationChartProps) => {
             brand: watch.brand,
             model: watch.model,
             invested,
-            current: watch.average_resale_price || 0,
-            change: (watch.average_resale_price || 0) - invested,
+            current: getCurrentValue(watch),
+            change: getCurrentValue(watch) - invested,
           };
         })
         .sort((a, b) => b.change - a.change);
