@@ -222,8 +222,15 @@ export const useStatsCalculations = (
     const totalCollectionValue = watches.reduce((sum, watch) => sum + (watch.cost || 0), 0);
     const totalMSRP = watches.reduce((sum, watch) => sum + (watch.msrp || 0), 0);
     
-    const watchesWithResaleData = watches.filter(w => w.average_resale_price != null && w.average_resale_price > 0);
-    const currentMarketValue = watchesWithResaleData.reduce((sum, watch) => sum + (watch.average_resale_price || 0), 0);
+    // Include every watch with a cost so newly added watches always appear in
+    // canvas value totals. Watches without a recorded resale price fall back
+    // to their cost (treated as no change).
+    const watchesWithResaleData = watches.filter(w => (w.cost || 0) > 0);
+    const getCurrentValueForStats = (w: Watch) =>
+      w.average_resale_price != null && w.average_resale_price > 0
+        ? w.average_resale_price
+        : (w.cost || 0);
+    const currentMarketValue = watchesWithResaleData.reduce((sum, watch) => sum + getCurrentValueForStats(watch), 0);
     
     const totalDepreciation = totalCollectionValue - currentMarketValue;
     const depreciationPercentage = totalCollectionValue > 0 
@@ -232,7 +239,8 @@ export const useStatsCalculations = (
 
     // Calculate depreciation per watch
     const watchDepreciations = watchesWithResaleData.map(watch => {
-      const depreciation = (watch.cost || 0) - (watch.average_resale_price || 0);
+      const currentValue = getCurrentValueForStats(watch);
+      const depreciation = (watch.cost || 0) - currentValue;
       const depreciationPercent = watch.cost > 0 ? (depreciation / watch.cost) * 100 : 0;
       return {
         watch,
