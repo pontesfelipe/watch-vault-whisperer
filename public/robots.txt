@@ -5,4 +5,4 @@ Disallow: /admin
 Disallow: /api
 Disallow: /profile
 Allow: /
-Sitemap: /sitemap.xml
+Sitemap: https://soravault.app/sitemap.xml
