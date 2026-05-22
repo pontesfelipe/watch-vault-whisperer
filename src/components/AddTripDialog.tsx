@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { format, subDays, parseISO } from "date-fns";
+import { format, subDays } from "date-fns";
 
 
 interface AddTripDialogProps {
@@ -31,71 +31,63 @@ export const AddTripDialog = ({ watches, onSuccess, open, onOpenChange }: AddTri
     notes: "",
   });
 
-  // Fetch user's profile location on mount
+  // Initialize form when dialog opens: set today's date and pre-fill from yesterday's trip
   useEffect(() => {
-    const fetchUserLocation = async () => {
+    const initializeForm = async () => {
       if (!user) return;
-      
-      try {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('city, state, country')
-          .eq('id', user.id)
-          .maybeSingle();
-        
-        if (profile) {
-          const locationParts = [profile.city, profile.state, profile.country].filter(Boolean);
-          if (locationParts.length > 0 && !formData.location) {
-            setFormData(prev => ({ ...prev, location: locationParts.join(', ') }));
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching user location:", error);
-      }
-    };
-    
-    if (open) {
-      fetchUserLocation();
-    }
-  }, [open, user]);
 
-  // Check for previous day's trip when date changes
-  useEffect(() => {
-    const checkPreviousDayEntry = async () => {
-      if (!formData.startDate || !user) return;
-      
-      // Only prefill if form is mostly empty (user just selected a date)
-      if (formData.notes || Object.keys(formData.watchDays).length > 0) return;
-      
+      const today = format(new Date(), 'yyyy-MM-dd');
+      const yesterday = format(subDays(new Date(), 1), 'yyyy-MM-dd');
+
       try {
-        const previousDate = format(subDays(parseISO(formData.startDate), 1), 'yyyy-MM-dd');
-        
+        // Check for yesterday's trip first
         const { data: previousTrip } = await supabase
           .from('trips')
           .select('*')
           .eq('user_id', user.id)
-          .eq('start_date', previousDate)
+          .eq('start_date', yesterday)
           .maybeSingle();
-        
+
         if (previousTrip) {
           const watchModel = previousTrip.watch_model as Record<string, number> | null;
-          setFormData(prev => ({
-            ...prev,
+          setFormData({
             location: previousTrip.location,
-            purpose: previousTrip.purpose,
-            totalDays: previousTrip.days.toString(),
-            notes: previousTrip.notes || "",
+            startDate: today,
             watchDays: watchModel || {},
-          }));
+            totalDays: previousTrip.days.toString(),
+            purpose: previousTrip.purpose,
+            notes: previousTrip.notes || "",
+          });
           toast.info("Pre-filled from yesterday's trip");
+        } else {
+          // No previous trip, set date and fetch user location
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('city, state, country')
+            .eq('id', user.id)
+            .maybeSingle();
+
+          const locationParts = profile ? [profile.city, profile.state, profile.country].filter(Boolean) : [];
+
+          setFormData({
+            location: locationParts.length > 0 ? locationParts.join(', ') : "",
+            startDate: today,
+            watchDays: {},
+            totalDays: "1",
+            purpose: "Business",
+            notes: "",
+          });
         }
       } catch (error) {
-        console.error("Error checking previous day trip:", error);
+        console.error("Error initializing trip form:", error);
+        setFormData(prev => ({ ...prev, startDate: today }));
       }
     };
-    
-    checkPreviousDayEntry();
-  }, [formData.startDate, user]);
+
+    if (open) {
+      initializeForm();
+    }
+  }, [open, user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
