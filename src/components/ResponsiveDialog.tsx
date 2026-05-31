@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Dialog,
@@ -36,6 +36,26 @@ export function ResponsiveDialog({
   className,
 }: ResponsiveDialogProps) {
   const isMobile = useIsMobile();
+
+  // Safety: ensure body styles are reset when dialog/drawer closes.
+  // vaul + Radix can occasionally leave pointer-events:none or position:fixed
+  // on <body> on mobile, blocking subsequent interactions.
+  useEffect(() => {
+    if (!open) {
+      const t = setTimeout(() => {
+        if (document.body.style.pointerEvents === "none") {
+          document.body.style.pointerEvents = "";
+        }
+        if (document.body.style.position === "fixed") {
+          document.body.style.position = "";
+          document.body.style.top = "";
+          document.body.style.left = "";
+          document.body.style.right = "";
+        }
+      }, 350);
+      return () => clearTimeout(t);
+    }
+  }, [open]);
 
   if (isMobile) {
     return (
