@@ -11,7 +11,7 @@ import { getItemLabel } from "@/types/collection";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
-import { SwipeableConversationItem } from "@/components/SwipeableConversationItem";
+import { SwipeableVaultPalConversationItem } from "@/components/vault-pal/SwipeableVaultPalConversationItem";
 import { useEdgeSwipeBack } from "@/hooks/useEdgeSwipeBack";
 import {
   Dialog,
