@@ -24,6 +24,35 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+const SALE_REASONS: Record<'sold' | 'traded', string[]> = {
+  sold: [
+    "Funding a new purchase",
+    "No longer wearing it",
+    "Didn't like it anymore",
+    "Needed the cash",
+    "Upgrading",
+    "Doesn't fit my style",
+    "Other",
+  ],
+  traded: [
+    "Upgrading",
+    "Wanted a different style",
+    "Doesn't fit collection",
+    "Better value in trade",
+    "Other",
+  ],
+};
 
 interface WatchCardProps {
   watch: {
@@ -65,6 +94,11 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isFetchingPrice, setIsFetchingPrice] = useState(false);
   const [showReasoningDialog, setShowReasoningDialog] = useState(false);
+  const [saleDialogMode, setSaleDialogMode] = useState<'sold' | 'traded' | null>(null);
+  const [salePrice, setSalePrice] = useState("");
+  const [saleReason, setSaleReason] = useState("");
+  const [saleNotes, setSaleNotes] = useState("");
+  const [isSubmittingSale, setIsSubmittingSale] = useState(false);
   
   const isSneaker = currentCollectionType ? isSneakerCollection(currentCollectionType) : false;
   const isPurse = currentCollectionType ? isPurseCollection(currentCollectionType) : false;
@@ -138,21 +172,38 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
     }
   };
 
-  const handleMarkAsSoldOrTraded = async (status: 'sold' | 'traded') => {
+  const openSaleDialog = (status: 'sold' | 'traded') => {
+    setSaleDialogMode(status);
+    setSalePrice("");
+    setSaleReason("");
+    setSaleNotes("");
+    setShowDeleteDialog(false);
+  };
+
+  const handleMarkAsSoldOrTraded = async () => {
+    if (!saleDialogMode) return;
+    setIsSubmittingSale(true);
     try {
       const { error } = await supabase
         .from("watches")
-        .update({ status, collection_id: null })
+        .update({
+          status: saleDialogMode,
+          collection_id: null,
+          sale_price: salePrice ? parseFloat(salePrice) : null,
+          sale_reason: saleReason || null,
+          sale_notes: saleNotes || null,
+          sold_at: new Date().toISOString(),
+        })
         .eq("id", watch.id);
 
       if (error) throw error;
 
       toast({
-        title: status === 'sold' ? `${singularLabel} Marked as Sold` : `${singularLabel} Marked as Traded`,
+        title: saleDialogMode === 'sold' ? `${singularLabel} Marked as Sold` : `${singularLabel} Marked as Traded`,
         description: "Removed from collection. Historical data preserved.",
       });
 
-      setShowDeleteDialog(false);
+      setSaleDialogMode(null);
       onDelete();
     } catch (error) {
       toast({
@@ -160,6 +211,8 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
         description: `Failed to update ${singularLabel.toLowerCase()} status`,
         variant: "destructive",
       });
+    } finally {
+      setIsSubmittingSale(false);
     }
   };
 
@@ -445,7 +498,7 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
                 <Button
                   variant="outline"
                   className="justify-start gap-3 h-auto py-3 border-borderSubtle hover:bg-surfaceMuted"
-                  onClick={() => handleMarkAsSoldOrTraded('sold')}
+                  onClick={() => openSaleDialog('sold')}
                 >
                   <div className="flex flex-col items-start">
                     <span className="font-medium">Mark as Sold</span>
@@ -455,7 +508,7 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
                 <Button
                   variant="outline"
                   className="justify-start gap-3 h-auto py-3 border-borderSubtle hover:bg-surfaceMuted"
-                  onClick={() => handleMarkAsSoldOrTraded('traded')}
+                  onClick={() => openSaleDialog('traded')}
                 >
                   <div className="flex flex-col items-start">
                     <span className="font-medium">Mark as Traded</span>
@@ -479,6 +532,77 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
                 >
                   Cancel
                 </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={saleDialogMode !== null} onOpenChange={(o) => !o && setSaleDialogMode(null)}>
+            <DialogContent className="bg-surface border-borderSubtle sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle className="text-textMain">
+                  {saleDialogMode === 'sold' ? `Sell ${singularLabel}` : `Trade ${singularLabel}`}
+                </DialogTitle>
+                <DialogDescription className="text-textSoft">
+                  Add details about {saleDialogMode === 'sold' ? 'the sale' : 'the trade'} of{' '}
+                  <span className="font-semibold">{watch.brand} {watch.model}</span>.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex flex-col gap-4 pt-2">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="sale-price">
+                    {saleDialogMode === 'sold' ? 'Sale price (USD)' : 'Value received (USD)'}
+                  </Label>
+                  <Input
+                    id="sale-price"
+                    type="number"
+                    inputMode="decimal"
+                    min="0"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={salePrice}
+                    onChange={(e) => setSalePrice(e.target.value)}
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label>Reason</Label>
+                  <Select value={saleReason} onValueChange={setSaleReason}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a reason" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(saleDialogMode ? SALE_REASONS[saleDialogMode] : []).map((r) => (
+                        <SelectItem key={r} value={r}>{r}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="sale-notes">Notes (optional)</Label>
+                  <Textarea
+                    id="sale-notes"
+                    rows={3}
+                    placeholder="Anything else worth remembering?"
+                    value={saleNotes}
+                    onChange={(e) => setSaleNotes(e.target.value)}
+                  />
+                </div>
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    variant="ghost"
+                    className="flex-1"
+                    onClick={() => setSaleDialogMode(null)}
+                    disabled={isSubmittingSale}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    className="flex-1"
+                    onClick={handleMarkAsSoldOrTraded}
+                    disabled={isSubmittingSale}
+                  >
+                    {isSubmittingSale ? 'Saving…' : (saleDialogMode === 'sold' ? 'Mark as Sold' : 'Mark as Traded')}
+                  </Button>
+                </div>
               </div>
             </DialogContent>
           </Dialog>

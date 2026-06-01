@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, RotateCcw, Trash2 } from "lucide-react";
+import { Calendar, RotateCcw, Trash2, DollarSign, MessageSquare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
@@ -25,6 +25,9 @@ interface PastWatchCardProps {
     cost: number;
     status: string;
     when_bought?: string;
+    sale_price?: number | null;
+    sale_reason?: string | null;
+    sale_notes?: string | null;
   };
   totalDays: number;
   onUpdate: () => void;
@@ -128,6 +131,29 @@ export const PastWatchCard = ({ watch, totalDays, onUpdate, collectionId }: Past
             <span className="text-textMuted">{currentCollectionConfig.typeLabel}</span>
             <span className="text-textSoft">{watch.type}</span>
           </div>
+          {watch.sale_price != null && (
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-textMuted flex items-center gap-1">
+                <DollarSign className="w-3 h-3" />
+                {watch.status === 'sold' ? 'Sold for' : 'Trade value'}
+              </span>
+              <span className="text-textSoft font-medium">
+                ${Number(watch.sale_price).toLocaleString()}
+              </span>
+            </div>
+          )}
+          {watch.sale_reason && (
+            <div className="flex items-start justify-between text-xs gap-2">
+              <span className="text-textMuted">Reason</span>
+              <span className="text-textSoft text-right">{watch.sale_reason}</span>
+            </div>
+          )}
+          {watch.sale_notes && (
+            <div className="flex items-start gap-1 text-xs text-textSoft pt-1 border-t border-borderSubtle">
+              <MessageSquare className="w-3 h-3 mt-0.5 shrink-0 text-textMuted" />
+              <span className="italic">{watch.sale_notes}</span>
+            </div>
+          )}
           <div className="flex items-center justify-between pt-2 border-t border-borderSubtle">
             <div className="flex items-center gap-1 text-textMuted">
               <Calendar className="w-3 h-3" />
