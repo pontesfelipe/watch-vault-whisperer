@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { useSearchParams } from "react-router-dom";
+import { PullToRefreshContainer } from "@/components/PullToRefreshContainer";
 
 export default function Social() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -73,6 +74,7 @@ function MessagesSection() {
     markMessagesAsRead,
     dismissTradeNotification,
     removeFriend,
+    refetch,
   } = useMessaging();
 
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
@@ -130,7 +132,14 @@ function MessagesSection() {
   }
 
   return (
-    <>
+    <PullToRefreshContainer onRefresh={async () => {
+      await Promise.all([
+        refetch.friends(),
+        refetch.friendRequests(),
+        refetch.conversations(),
+        refetch.tradeNotifications(),
+      ]);
+    }}>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-xl font-bold text-textMain">Messages</h2>
@@ -215,7 +224,7 @@ function MessagesSection() {
           />
         </Card>
       </div>
-    </>
+    </PullToRefreshContainer>
   );
 }
 
@@ -224,13 +233,13 @@ function ForumSection() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   
-  const { posts, loading, createPost, updatePost, deletePost, togglePinPost, votePost } = useForumData({
+  const { posts, loading, createPost, updatePost, deletePost, togglePinPost, votePost, refetch } = useForumData({
     searchQuery,
     category: selectedCategory
   });
 
   return (
-    <>
+    <PullToRefreshContainer onRefresh={async () => { await refetch(); }}>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-xl font-bold text-textMain">Forum</h2>
@@ -303,6 +312,6 @@ function ForumSection() {
           ))}
         </div>
       )}
-    </>
+    </PullToRefreshContainer>
   );
 }

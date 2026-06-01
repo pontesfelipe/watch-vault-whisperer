@@ -15,6 +15,7 @@ import { useCollection } from "@/contexts/CollectionContext";
 import { isWatchCollection, getCollectionConfig } from "@/types/collection";
 import { useSearchParams } from "react-router-dom";
 import { useEdgeSwipeBack } from "@/hooks/useEdgeSwipeBack";
+import { PullToRefreshContainer } from "@/components/PullToRefreshContainer";
 
 const UsageDetails = () => {
   useEdgeSwipeBack();
@@ -56,6 +57,15 @@ const UsageDetails = () => {
 
   const isLoading = waterLoading || eventLoading || sportLoading || watchLoading || tripLoading;
 
+  const handleRefresh = async () => {
+    await Promise.all([
+      refetchWater(),
+      refetchEvents(),
+      refetchSports(),
+      refetchTrips(),
+    ]);
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -68,7 +78,7 @@ const UsageDetails = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <PullToRefreshContainer onRefresh={handleRefresh} className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl md:text-4xl font-semibold text-textMain">
@@ -222,7 +232,7 @@ const UsageDetails = () => {
           </TabsContent>
         )}
       </Tabs>
-    </div>
+    </PullToRefreshContainer>
   );
 };
 

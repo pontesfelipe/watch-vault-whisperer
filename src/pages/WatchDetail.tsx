@@ -210,6 +210,7 @@ const WatchDetail = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
+      <div className="md:pb-0 pb-24">
         <Tabs defaultValue="specs" className="w-full">
           <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-8">
             <TabsTrigger value="specs">Specifications</TabsTrigger>
@@ -605,6 +606,7 @@ const WatchDetail = () => {
             </Card>
           </TabsContent>
         </Tabs>
+      </div>
       </main>
 
       {editingEntry && (
@@ -616,6 +618,18 @@ const WatchDetail = () => {
           onUpdate={fetchData}
         />
       )}
+
+      {/* Mobile sticky action bar */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-card/95 backdrop-blur-sm safe-area-inset-bottom">
+        <div className="container mx-auto px-4 py-3 flex items-center gap-2">
+          <div className="flex-1">
+            <EditWatchDialog watch={watch} onSuccess={fetchData} />
+          </div>
+          <div className="flex-1">
+            <AddWearDialog watchId={watch.id} onSuccess={fetchData} />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

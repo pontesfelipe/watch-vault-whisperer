@@ -6,7 +6,7 @@ import { format } from "date-fns";
 import { Conversation } from "@/hooks/useVaultPalChat";
 import { triggerHaptic } from "@/utils/haptics";
 
-interface SwipeableConversationItemProps {
+interface SwipeableVaultPalConversationItemProps {
   conversation: Conversation;
   isActive: boolean;
   onSelect: () => void;
@@ -18,7 +18,7 @@ interface SwipeableConversationItemProps {
 
 const SWIPE_THRESHOLD = -80;
 
-export const SwipeableConversationItem = ({
+export const SwipeableVaultPalConversationItem = ({
   conversation,
   isActive,
   onSelect,
@@ -26,7 +26,7 @@ export const SwipeableConversationItem = ({
   onEdit,
   searchQuery = "",
   isMobile,
-}: SwipeableConversationItemProps) => {
+}: SwipeableVaultPalConversationItemProps) => {
   const [isRevealed, setIsRevealed] = useState(false);
   const x = useMotionValue(0);
   const deleteOpacity = useTransform(x, [-100, -50, 0], [1, 0.5, 0]);
