@@ -33,6 +33,7 @@ export default function UserProfile() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
+  useEdgeSwipeBack();
   const [profile, setProfile] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [watches, setWatches] = useState<PublicWatch[]>([]);
