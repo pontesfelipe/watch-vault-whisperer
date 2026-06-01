@@ -125,13 +125,9 @@ export default function Admin() {
             <Users className="h-5 w-5 text-primary" />
             <h2 className="text-lg font-semibold">Users</h2>
           </div>
-          <Tabs defaultValue="requests" className="w-full">
+          <Tabs defaultValue="allowed" className="w-full">
             <div className="w-full overflow-x-auto scrollbar-hide -mx-2 px-2">
               <TabsList className="inline-flex w-max gap-1 h-auto p-1">
-                <TabsTrigger value="requests" className="flex items-center gap-1.5 text-xs px-3 py-2 whitespace-nowrap">
-                  <UserCog className="h-3.5 w-3.5" />
-                  Requests
-                </TabsTrigger>
                 <TabsTrigger value="allowed" className="flex items-center gap-1.5 text-xs px-3 py-2 whitespace-nowrap">
                   <UserCog className="h-3.5 w-3.5" />
                   Allowed
@@ -146,20 +142,6 @@ export default function Admin() {
                 </TabsTrigger>
               </TabsList>
             </div>
-
-            <TabsContent value="requests" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Registration Requests</CardTitle>
-                  <CardDescription>
-                    Review and approve user registration requests
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <RegistrationRequestsTable />
-                </CardContent>
-              </Card>
-            </TabsContent>
 
             <TabsContent value="allowed" className="space-y-4">
               <Card>
