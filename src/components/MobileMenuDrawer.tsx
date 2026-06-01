@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Settings, HelpCircle, Info, Shield, Lightbulb, LogOut, Bot } from "lucide-react";
+import { Settings, HelpCircle, Info, Shield, Lightbulb, LogOut, Bot, Lock } from "lucide-react";
 import { motion } from "framer-motion";
 import {
   Drawer,
@@ -33,7 +33,12 @@ export function MobileMenuDrawer({ children }: MobileMenuDrawerProps) {
     { title: "Settings", url: "/settings", icon: Settings },
     { title: "FAQ", url: "/faq", icon: HelpCircle },
     { title: "About", url: "/about", icon: Info },
-    ...(isAdmin ? [{ title: "Admin", url: "/admin", icon: Shield }] : []),
+    ...(isAdmin
+      ? [
+          { title: "Admin", url: "/admin", icon: Shield },
+          { title: "Security", url: "/admin/security", icon: Lock },
+        ]
+      : []),
   ];
 
   const handleNavigation = (url: string) => {

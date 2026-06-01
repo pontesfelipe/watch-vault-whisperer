@@ -5,7 +5,6 @@ import { SubmitFeedbackDialog } from "@/components/SubmitFeedbackDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCollection } from "@/contexts/CollectionContext";
 import { useSocialNotifications } from "@/hooks/useSocialNotifications";
-import { isWatchCollection } from "@/types/collection";
 import {
   Sidebar,
   SidebarContent,
@@ -28,8 +27,6 @@ export function AppNavigation() {
   const { user, isAdmin, signOut } = useAuth();
   const { currentCollection } = useCollection();
   const { totalCount } = useSocialNotifications();
-  
-  const isWatches = currentCollection ? isWatchCollection(currentCollection.collection_type) : true;
 
   const mainNavItems = [
     { title: "Home", url: "/", icon: Home },
