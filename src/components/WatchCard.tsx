@@ -24,6 +24,35 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+const SALE_REASONS: Record<'sold' | 'traded', string[]> = {
+  sold: [
+    "Funding a new purchase",
+    "No longer wearing it",
+    "Didn't like it anymore",
+    "Needed the cash",
+    "Upgrading",
+    "Doesn't fit my style",
+    "Other",
+  ],
+  traded: [
+    "Upgrading",
+    "Wanted a different style",
+    "Doesn't fit collection",
+    "Better value in trade",
+    "Other",
+  ],
+};
 
 interface WatchCardProps {
   watch: {
@@ -65,6 +94,11 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isFetchingPrice, setIsFetchingPrice] = useState(false);
   const [showReasoningDialog, setShowReasoningDialog] = useState(false);
+  const [saleDialogMode, setSaleDialogMode] = useState<'sold' | 'traded' | null>(null);
+  const [salePrice, setSalePrice] = useState("");
+  const [saleReason, setSaleReason] = useState("");
+  const [saleNotes, setSaleNotes] = useState("");
+  const [isSubmittingSale, setIsSubmittingSale] = useState(false);
   
   const isSneaker = currentCollectionType ? isSneakerCollection(currentCollectionType) : false;
   const isPurse = currentCollectionType ? isPurseCollection(currentCollectionType) : false;
@@ -138,21 +172,38 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
     }
   };
 
-  const handleMarkAsSoldOrTraded = async (status: 'sold' | 'traded') => {
+  const openSaleDialog = (status: 'sold' | 'traded') => {
+    setSaleDialogMode(status);
+    setSalePrice("");
+    setSaleReason("");
+    setSaleNotes("");
+    setShowDeleteDialog(false);
+  };
+
+  const handleMarkAsSoldOrTraded = async () => {
+    if (!saleDialogMode) return;
+    setIsSubmittingSale(true);
     try {
       const { error } = await supabase
         .from("watches")
-        .update({ status, collection_id: null })
+        .update({
+          status: saleDialogMode,
+          collection_id: null,
+          sale_price: salePrice ? parseFloat(salePrice) : null,
+          sale_reason: saleReason || null,
+          sale_notes: saleNotes || null,
+          sold_at: new Date().toISOString(),
+        })
         .eq("id", watch.id);
 
       if (error) throw error;
 
       toast({
-        title: status === 'sold' ? `${singularLabel} Marked as Sold` : `${singularLabel} Marked as Traded`,
+        title: saleDialogMode === 'sold' ? `${singularLabel} Marked as Sold` : `${singularLabel} Marked as Traded`,
         description: "Removed from collection. Historical data preserved.",
       });
 
-      setShowDeleteDialog(false);
+      setSaleDialogMode(null);
       onDelete();
     } catch (error) {
       toast({
@@ -160,6 +211,8 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
         description: `Failed to update ${singularLabel.toLowerCase()} status`,
         variant: "destructive",
       });
+    } finally {
+      setIsSubmittingSale(false);
     }
   };
 
