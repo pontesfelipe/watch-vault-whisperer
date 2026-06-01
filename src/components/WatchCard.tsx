@@ -535,6 +535,77 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
               </div>
             </DialogContent>
           </Dialog>
+
+          <Dialog open={saleDialogMode !== null} onOpenChange={(o) => !o && setSaleDialogMode(null)}>
+            <DialogContent className="bg-surface border-borderSubtle sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle className="text-textMain">
+                  {saleDialogMode === 'sold' ? `Sell ${singularLabel}` : `Trade ${singularLabel}`}
+                </DialogTitle>
+                <DialogDescription className="text-textSoft">
+                  Add details about {saleDialogMode === 'sold' ? 'the sale' : 'the trade'} of{' '}
+                  <span className="font-semibold">{watch.brand} {watch.model}</span>.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex flex-col gap-4 pt-2">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="sale-price">
+                    {saleDialogMode === 'sold' ? 'Sale price (USD)' : 'Value received (USD)'}
+                  </Label>
+                  <Input
+                    id="sale-price"
+                    type="number"
+                    inputMode="decimal"
+                    min="0"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={salePrice}
+                    onChange={(e) => setSalePrice(e.target.value)}
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label>Reason</Label>
+                  <Select value={saleReason} onValueChange={setSaleReason}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a reason" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(saleDialogMode ? SALE_REASONS[saleDialogMode] : []).map((r) => (
+                        <SelectItem key={r} value={r}>{r}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="sale-notes">Notes (optional)</Label>
+                  <Textarea
+                    id="sale-notes"
+                    rows={3}
+                    placeholder="Anything else worth remembering?"
+                    value={saleNotes}
+                    onChange={(e) => setSaleNotes(e.target.value)}
+                  />
+                </div>
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    variant="ghost"
+                    className="flex-1"
+                    onClick={() => setSaleDialogMode(null)}
+                    disabled={isSubmittingSale}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    className="flex-1"
+                    onClick={handleMarkAsSoldOrTraded}
+                    disabled={isSubmittingSale}
+                  >
+                    {isSubmittingSale ? 'Saving…' : (saleDialogMode === 'sold' ? 'Mark as Sold' : 'Mark as Traded')}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     </Card>
