@@ -1,5 +1,5 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { ResponsiveDialog } from "@/components/ResponsiveDialog";
 
 interface TermsDialogProps {
   open: boolean;
@@ -8,14 +8,13 @@ interface TermsDialogProps {
 
 export const TermsDialog = ({ open, onOpenChange }: TermsDialogProps) => {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[80vh]">
-        <DialogHeader>
-          <DialogTitle>Terms & Conditions (Beta Version)</DialogTitle>
-          <DialogDescription>
-            Last Updated: November 2025
-          </DialogDescription>
-        </DialogHeader>
+    <ResponsiveDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Terms & Conditions (Beta Version)"
+      className="max-w-3xl max-h-[80vh]"
+    >
+        <p className="text-xs text-muted-foreground mb-3">Last Updated: November 2025</p>
         <ScrollArea className="h-[60vh] pr-4">
           <div className="space-y-4 text-sm">
             <section>
@@ -134,7 +133,6 @@ export const TermsDialog = ({ open, onOpenChange }: TermsDialogProps) => {
             </section>
           </div>
         </ScrollArea>
-      </DialogContent>
-    </Dialog>
+    </ResponsiveDialog>
   );
 };

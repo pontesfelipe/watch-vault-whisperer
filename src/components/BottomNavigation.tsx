@@ -5,6 +5,7 @@ import { triggerHaptic } from "@/utils/haptics";
 import { useSocialNotifications } from "@/hooks/useSocialNotifications";
 import { Badge } from "@/components/ui/badge";
 import { MobileMenuDrawer } from "@/components/MobileMenuDrawer";
+import { motion } from "framer-motion";
 
 const navItems = [
   { title: "Home", url: "/", icon: Home },
@@ -36,13 +37,20 @@ export function BottomNavigation() {
               key={item.title}
               to={item.url}
               onClick={handleNavClick}
-              className={`flex flex-col items-center justify-center flex-1 h-full py-2 transition-colors touch-target ${
+              className={`relative flex flex-col items-center justify-center flex-1 h-full py-2 transition-colors touch-target ${
                 isActive
                   ? "text-accent"
                   : "text-textMuted"
               }`}
               activeClassName="text-accent"
             >
+              {isActive && (
+                <motion.div
+                  layoutId="bottomNavIndicator"
+                  className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full bg-accent"
+                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                />
+              )}
               <div className="relative">
                 <item.icon className={`h-6 w-6 mb-1 ${isActive ? "text-accent" : ""}`} />
                 {showBadge && (

@@ -1,14 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import ReactCrop, { Crop, PixelCrop, centerCrop, makeAspectCrop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { ResponsiveDialog } from "@/components/ResponsiveDialog";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
@@ -128,15 +121,16 @@ export function AvatarCropDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Crop Avatar</DialogTitle>
-          <DialogDescription>
-            Drag to adjust the crop area. The avatar will be cropped to a square.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="flex justify-center py-4">
+    <ResponsiveDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Crop Avatar"
+      className="sm:max-w-md"
+    >
+        <p className="text-sm text-muted-foreground mb-3">
+          Drag to adjust the crop area. The avatar will be cropped to a square.
+        </p>
+        <div className="flex justify-center py-2">
           <ReactCrop
             crop={crop}
             onChange={(_, percentCrop) => setCrop(percentCrop)}
@@ -154,7 +148,7 @@ export function AvatarCropDialog({
             />
           </ReactCrop>
         </div>
-        <DialogFooter className="gap-2 sm:gap-0">
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
@@ -168,8 +162,7 @@ export function AvatarCropDialog({
               "Save Avatar"
             )}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+    </ResponsiveDialog>
   );
 }
