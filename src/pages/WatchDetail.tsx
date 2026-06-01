@@ -210,6 +210,7 @@ const WatchDetail = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
+      <div className="md:pb-0 pb-24">
         <Tabs defaultValue="specs" className="w-full">
           <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-8">
             <TabsTrigger value="specs">Specifications</TabsTrigger>
