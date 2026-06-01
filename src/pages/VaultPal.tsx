@@ -293,7 +293,7 @@ const VaultPal = () => {
                 </p>
               ) : (
                 conversations.map((conv) => (
-                  <SwipeableConversationItem
+                  <SwipeableVaultPalConversationItem
                     key={conv.id}
                     conversation={conv}
                     isActive={conv.id === currentConversationId}
@@ -460,7 +460,7 @@ const VaultPal = () => {
                   </p>
                 ) : (
                   conversations.map((conv) => (
-                    <SwipeableConversationItem
+                    <SwipeableVaultPalConversationItem
                       key={conv.id}
                       conversation={conv}
                       isActive={conv.id === currentConversationId}
