@@ -2,6 +2,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { HelpCircle } from "lucide-react";
+import { useEdgeSwipeBack } from "@/hooks/useEdgeSwipeBack";
 
 const faqItems = [
   {
@@ -59,6 +60,7 @@ const faqItems = [
 ];
 
 export default function FAQ() {
+  useEdgeSwipeBack();
   return (
     <AppLayout>
       <div className="space-y-6 max-w-4xl mx-auto">

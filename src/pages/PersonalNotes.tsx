@@ -12,6 +12,7 @@ import { PersonalNotesTable } from "@/components/PersonalNotesTable";
 import { PurchaseTimelineTab } from "@/components/PurchaseTimelineTab";
 import { SpendingAnalyticsTab } from "@/components/SpendingAnalyticsTab";
 import { WarrantyStatusTab } from "@/components/WarrantyStatusTab";
+import { useEdgeSwipeBack } from "@/hooks/useEdgeSwipeBack";
 
 interface Watch {
   id: string;
@@ -29,6 +30,7 @@ interface Watch {
 }
 
 export default function PersonalNotes() {
+  useEdgeSwipeBack();
   const { isVerified, requestVerification } = usePasscode();
   const { selectedCollectionId } = useCollection();
   const [watches, setWatches] = useState<Watch[]>([]);

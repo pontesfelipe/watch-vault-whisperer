@@ -23,6 +23,7 @@ import { ProfileSettingsCard } from "@/components/ProfileSettingsCard";
 import { PasswordStrengthIndicator } from "@/components/PasswordStrengthIndicator";
 import { TwoFactorAuthCard } from "@/components/TwoFactorAuthCard";
 import { SessionManagementCard } from "@/components/SessionManagementCard";
+import { useEdgeSwipeBack } from "@/hooks/useEdgeSwipeBack";
 import { LoginHistoryCard } from "@/components/LoginHistoryCard";
 import { AccountLinkingCard } from "@/components/AccountLinkingCard";
 import { DefaultCollectionCard } from "@/components/DefaultCollectionCard";
@@ -31,6 +32,7 @@ import { TagManagerCard } from "@/components/TagManagerCard";
 import { PrivacySettingsCard } from "@/components/PrivacySettingsCard";
 
 const Settings = () => {
+  useEdgeSwipeBack();
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
