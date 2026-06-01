@@ -11,6 +11,10 @@ interface PastWatch {
   cost: number;
   status: string;
   when_bought?: string;
+  sale_price?: number | null;
+  sale_reason?: string | null;
+  sale_notes?: string | null;
+  sold_at?: string | null;
 }
 
 interface WearEntry {
