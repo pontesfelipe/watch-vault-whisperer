@@ -14,8 +14,10 @@ import { useStatsCalculations } from "@/hooks/useStatsCalculations";
 import { useCollection } from "@/contexts/CollectionContext";
 import { isWatchCollection, getCollectionConfig } from "@/types/collection";
 import { useSearchParams } from "react-router-dom";
+import { useEdgeSwipeBack } from "@/hooks/useEdgeSwipeBack";
 
 const UsageDetails = () => {
+  useEdgeSwipeBack();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialTab = searchParams.get("tab") || "trips";
   

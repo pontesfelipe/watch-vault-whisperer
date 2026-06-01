@@ -4,8 +4,10 @@ import { Info, Watch, Heart, Shield, Sparkles, Users, Globe, Footprints, Shoppin
 import watchHero from "@/assets/watch-hero.jpg";
 import sneakerHero from "@/assets/sneaker-hero.jpg";
 import purseHero from "@/assets/purse-hero.jpg";
+import { useEdgeSwipeBack } from "@/hooks/useEdgeSwipeBack";
 
 export default function About() {
+  useEdgeSwipeBack();
   return (
     <AppLayout>
       <div className="space-y-8 max-w-5xl mx-auto">

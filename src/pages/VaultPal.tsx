@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
 import { SwipeableConversationItem } from "@/components/SwipeableConversationItem";
+import { useEdgeSwipeBack } from "@/hooks/useEdgeSwipeBack";
 import {
   Dialog,
   DialogContent,
@@ -35,6 +36,7 @@ import { toast } from "sonner";
 import { useVoiceInput } from "@/hooks/useVoiceInput";
 
 const VaultPal = () => {
+  useEdgeSwipeBack();
   const {
     messages,
     conversations,
