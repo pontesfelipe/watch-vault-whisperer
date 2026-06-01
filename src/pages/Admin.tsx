@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AllowedUsersTable } from "@/components/admin/AllowedUsersTable";
 import { RegisteredUsersTable } from "@/components/admin/RegisteredUsersTable";
-import { RegistrationRequestsTable } from "@/components/admin/RegistrationRequestsTable";
 import { ManageCollectionsDialog } from "@/components/admin/ManageCollectionsDialog";
 import { MethodologyTab } from "@/components/admin/MethodologyTab";
 import { DocumentationTab } from "@/components/admin/DocumentationTab";
