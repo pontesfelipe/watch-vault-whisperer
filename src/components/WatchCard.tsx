@@ -498,7 +498,7 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
                 <Button
                   variant="outline"
                   className="justify-start gap-3 h-auto py-3 border-borderSubtle hover:bg-surfaceMuted"
-                  onClick={() => handleMarkAsSoldOrTraded('sold')}
+                  onClick={() => openSaleDialog('sold')}
                 >
                   <div className="flex flex-col items-start">
                     <span className="font-medium">Mark as Sold</span>
@@ -508,7 +508,7 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
                 <Button
                   variant="outline"
                   className="justify-start gap-3 h-auto py-3 border-borderSubtle hover:bg-surfaceMuted"
-                  onClick={() => handleMarkAsSoldOrTraded('traded')}
+                  onClick={() => openSaleDialog('traded')}
                 >
                   <div className="flex flex-col items-start">
                     <span className="font-medium">Mark as Traded</span>
