@@ -17,6 +17,7 @@ import { WearCalendar } from "@/components/WearCalendar";
 import { CollectionSwitcher } from "@/components/CollectionSwitcher";
 import { getCollectionConfig } from "@/types/collection";
 import { useTranslation } from "react-i18next";
+import { PullToRefreshContainer } from "@/components/PullToRefreshContainer";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -93,6 +94,7 @@ const Home = () => {
   };
 
   return (
+    <PullToRefreshContainer onRefresh={async () => { await refetch?.(); }}>
     <div className="space-y-6 pb-4">
       {/* Greeting + Collection Switcher */}
       <div className="flex items-start justify-between">
@@ -218,6 +220,7 @@ const Home = () => {
         onSuccess={() => refetch?.()}
       />
     </div>
+    </PullToRefreshContainer>
   );
 };
 
