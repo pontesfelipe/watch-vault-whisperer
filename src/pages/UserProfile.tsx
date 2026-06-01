@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Loader2, ArrowLeft, Lock, UserPlus, MessageCircle, Watch, FileText } from "lucide-react";
 import { toast } from "sonner";
+import { useEdgeSwipeBack } from "@/hooks/useEdgeSwipeBack";
 
 interface UserProfileData {
   id: string;
@@ -32,6 +33,7 @@ export default function UserProfile() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
+  useEdgeSwipeBack();
   const [profile, setProfile] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [watches, setWatches] = useState<PublicWatch[]>([]);

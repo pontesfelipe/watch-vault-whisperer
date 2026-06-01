@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { usePasscode } from "@/contexts/PasscodeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { parseLocalDate } from "@/lib/date";
+import { useEdgeSwipeBack } from "@/hooks/useEdgeSwipeBack";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -78,6 +79,7 @@ const WatchDetail = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isAdmin } = useAuth();
+  useEdgeSwipeBack();
   const { requestVerification, isVerified } = usePasscode();
   const [watch, setWatch] = useState<Watch | null>(null);
   const [watchSpecs, setWatchSpecs] = useState<WatchSpecs | null>(null);
