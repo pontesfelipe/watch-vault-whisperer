@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Loader2, ArrowLeft, Lock, UserPlus, MessageCircle, Watch, FileText } from "lucide-react";
 import { toast } from "sonner";
+import { useEdgeSwipeBack } from "@/hooks/useEdgeSwipeBack";
 
 interface UserProfileData {
   id: string;
