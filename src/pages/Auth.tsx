@@ -10,7 +10,6 @@ import { Watch, Footprints, ShoppingBag, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { useAuth } from "@/contexts/AuthContext";
-import { RegistrationRequestForm } from "@/components/RegistrationRequestForm";
 import { BetaBadge } from "@/components/BetaBadge";
 import { lovable } from "@/integrations/lovable/index";
 import { PrivacyDialog } from "@/components/PrivacyDialog";
@@ -38,7 +37,6 @@ export default function Auth() {
   const [termsOpen, setTermsOpen] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [showMfaVerification, setShowMfaVerification] = useState(false);
-  const [activeTab, setActiveTab] = useState<"signin" | "request">("signin");
 
   useEffect(() => {
     if (!loading && user) {
@@ -345,43 +343,15 @@ export default function Auth() {
             </motion.p>
           </div>
 
-          {/* Tab Switcher */}
-          <div className="flex gap-1 p-1 bg-muted rounded-xl mb-8">
-            {([
-              { key: "signin", label: "Sign In" },
-              { key: "request", label: "Request Access" },
-            ] as const).map(({ key, label }) => (
-              <button
-                key={key}
-                onClick={() => setActiveTab(key)}
-                className={`relative flex-1 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${
-                  activeTab === key
-                    ? "text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {activeTab === key && (
-                  <motion.div
-                    layoutId="auth-tab-bg"
-                    className="absolute inset-0 bg-background rounded-lg shadow-sm"
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  />
-                )}
-                <span className="relative z-10">{label}</span>
-              </button>
-            ))}
-          </div>
-
           <AnimatePresence mode="wait">
-            {activeTab === "signin" ? (
-              <motion.div
-                key="signin"
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 8 }}
-                transition={{ duration: 0.2 }}
-              >
-                {/* Social Login — Premium Buttons */}
+            <motion.div
+              key="signin"
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 8 }}
+              transition={{ duration: 0.2 }}
+            >
+              {/* Social Login — Premium Buttons */}
                 <div className="grid grid-cols-2 gap-3 mb-6">
                   <SocialButton
                     onClick={handleGoogleSignIn}
@@ -454,18 +424,7 @@ export default function Auth() {
                 <p className="text-center text-[11px] text-muted-foreground/60 mt-6">
                   By continuing, you agree to our terms of service
                 </p>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="request"
-                initial={{ opacity: 0, x: 8 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -8 }}
-                transition={{ duration: 0.2 }}
-              >
-                <RegistrationRequestForm />
-              </motion.div>
-            )}
+            </motion.div>
           </AnimatePresence>
 
           <TermsDialog open={termsOpen} onOpenChange={setTermsOpen} />
