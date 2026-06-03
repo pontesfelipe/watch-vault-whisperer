@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +14,7 @@ import { CollectionType, getCollectionConfig, isWatchCollection } from "@/types/
 import { ResponsiveDialog } from "@/components/ResponsiveDialog";
 import { WearTagSelector } from "@/components/WearTagSelector";
 import { syncWearEntryTags } from "@/utils/wearEntryTags";
+import { format, parseISO, subDays } from "date-fns";
 
 const wearSchema = z.object({
   watchId: z.string().uuid(),
@@ -29,6 +30,14 @@ interface QuickAddWearDialogProps {
   onExternalOpenChange?: (open: boolean) => void;
 }
 
+const getTodayDate = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propType, externalOpen, onExternalOpenChange }: QuickAddWearDialogProps) => {
   const [internalOpen, setInternalOpen] = useState(false);
   const open = externalOpen !== undefined ? externalOpen : internalOpen;
@@ -39,6 +48,9 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
   const [isEvent, setIsEvent] = useState(false);
   const [isWaterActivity, setIsWaterActivity] = useState(false);
   const [isSport, setIsSport] = useState(false);
+  const [wearDate, setWearDate] = useState(getTodayDate);
+  const [tripLocation, setTripLocation] = useState("");
+  const [tripPurpose, setTripPurpose] = useState("Business");
   const [tripNotes, setTripNotes] = useState("");
   const [sportLocation, setSportLocation] = useState("");
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
@@ -49,6 +61,46 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
   const collectionType = propType || currentCollectionType || 'watches';
   const config = getCollectionConfig(collectionType);
   const isWatch = isWatchCollection(collectionType);
+
+  useEffect(() => {
+    if (!open) return;
+
+    setWearDate(getTodayDate());
+    setTripLocation("");
+    setTripPurpose("Business");
+    setTripNotes("");
+  }, [open]);
+
+  useEffect(() => {
+    const prefillTripFromPreviousDay = async () => {
+      if (!open || !isTrip || !wearDate || !user || tripLocation || tripNotes) return;
+
+      try {
+        const previousDate = format(subDays(parseISO(wearDate), 1), 'yyyy-MM-dd');
+
+        const { data: previousTrip } = await supabase
+          .from('trips')
+          .select('location, purpose, notes')
+          .eq('user_id', user.id)
+          .eq('start_date', previousDate)
+          .maybeSingle();
+
+        if (previousTrip) {
+          setTripLocation(previousTrip.location || "");
+          setTripPurpose(previousTrip.purpose || "Business");
+          setTripNotes(previousTrip.notes || "");
+          toast({
+            title: "Trip details pre-filled",
+            description: "Copied from yesterday's trip.",
+          });
+        }
+      } catch (error) {
+        console.error("Error pre-filling trip from previous day:", error);
+      }
+    };
+
+    prefillTripFromPreviousDay();
+  }, [open, isTrip, wearDate, user]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -79,14 +131,13 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
 
       // Create trip if checkbox is checked
       if (isTrip) {
-        const tripLocation = formData.get("tripLocation") as string;
-        const tripPurpose = formData.get("tripPurpose") as string;
+        const tripLocationValue = tripLocation.trim();
 
-        if (tripLocation && tripPurpose) {
+        if (tripLocationValue && tripPurpose) {
           const { data: tripData, error: tripError } = await supabase
             .from("trips")
             .insert({
-              location: tripLocation,
+              location: tripLocationValue,
               purpose: tripPurpose,
               start_date: formattedDate,
               days: days,
@@ -291,6 +342,9 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
       setIsEvent(false);
       setIsWaterActivity(false);
       setIsSport(false);
+      setTripLocation("");
+      setTripPurpose("Business");
+      setTripNotes("");
       setSportLocation("");
       setSelectedTagIds([]);
       onSuccess();
@@ -319,15 +373,6 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
     if (brandCompare !== 0) return brandCompare;
     return a.model.localeCompare(b.model);
   });
-
-  // Get today's date in local timezone
-  const getTodayDate = () => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
 
   const triggerButton = (
     <Button className="gap-2">
