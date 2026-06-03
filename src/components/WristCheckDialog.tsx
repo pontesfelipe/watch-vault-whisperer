@@ -202,7 +202,7 @@ export function WristCheckDialog({ open, onOpenChange, watches, username }: Wris
         {/* Watch Selector */}
         <div>
           <Label className="text-sm font-medium mb-2 block">Select your watch</Label>
-          <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+          <div className="grid grid-cols-2 gap-2">
             {watches.map((w) => (
               <button
                 key={w.id}
