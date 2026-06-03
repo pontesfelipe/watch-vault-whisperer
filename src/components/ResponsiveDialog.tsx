@@ -65,7 +65,18 @@ export function ResponsiveDialog({
           <DrawerHeader className="text-left">
             <DrawerTitle>{title}</DrawerTitle>
           </DrawerHeader>
-          <div data-vaul-no-drag className="px-4 pb-6 max-h-[80vh] overflow-y-auto overscroll-contain touch-pan-y">
+          <div
+            data-vaul-no-drag
+            className="px-4 pb-6 max-h-[80vh] overflow-y-auto overscroll-contain touch-pan-y"
+            style={{ WebkitOverflowScrolling: "touch" }}
+            onTouchStart={(e) => {
+              // Prevent vaul drawer from hijacking vertical scroll on iOS Safari
+              e.stopPropagation();
+            }}
+            onTouchMove={(e) => {
+              e.stopPropagation();
+            }}
+          >
             {children}
           </div>
         </DrawerContent>
@@ -80,7 +91,10 @@ export function ResponsiveDialog({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
-        <div className="overflow-y-auto overscroll-contain pr-1 -mr-1 flex-1 min-h-0">
+        <div
+          className="overflow-y-auto overscroll-contain pr-1 -mr-1 flex-1 min-h-0"
+          style={{ WebkitOverflowScrolling: "touch" }}
+        >
           {children}
         </div>
       </DialogContent>
