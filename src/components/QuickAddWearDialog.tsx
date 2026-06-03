@@ -423,7 +423,8 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
               type="date"
               required
               max={getTodayDate()}
-              defaultValue={getTodayDate()}
+              value={wearDate}
+              onChange={(e) => setWearDate(e.target.value)}
               className="bg-background border-border"
             />
           </div>
@@ -488,13 +489,15 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
                   <Input
                     id="tripLocation"
                     name="tripLocation"
+                    value={tripLocation}
+                    onChange={(e) => setTripLocation(e.target.value)}
                     placeholder="e.g., Tokyo, Japan"
                     className="bg-background border-border"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="tripPurpose">Purpose</Label>
-                  <Select name="tripPurpose" defaultValue="Business">
+                  <Select name="tripPurpose" value={tripPurpose} onValueChange={setTripPurpose}>
                     <SelectTrigger className="bg-background border-border">
                       <SelectValue placeholder="Select purpose" />
                     </SelectTrigger>
