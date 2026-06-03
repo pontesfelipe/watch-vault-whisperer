@@ -76,11 +76,13 @@ export function ResponsiveDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-      <DialogContent className={className}>
+      <DialogContent className={`${className ?? ""} max-h-[90vh] flex flex-col`}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
-        {children}
+        <div className="overflow-y-auto overscroll-contain pr-1 -mr-1 flex-1 min-h-0">
+          {children}
+        </div>
       </DialogContent>
     </Dialog>
   );
