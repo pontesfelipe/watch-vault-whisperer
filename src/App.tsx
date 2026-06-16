@@ -108,7 +108,7 @@ function AppContent() {
             <Route path="/personal-notes" element={<ProtectedRoute><AppLayout><PageTransition><PersonalNotes /></PageTransition></AppLayout></ProtectedRoute>} />
             <Route path="/social" element={<ProtectedRoute><AppLayout><PageTransition><Social /></PageTransition></AppLayout></ProtectedRoute>} />
             <Route path="/messages" element={<Navigate to="/social?tab=messages" replace />} />
-            <Route path="/forum" element={<Navigate to="/social?tab=forum" replace />} />
+            <Route path="/forum" element={<Navigate to="/social" replace />} />
             <Route path="/admin" element={<ProtectedRoute><PageTransition><Admin /></PageTransition></ProtectedRoute>} />
             <Route path="/admin/security" element={<ProtectedRoute><PageTransition><AdminSecurity /></PageTransition></ProtectedRoute>} />
             <Route path="/admin/wear-logs" element={<ProtectedRoute><PageTransition><WearLogsAdmin /></PageTransition></ProtectedRoute>} />
