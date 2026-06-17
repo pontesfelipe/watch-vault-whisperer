@@ -12,6 +12,7 @@ import { z } from "zod";
 import { WarrantyCardUpload } from "./WarrantyCardUpload";
 import { Separator } from "@/components/ui/separator";
 import { WatchTypeMultiSelect } from "./WatchTypeMultiSelect";
+import { normalizeBrand, normalizeText } from "@/utils/normalizeBrand";
 
 const watchSchema = z.object({
   brand: z.string().trim().min(1, "Brand is required").max(100),
@@ -176,6 +177,8 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
         throw new Error("User not authenticated");
       }
 
+      const normalizedBrand = await normalizeBrand(data.brand, currentUser.id);
+
       // Upload warranty card if provided
       let warrantyCardUrl = watch.warranty_card_url;
       if (formValues.warrantyCardFile) {
@@ -206,9 +209,9 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
       const { error } = await supabase
         .from("watches")
         .update({
-          brand: data.brand,
-          model: data.model,
-          dial_color: data.dialColor,
+          brand: normalizedBrand,
+          model: normalizeText(data.model),
+          dial_color: normalizeText(data.dialColor),
           type: data.type,
           cost: data.cost,
           msrp: data.msrp || null,
