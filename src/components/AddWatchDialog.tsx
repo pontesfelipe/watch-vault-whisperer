@@ -19,6 +19,7 @@ import { WatchPhotoUpload } from "./WatchPhotoUpload";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WatchTypeMultiSelect } from "./WatchTypeMultiSelect";
+import { normalizeBrand, normalizeText } from "@/utils/normalizeBrand";
 
 // Watch reference database for auto-population
 const WATCH_REFERENCES: Record<string, {
@@ -239,6 +240,10 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         throw new Error("User not authenticated");
       }
 
+      // Normalize brand so casing variants (e.g. "TAG Heuer" vs "Tag Heuer")
+      // don't create duplicate groups in charts/filters.
+      const normalizedBrand = await normalizeBrand(data.brand, user.id);
+
       // Get the maximum sort_order for this collection to add the new watch at the end
       const { data: maxSortData } = await supabase
         .from("watches")
@@ -251,9 +256,9 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
       const nextSortOrder = maxSortData?.sort_order ? maxSortData.sort_order + 1 : 1;
 
       const { data: insertData, error } = await supabase.from("watches").insert({
-        brand: data.brand,
-        model: data.model,
-        dial_color: data.dialColor,
+        brand: normalizedBrand,
+        model: normalizeText(data.model),
+        dial_color: normalizeText(data.dialColor),
         type: data.type,
         cost: data.cost,
         msrp: data.msrp || null,
