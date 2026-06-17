@@ -251,9 +251,9 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
       const nextSortOrder = maxSortData?.sort_order ? maxSortData.sort_order + 1 : 1;
 
       const { data: insertData, error } = await supabase.from("watches").insert({
-        brand: data.brand,
-        model: data.model,
-        dial_color: data.dialColor,
+        brand: normalizedBrand,
+        model: normalizeText(data.model),
+        dial_color: normalizeText(data.dialColor),
         type: data.type,
         cost: data.cost,
         msrp: data.msrp || null,
