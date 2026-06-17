@@ -16,6 +16,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useCollection } from "@/contexts/CollectionContext";
 import { CollectionType, getCollectionConfig, SNEAKER_CONDITIONS, PURSE_SIZES, STRAP_TYPES } from "@/types/collection";
+import { normalizeBrand, normalizeText } from "@/utils/normalizeBrand";
 
 interface AddItemDialogProps {
   onSuccess: () => void;
@@ -98,13 +99,15 @@ export const AddItemDialog = ({ onSuccess }: AddItemDialogProps) => {
 
       const nextSortOrder = maxSortData?.sort_order ? maxSortData.sort_order + 1 : 1;
 
+      const normalizedBrand = await normalizeBrand(baseValues.brand, user.id);
+
       // Insert base item (using watches table for all types)
       const { data: insertData, error: insertError } = await supabase
         .from("watches")
         .insert({
-          brand: baseValues.brand.trim(),
-          model: baseValues.model.trim(),
-          dial_color: baseValues.primaryColor.trim(),
+          brand: normalizedBrand,
+          model: normalizeText(baseValues.model),
+          dial_color: normalizeText(baseValues.primaryColor),
           type: baseValues.type || config.defaultTypeOption,
           cost: parseFloat(baseValues.cost) || 0,
           msrp: baseValues.msrp ? parseFloat(baseValues.msrp) : null,
