@@ -55,23 +55,25 @@ export const DepreciationChart = ({ watches }: DepreciationChartProps) => {
     if (filterType === "brand") {
       // Group by brand and sum values
       const brandGroups = watchesWithResale.reduce((acc, watch) => {
-        if (!acc[watch.brand]) {
-          acc[watch.brand] = {
+        const key = (watch.brand || "").trim().toLowerCase();
+        if (!acc[key]) {
+          acc[key] = {
+            displayName: (watch.brand || "").trim(),
             invested: 0,
             current: 0,
             count: 0
           };
         }
-        acc[watch.brand].invested += getInvestedValue(watch);
-        acc[watch.brand].current += getCurrentValue(watch);
-        acc[watch.brand].count += 1;
+        acc[key].invested += getInvestedValue(watch);
+        acc[key].current += getCurrentValue(watch);
+        acc[key].count += 1;
         return acc;
-      }, {} as Record<string, { invested: number; current: number; count: number }>);
+      }, {} as Record<string, { displayName: string; invested: number; current: number; count: number }>);
 
       return Object.entries(brandGroups)
-        .map(([brand, data]) => ({
-          name: brand,
-          brand,
+        .map(([, data]) => ({
+          name: data.displayName,
+          brand: data.displayName,
           model: `${data.count} watches`,
           invested: data.invested,
           current: data.current,
