@@ -192,15 +192,15 @@ export default function Auth() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <main className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
+      </main>
     );
   }
 
   if (showMfaVerification) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <main className="min-h-screen flex items-center justify-center bg-background p-4">
         <div className="w-full max-w-md">
           <div className="flex flex-col items-center mb-10">
             <AnimatedLogo />
@@ -216,18 +216,23 @@ export default function Auth() {
             }}
           />
         </div>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="min-h-screen flex bg-background">
+    <main className="min-h-screen flex bg-background">
       {/* Left — Cinematic Hero */}
       <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden">
         {/* Ken Burns animated hero */}
         <motion.img 
           src={heroImage} 
           alt="Luxury collection" 
+          width={1600}
+          height={1200}
+          fetchPriority="high"
+          loading="eager"
+          decoding="async"
           className="absolute inset-0 w-full h-full object-cover"
           initial={{ scale: 1.1 }}
           animate={{ scale: 1 }}
@@ -431,7 +436,7 @@ export default function Auth() {
           <PrivacyDialog open={privacyOpen} onOpenChange={setPrivacyOpen} />
         </motion.div>
       </div>
-    </div>
+    </main>
   );
 }
 
