@@ -436,7 +436,7 @@ export default function Auth() {
           <PrivacyDialog open={privacyOpen} onOpenChange={setPrivacyOpen} />
         </motion.div>
       </div>
-    </div>
+    </main>
   );
 }
 
