@@ -317,7 +317,7 @@ export const CollectionsTab = () => {
               <TableRow>
                 <TableHead>Collection Name</TableHead>
                 <TableHead>Owner</TableHead>
-                <TableHead className="text-center">Watches</TableHead>
+                <TableHead className="text-center">Items</TableHead>
                 <TableHead>Users with Access</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
