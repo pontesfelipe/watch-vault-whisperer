@@ -83,6 +83,7 @@ const WatchDetail = () => {
   const [watch, setWatch] = useState<Watch | null>(null);
   const [watchSpecs, setWatchSpecs] = useState<WatchSpecs | null>(null);
   const [wearEntries, setWearEntries] = useState<WearEntry[]>([]);
+  const [warrantyCardUrl, setWarrantyCardUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [showCost, setShowCost] = useState(isAdmin);
   const [editingEntry, setEditingEntry] = useState<WearEntry | null>(null);
