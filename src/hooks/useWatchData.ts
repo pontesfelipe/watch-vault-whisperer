@@ -25,7 +25,6 @@ interface Watch {
   movement?: string;
   has_sapphire?: boolean;
   warranty_date?: string;
-  warranty_card_url?: string;
   metadata_analysis_reasoning?: string;
 }
 
