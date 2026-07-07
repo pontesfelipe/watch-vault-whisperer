@@ -270,7 +270,6 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         average_resale_price: data.averageResalePrice || null,
         warranty_date: data.warrantyDate || null,
         when_bought: purchaseDate ? format(purchaseDate, "yyyy-MM-dd") : null,
-        warranty_card_url: warrantyCardUrl,
         collection_id: selectedCollectionId,
         user_id: user.id,
         sort_order: nextSortOrder,
@@ -280,6 +279,16 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
       }).select().single();
 
       if (error) throw error;
+
+      // Store warranty card URL in owner-only table
+      if (insertData?.id && warrantyCardUrl) {
+        const { error: wcErr } = await supabase.from("watch_warranty_cards").upsert({
+          watch_id: insertData.id,
+          user_id: user.id,
+          warranty_card_url: warrantyCardUrl,
+        });
+        if (wcErr) console.warn("Failed to save warranty card:", wcErr);
+      }
 
       // Auto-analyze metadata after creating the watch
       if (insertData?.id) {

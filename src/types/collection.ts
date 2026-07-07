@@ -34,7 +34,6 @@ export interface WatchSpecificFields {
   has_sapphire: boolean | null;
   caseback_material: string | null;
   warranty_date: string | null;
-  warranty_card_url: string | null;
   sentiment: string | null;
   sentiment_analyzed_at: string | null;
   rarity: 'common' | 'uncommon' | 'rare' | 'very_rare' | 'grail' | null;

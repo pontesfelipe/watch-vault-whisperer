@@ -44,7 +44,6 @@ interface Watch {
   has_sapphire?: boolean;
   average_resale_price?: number;
   warranty_date?: string;
-  warranty_card_url?: string;
   rarity?: string;
   historical_significance?: string;
   metadata_analysis_reasoning?: string;
@@ -84,6 +83,7 @@ const WatchDetail = () => {
   const [watch, setWatch] = useState<Watch | null>(null);
   const [watchSpecs, setWatchSpecs] = useState<WatchSpecs | null>(null);
   const [wearEntries, setWearEntries] = useState<WearEntry[]>([]);
+  const [warrantyCardUrl, setWarrantyCardUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [showCost, setShowCost] = useState(isAdmin);
   const [editingEntry, setEditingEntry] = useState<WearEntry | null>(null);
@@ -113,15 +113,17 @@ const WatchDetail = () => {
   const fetchData = async () => {
     if (!id) return;
 
-    const [watchResult, specsResult, wearResult] = await Promise.all([
+    const [watchResult, specsResult, wearResult, warrantyCardResult] = await Promise.all([
       supabase.from("watches").select("*").eq("id", id).single(),
       supabase.from("watch_specs").select("*").eq("watch_id", id).maybeSingle(),
       supabase.from("wear_entries").select("*").eq("watch_id", id).order("wear_date", { ascending: false }),
+      supabase.from("watch_warranty_cards").select("warranty_card_url").eq("watch_id", id).maybeSingle(),
     ]);
 
     if (watchResult.data) setWatch(watchResult.data);
     if (specsResult.data) setWatchSpecs(specsResult.data);
     if (wearResult.data) setWearEntries(wearResult.data);
+    setWarrantyCardUrl(warrantyCardResult.data?.warranty_card_url ?? null);
     setLoading(false);
   };
 
@@ -334,9 +336,9 @@ const WatchDetail = () => {
                             <span className="text-green-500">Valid until {new Date(watch.warranty_date).toLocaleDateString()}</span>
                           )}
                         </p>
-                        {watch.warranty_card_url && (
+                        {warrantyCardUrl && (
                           <a 
-                            href={watch.warranty_card_url} 
+                            href={warrantyCardUrl} 
                             target="_blank" 
                             rel="noopener noreferrer"
                             className="text-sm text-primary hover:underline mt-1 inline-block"

@@ -70,7 +70,6 @@ interface WatchCardProps {
     has_sapphire?: boolean;
     average_resale_price?: number;
     warranty_date?: string;
-    warranty_card_url?: string;
     when_bought?: string;
     rarity?: string;
     historical_significance?: string;

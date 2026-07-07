@@ -1800,6 +1800,38 @@ export type Database = {
           },
         ]
       }
+      watch_warranty_cards: {
+        Row: {
+          created_at: string
+          updated_at: string
+          user_id: string
+          warranty_card_url: string
+          watch_id: string
+        }
+        Insert: {
+          created_at?: string
+          updated_at?: string
+          user_id: string
+          warranty_card_url: string
+          watch_id: string
+        }
+        Update: {
+          created_at?: string
+          updated_at?: string
+          user_id?: string
+          warranty_card_url?: string
+          watch_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "watch_warranty_cards_watch_id_fkey"
+            columns: ["watch_id"]
+            isOneToOne: true
+            referencedRelation: "watches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       watches: {
         Row: {
           ai_image_url: string | null
@@ -1836,7 +1868,6 @@ export type Database = {
           type: string
           updated_at: string
           user_id: string | null
-          warranty_card_url: string | null
           warranty_date: string | null
           what_i_dont_like: string | null
           what_i_like: string | null
@@ -1878,7 +1909,6 @@ export type Database = {
           type: string
           updated_at?: string
           user_id?: string | null
-          warranty_card_url?: string | null
           warranty_date?: string | null
           what_i_dont_like?: string | null
           what_i_like?: string | null
@@ -1920,7 +1950,6 @@ export type Database = {
           type?: string
           updated_at?: string
           user_id?: string | null
-          warranty_card_url?: string | null
           warranty_date?: string | null
           what_i_dont_like?: string | null
           what_i_like?: string | null

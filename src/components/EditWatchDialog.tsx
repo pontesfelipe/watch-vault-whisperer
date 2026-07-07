@@ -42,7 +42,6 @@ interface Watch {
   has_sapphire?: boolean;
   average_resale_price?: number;
   warranty_date?: string;
-  warranty_card_url?: string;
   when_bought?: string;
   rarity?: string;
   historical_significance?: string;
@@ -53,6 +52,7 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [specRowId, setSpecRowId] = useState<string | null>(null);
+  const [existingWarrantyCardUrl, setExistingWarrantyCardUrl] = useState<string | null>(null);
   const [formValues, setFormValues] = useState({
     brand: watch.brand,
     model: watch.model,
@@ -148,6 +148,17 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
 
     loadSpecs();
 
+    const loadWarrantyCard = async () => {
+      const { data } = await supabase
+        .from("watch_warranty_cards")
+        .select("warranty_card_url")
+        .eq("watch_id", watch.id)
+        .maybeSingle();
+      if (cancelled) return;
+      setExistingWarrantyCardUrl(data?.warranty_card_url ?? null);
+    };
+    loadWarrantyCard();
+
     return () => {
       cancelled = true;
     };
@@ -180,7 +191,7 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
       const normalizedBrand = await normalizeBrand(data.brand, currentUser.id);
 
       // Upload warranty card if provided
-      let warrantyCardUrl = watch.warranty_card_url;
+      let warrantyCardUrl = existingWarrantyCardUrl;
       if (formValues.warrantyCardFile) {
         const fileExt = formValues.warrantyCardFile.name.split('.').pop();
         const fileName = `${currentUser.id}/${crypto.randomUUID()}.${fileExt}`;
@@ -222,7 +233,6 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
           has_sapphire: formValues.hasSapphire,
           average_resale_price: data.averageResalePrice || null,
           warranty_date: data.warrantyDate || null,
-          warranty_card_url: warrantyCardUrl,
           when_bought: formValues.whenBought || null,
           rarity: data.rarity || 'common',
           historical_significance: data.historicalSignificance || 'regular',
@@ -231,6 +241,16 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
         .eq("id", watch.id);
 
       if (error) throw error;
+
+      // Persist warranty card URL to owner-only table
+      if (warrantyCardUrl && warrantyCardUrl !== existingWarrantyCardUrl) {
+        const { error: wcErr } = await supabase.from("watch_warranty_cards").upsert({
+          watch_id: watch.id,
+          user_id: currentUser.id,
+          warranty_card_url: warrantyCardUrl,
+        });
+        if (wcErr) console.warn("Failed to save warranty card:", wcErr);
+      }
 
       // Keep watch_specs (the data used in the Details → Specifications tab) in sync
       const shouldWriteSpecs = Boolean(
@@ -517,9 +537,9 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
               onChange={(e) => setFormValues({ ...formValues, warrantyCardFile: e.target.files?.[0] || null })}
               className="bg-background border-border"
             />
-            {watch.warranty_card_url && !formValues.warrantyCardFile && (
+            {existingWarrantyCardUrl && !formValues.warrantyCardFile && (
               <p className="text-xs text-muted-foreground">
-                Current: <a href={watch.warranty_card_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">View existing card</a>
+                Current: <a href={existingWarrantyCardUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">View existing card</a>
               </p>
             )}
             {formValues.warrantyCardFile && (
