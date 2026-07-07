@@ -537,9 +537,9 @@ export const EditWatchDialog = ({ watch, onSuccess }: { watch: Watch; onSuccess:
               onChange={(e) => setFormValues({ ...formValues, warrantyCardFile: e.target.files?.[0] || null })}
               className="bg-background border-border"
             />
-            {watch.warranty_card_url && !formValues.warrantyCardFile && (
+            {existingWarrantyCardUrl && !formValues.warrantyCardFile && (
               <p className="text-xs text-muted-foreground">
-                Current: <a href={watch.warranty_card_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">View existing card</a>
+                Current: <a href={existingWarrantyCardUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">View existing card</a>
               </p>
             )}
             {formValues.warrantyCardFile && (
