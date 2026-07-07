@@ -498,14 +498,14 @@ const VaultPal = () => {
                   I'm your personal collection expert. I know everything about your {itemLabel.toLowerCase()}, 
                   wear patterns, trips, events, and preferences. Ask me anything!
                 </p>
-                <div className="flex overflow-x-auto flex-nowrap gap-2 justify-center max-w-lg scrollbar-hide pb-2">
+                <div className="flex flex-wrap gap-2 justify-center max-w-lg px-4">
                   {suggestedQuestions.map((question, idx) => (
                     <Button
                       key={idx}
                       variant="outline"
                       size="sm"
                       onClick={() => sendMessage(question)}
-                      className="text-xs shrink-0"
+                      className="text-xs"
                     >
                       {question}
                     </Button>
