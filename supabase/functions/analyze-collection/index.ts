@@ -84,7 +84,9 @@ Provide a warm, insightful analysis covering:
 4. What this collection says about the collector's personality
 5. Potential collection strengths or interesting characteristics
 
-Write in second person ("you", "your") as if speaking directly to the collector. Be warm, insightful, and specific. Keep it conversational and engaging. Write 3-4 short paragraphs.`;
+Write in second person ("you", "your") as if speaking directly to the collector. Be warm, insightful, and specific. Keep it conversational and engaging.
+
+STRICT LENGTH LIMIT: Your entire response MUST be 500 characters or fewer (including spaces and punctuation). Be concise and prioritize the most meaningful observations.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -120,7 +122,10 @@ Write in second person ("you", "your") as if speaking directly to the collector.
     }
 
     const data = await response.json();
-    const insights = data.choices[0].message.content;
+    let insights = data.choices[0].message.content ?? "";
+    if (insights.length > 500) {
+      insights = insights.slice(0, 500);
+    }
     
     console.log("Generated insights successfully");
 
