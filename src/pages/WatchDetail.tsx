@@ -213,6 +213,18 @@ const WatchDetail = () => {
 
       <main className="container mx-auto px-4 py-8">
       <div className="md:pb-0 pb-24">
+        {watch.ai_image_url && (
+          <div className="max-w-md mx-auto mb-8">
+            <div className="aspect-square rounded-2xl overflow-hidden bg-muted border border-border shadow-lg">
+              <img
+                src={watch.ai_image_url}
+                alt={`${watch.brand} ${watch.model}`}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
+          </div>
+        )}
         <Tabs defaultValue="specs" className="w-full">
           <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-8">
             <TabsTrigger value="specs">Specifications</TabsTrigger>

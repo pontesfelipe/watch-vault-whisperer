@@ -46,36 +46,36 @@ serve(async (req) => {
 
     console.log(`Analyzing watch: ${brand} ${model}`);
 
-    const systemPrompt = `You are a watch expert specializing in luxury timepieces. Analyze watches to determine their rarity and historical significance based on production numbers, market availability, and historical context.
+    const systemPrompt = `You are a watch expert specializing in luxury timepieces. You classify watches honestly and conservatively. Most watches in production are COMMON — do not inflate rarity just because a watch is expensive, luxury, or well-known. Popularity and desirability are NOT rarity.
 
-For RARITY, consider:
-- Production numbers (limited editions, discontinued models)
-- Current market availability
-- Brand exclusivity
-- Special editions or collaborations
-Return one of: "common", "uncommon", "rare", "very_rare", "grail"
+Use these strict RARITY definitions:
 
-For HISTORICAL SIGNIFICANCE, consider:
-- Historical events (e.g., moon landing, expeditions)
-- Technological innovations
-- Cultural impact
-- Celebrity associations
-- Brand milestones
-Return one of: "regular", "notable", "historically_significant"
+- "common": Current or recent-production catalog models that are widely available at authorized dealers or on the secondary market with no meaningful waitlist. Examples: standard Rolex Datejust, Omega Seamaster 300M, Tudor Black Bay, most Seiko, TAG Heuer Carrera, Cartier Tank, Longines, Tissot, Hamilton, Breitling Navitimer, IWC Pilot, Panerai Luminor base models, JLC Reverso Classic, JLC Master Control, most Grand Seiko catalog references.
+- "uncommon": Regular production but with real supply constraints — multi-month waitlists at ADs, discontinued within the last ~10 years but still findable, or lower-volume references from mainstream brands. Examples: standard Rolex Submariner/GMT (waitlisted but produced in volume), Omega Speedmaster Professional, AP Royal Oak Selfwinding steel base models.
+- "rare": Genuinely low production or hard to source: limited editions of a few thousand or less, long-discontinued references (~20+ years) with thin market supply, or independent brands with small annual output (e.g., Moser, Laurent Ferrier, most F.P. Journe catalog).
+- "very_rare": Limited editions of a few hundred or fewer, or vintage references that rarely trade. Serious collector pieces.
+- "grail": Iconic, historically important, or extremely low-production references that most collectors will never own (e.g., Paul Newman Daytona, original Nautilus 3700, Rolex Daytona 6263 "Big Red", unique pieces, top independents like Philippe Dufour Simplicity).
 
-Provide detailed reasoning for your classifications.`;
+Default to "common" unless you have specific evidence to justify higher. If unsure between two tiers, pick the lower one.
 
-    const userPrompt = `Analyze this watch and provide rarity and historical significance classifications:
+For HISTORICAL SIGNIFICANCE:
+- "regular": Standard catalog piece with no specific historical role.
+- "notable": Recognized design icon or long-running important reference in the brand's lineup (e.g., Reverso, Speedmaster, Royal Oak line generally).
+- "historically_significant": Directly tied to a specific historical event, first-of-its-kind innovation, or major cultural moment (e.g., Speedmaster on the moon, first automatic chronograph, first dive watch).
+
+Provide detailed reasoning citing production volume, availability, and evidence for the tier chosen.`;
+
+    const userPrompt = `Classify this watch using the strict rarity tiers. Default to "common" unless there is clear evidence of low production or constrained availability. Do NOT confuse "expensive" or "prestigious" with "rare".
 
 Watch: ${brand} ${model}
 
-Consider:
-1. How many pieces were produced? Is it still in production?
-2. What is its market availability and demand?
-3. Does it have any historical significance? (e.g., worn in significant events, technological firsts, cultural impact)
-4. Are there any special features or associations that affect its rarity or historical importance?
+Answer these before deciding:
+1. Is this a current or recent catalog reference from a brand that produces it in volume? If yes → "common".
+2. Is there a documented production cap (limited edition number) or is it long-discontinued with thin supply? If not, it is not "rare".
+3. What is the approximate annual production or total production run, if known?
+4. Is it readily available at ADs or on the secondary market today?
 
-Provide your analysis in a structured format.`;
+Then classify rarity and historical significance and explain your reasoning with specific evidence.`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
