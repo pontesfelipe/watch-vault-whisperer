@@ -173,8 +173,8 @@ const Collection = () => {
     for (const watch of watches) {
       try {
         // Extract year from when_bought
-        let year: number | undefined;
-        if (watch.when_bought) {
+        let year: number | undefined = (watch as any).year || undefined;
+        if (!year && watch.when_bought) {
           const yearMatch = watch.when_bought.match(/\d{4}/);
           if (yearMatch) {
             year = parseInt(yearMatch[0]);
@@ -190,7 +190,8 @@ const Collection = () => {
             year,
             caseSize: watch.case_size,
             movement: watch.movement,
-            hasSapphire: watch.has_sapphire
+            hasSapphire: watch.has_sapphire,
+            reference: (watch as any).reference || undefined,
           }
         });
 
