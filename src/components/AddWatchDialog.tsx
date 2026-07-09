@@ -528,6 +528,23 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="year">Production Year (Optional)</Label>
+              <Input
+                id="year"
+                value={formValues.year}
+                onChange={(e) => setFormValues({ ...formValues, year: e.target.value })}
+                type="number"
+                min="1900"
+                max={new Date().getFullYear()}
+                placeholder="e.g., 2021"
+                className="bg-background border-border"
+              />
+              <p className="text-xs text-muted-foreground">
+                Important for accurate market pricing — pre-owned models differ from current production.
+              </p>
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="model">Model</Label>
               <Input
                 id="model"
