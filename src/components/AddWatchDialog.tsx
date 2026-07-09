@@ -84,6 +84,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
     rarity: "common" as "common" | "uncommon" | "rare" | "very_rare" | "grail",
     historicalSignificance: "regular" as "regular" | "notable" | "historically_significant",
     availableForTrade: false,
+        year: "",
     year: "",
   });
   const { toast } = useToast();
@@ -126,6 +127,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         rarity: "common",
         historicalSignificance: "regular",
         availableForTrade: false,
+        year: "",
       });
         toast({
           title: "Watch Found",
@@ -168,6 +170,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         rarity: "common",
         historicalSignificance: "regular",
         availableForTrade: false,
+        year: "",
       });
       
       toast({
@@ -375,6 +378,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         rarity: "common",
         historicalSignificance: "regular",
         availableForTrade: false,
+        year: "",
       });
       onSuccess();
     } catch (error) {
