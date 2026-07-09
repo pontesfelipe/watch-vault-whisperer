@@ -279,7 +279,9 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         rarity: data.rarity || 'common',
         historical_significance: data.historicalSignificance || 'regular',
         available_for_trade: formValues.availableForTrade,
-      }).select().single();
+        reference: modelRef.trim() || null,
+        year: formValues.year ? parseInt(formValues.year, 10) : null,
+      } as any).select().single();
 
       if (error) throw error;
 
@@ -347,6 +349,29 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
           });
         } catch (imgError) {
           console.error('AI image generation trigger failed:', imgError);
+        }
+
+        // Auto-fetch market resale price so the Canvas reflects it immediately.
+        if (!data.averageResalePrice) {
+          supabase.functions.invoke('fetch-watch-price', {
+            body: {
+              watchId: insertData.id,
+              brand: data.brand,
+              model: data.model,
+              dialColor: data.dialColor,
+              caseSize: formValues.caseSize || undefined,
+              movement: formValues.movement || undefined,
+              hasSapphire: formValues.hasSapphire ?? undefined,
+              year: formValues.year ? parseInt(formValues.year, 10) : undefined,
+              reference: modelRef.trim() || undefined,
+            }
+          }).then(({ error: priceError }) => {
+            if (priceError) {
+              console.error('Market price fetch failed:', priceError);
+            } else {
+              onSuccess();
+            }
+          });
         }
       }
 
