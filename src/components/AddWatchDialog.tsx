@@ -84,6 +84,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
     rarity: "common" as "common" | "uncommon" | "rare" | "very_rare" | "grail",
     historicalSignificance: "regular" as "regular" | "notable" | "historically_significant",
     availableForTrade: false,
+    year: "",
   });
   const { toast } = useToast();
   const { selectedCollectionId } = useCollection();
@@ -125,6 +126,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         rarity: "common",
         historicalSignificance: "regular",
         availableForTrade: false,
+        year: "",
       });
         toast({
           title: "Watch Found",
@@ -167,6 +169,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         rarity: "common",
         historicalSignificance: "regular",
         availableForTrade: false,
+        year: "",
       });
       
       toast({
@@ -276,7 +279,9 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         rarity: data.rarity || 'common',
         historical_significance: data.historicalSignificance || 'regular',
         available_for_trade: formValues.availableForTrade,
-      }).select().single();
+        reference: modelRef.trim() || null,
+        year: formValues.year ? parseInt(formValues.year, 10) : null,
+      } as any).select().single();
 
       if (error) throw error;
 
@@ -345,6 +350,29 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         } catch (imgError) {
           console.error('AI image generation trigger failed:', imgError);
         }
+
+        // Auto-fetch market resale price so the Canvas reflects it immediately.
+        if (!data.averageResalePrice) {
+          supabase.functions.invoke('fetch-watch-price', {
+            body: {
+              watchId: insertData.id,
+              brand: data.brand,
+              model: data.model,
+              dialColor: data.dialColor,
+              caseSize: formValues.caseSize || undefined,
+              movement: formValues.movement || undefined,
+              hasSapphire: formValues.hasSapphire ?? undefined,
+              year: formValues.year ? parseInt(formValues.year, 10) : undefined,
+              reference: modelRef.trim() || undefined,
+            }
+          }).then(({ error: priceError }) => {
+            if (priceError) {
+              console.error('Market price fetch failed:', priceError);
+            } else {
+              onSuccess();
+            }
+          });
+        }
       }
 
       toast({
@@ -374,6 +402,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         rarity: "common",
         historicalSignificance: "regular",
         availableForTrade: false,
+        year: "",
       });
       onSuccess();
     } catch (error) {
@@ -495,6 +524,23 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
               </div>
               <p className="text-xs text-muted-foreground">
                 With brand entered above, click Search to auto-fill remaining fields
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="year">Production Year (Optional)</Label>
+              <Input
+                id="year"
+                value={formValues.year}
+                onChange={(e) => setFormValues({ ...formValues, year: e.target.value })}
+                type="number"
+                min="1900"
+                max={new Date().getFullYear()}
+                placeholder="e.g., 2021"
+                className="bg-background border-border"
+              />
+              <p className="text-xs text-muted-foreground">
+                Important for accurate market pricing — pre-owned models differ from current production.
               </p>
             </div>
 

@@ -1857,6 +1857,7 @@ export type Database = {
           movement: string | null
           msrp: number | null
           rarity: Database["public"]["Enums"]["watch_rarity"] | null
+          reference: string | null
           sale_notes: string | null
           sale_price: number | null
           sale_reason: string | null
@@ -1873,6 +1874,7 @@ export type Database = {
           what_i_like: string | null
           when_bought: string | null
           why_bought: string | null
+          year: number | null
         }
         Insert: {
           ai_image_url?: string | null
@@ -1898,6 +1900,7 @@ export type Database = {
           movement?: string | null
           msrp?: number | null
           rarity?: Database["public"]["Enums"]["watch_rarity"] | null
+          reference?: string | null
           sale_notes?: string | null
           sale_price?: number | null
           sale_reason?: string | null
@@ -1914,6 +1917,7 @@ export type Database = {
           what_i_like?: string | null
           when_bought?: string | null
           why_bought?: string | null
+          year?: number | null
         }
         Update: {
           ai_image_url?: string | null
@@ -1939,6 +1943,7 @@ export type Database = {
           movement?: string | null
           msrp?: number | null
           rarity?: Database["public"]["Enums"]["watch_rarity"] | null
+          reference?: string | null
           sale_notes?: string | null
           sale_price?: number | null
           sale_reason?: string | null
@@ -1955,6 +1960,7 @@ export type Database = {
           what_i_like?: string | null
           when_bought?: string | null
           why_bought?: string | null
+          year?: number | null
         }
         Relationships: [
           {

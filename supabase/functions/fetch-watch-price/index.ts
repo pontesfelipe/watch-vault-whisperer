@@ -18,7 +18,7 @@ serve(async (req) => {
       return unauthorizedResponse(corsHeaders, auth.error);
     }
 
-    const { brand, model, watchId, dialColor, year, caseSize, movement, hasSapphire } = await req.json();
+    const { brand, model, watchId, dialColor, year, caseSize, movement, hasSapphire, reference } = await req.json();
 
     if (!brand || !model) {
       return new Response(
@@ -56,6 +56,7 @@ serve(async (req) => {
     // Build detailed watch description
     const specs = [];
     if (year) specs.push(`${year}`);
+    if (reference) specs.push(`ref. ${reference}`);
     if (dialColor) specs.push(`${dialColor} dial`);
     if (caseSize) specs.push(`${caseSize} case`);
     if (movement) specs.push(`${movement} movement`);
@@ -71,6 +72,7 @@ serve(async (req) => {
 
     // Build detailed search query with all specifications
     let searchQuery = `${brand} ${model}`;
+    if (reference) searchQuery += ` ${reference}`;
     if (dialColor) searchQuery += ` ${dialColor} dial`;
     if (caseSize) searchQuery += ` ${caseSize}`;
     if (movement) searchQuery += ` ${movement}`;
@@ -97,7 +99,7 @@ serve(async (req) => {
 
 CRITICAL SPECIFICATIONS TO MATCH:
 - Brand: ${brand}
-- Model: ${model}${dialColor ? `\n- Dial Color: ${dialColor} (MUST match this exact color)` : ''}${caseSize ? `\n- Case Size: ${caseSize}` : ''}${movement ? `\n- Movement: ${movement}` : ''}${hasSapphire ? `\n- Crystal: Sapphire` : ''}${year ? `\n- Year: ${year}` : ''}
+- Model: ${model}${reference ? `\n- Reference number: ${reference} (MUST match this exact reference — different references have very different prices)` : ''}${dialColor ? `\n- Dial Color: ${dialColor} (MUST match this exact color)` : ''}${caseSize ? `\n- Case Size: ${caseSize}` : ''}${movement ? `\n- Movement: ${movement}` : ''}${hasSapphire ? `\n- Crystal: Sapphire` : ''}${year ? `\n- Production Year: ${year} (search for pre-owned prices of this specific year — older generations often differ significantly from current models)` : ''}
 
 Search multiple marketplaces (Chrono24, WatchCharts, eBay) for this EXACT specification combination. If this is a limited edition or special variant (e.g., "Coulson", "Limited", special dial color), make sure to search for that specific version, NOT the standard model. Provide a single average price. Only respond with the number, no currency symbols or text.`
           }
