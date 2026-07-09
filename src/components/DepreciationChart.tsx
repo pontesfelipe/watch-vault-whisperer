@@ -3,6 +3,25 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState, useMemo } from "react";
 
+// Brand abbreviations for the chart X-axis. Falls back to the first
+// 3 letters of the brand name when the brand is not listed here.
+const BRAND_ABBREVIATIONS: Record<string, string> = {
+  "jaeger-lecoultre": "JLC",
+  "jaeger lecoultre": "JLC",
+  "jaeger": "JLC",
+  "a. lange & söhne": "ALS",
+  "a lange sohne": "ALS",
+  "audemars piguet": "AP",
+  "patek philippe": "PP",
+  "vacheron constantin": "VC",
+  "grand seiko": "GS",
+};
+
+const abbreviateBrand = (brand: string) => {
+  const key = brand.trim().toLowerCase();
+  return BRAND_ABBREVIATIONS[key] ?? brand.trim().substring(0, 3).toUpperCase();
+};
+
 interface Watch {
   brand: string;
   model: string;
@@ -20,13 +39,13 @@ export const DepreciationChart = ({ watches }: DepreciationChartProps) => {
   const [selectedWatch, setSelectedWatch] = useState<string>("");
   const [comparisonMode, setComparisonMode] = useState<"price_paid" | "msrp">("price_paid");
 
-  // Include every watch with a cost. If no resale price is recorded yet,
-  // fall back to cost so newly added watches appear immediately (zero change).
-  const watchesWithResale = watches.filter((w) => (w.cost || 0) > 0);
-  const getCurrentValue = (watch: Watch) =>
-    watch.average_resale_price != null && watch.average_resale_price > 0
-      ? watch.average_resale_price
-      : watch.cost || 0;
+  // Only include watches that have BOTH a cost and a real market/resale
+  // price. Otherwise the "Current Value" bar would be a copy of the
+  // "Price Paid" bar (identical heights) and mislead the user.
+  const watchesWithResale = watches.filter(
+    (w) => (w.cost || 0) > 0 && w.average_resale_price != null && w.average_resale_price > 0,
+  );
+  const getCurrentValue = (watch: Watch) => watch.average_resale_price || 0;
 
   // Get unique brands and individual watches
   const brands = useMemo(() => {
@@ -98,8 +117,9 @@ export const DepreciationChart = ({ watches }: DepreciationChartProps) => {
       // Show all watches with abbreviated names
       return watchesWithResale
         .map((watch) => {
-          // Create abbreviated name (first 3 letters of brand + first 3 of model)
-          const abbrevBrand = watch.brand.substring(0, 3).toUpperCase();
+          // Abbreviated axis label: known brand aliases (e.g. JLC) or
+          // first 3 letters of the brand, plus first token of the model.
+          const abbrevBrand = abbreviateBrand(watch.brand);
           const abbrevModel = watch.model.split(' ')[0].substring(0, 4);
           const invested = getInvestedValue(watch);
           return {
