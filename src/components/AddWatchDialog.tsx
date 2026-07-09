@@ -84,6 +84,7 @@ export const AddWatchDialog = ({ onSuccess }: { onSuccess: () => void }) => {
     rarity: "common" as "common" | "uncommon" | "rare" | "very_rare" | "grail",
     historicalSignificance: "regular" as "regular" | "notable" | "historically_significant",
     availableForTrade: false,
+    year: "",
   });
   const { toast } = useToast();
   const { selectedCollectionId } = useCollection();
