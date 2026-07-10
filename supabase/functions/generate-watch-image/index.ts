@@ -455,7 +455,9 @@ serve(async (req) => {
 
     const imageFormat = base64Match[1];
     const binaryData = Uint8Array.from(atob(base64Match[2]), c => c.charCodeAt(0));
-    const fileName = `${watchId || crypto.randomUUID()}_ai.${imageFormat}`;
+    // Include a timestamp so each regeneration produces a new URL — otherwise
+    // the Storage CDN keeps serving the previous bytes at the same public URL.
+    const fileName = `${watchId || crypto.randomUUID()}_ai_${Date.now()}.${imageFormat}`;
 
     const { error: uploadError } = await supabaseClient.storage
       .from('watch-images').upload(fileName, binaryData, { contentType: `image/${imageFormat}`, upsert: true });
