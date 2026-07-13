@@ -3,15 +3,22 @@ import { Eye, Calendar, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,6 +26,25 @@ import { useToast } from "@/hooks/use-toast";
 import watchHero from "@/assets/watch-hero.jpg";
 import { WatchContextMenu, useLongPress } from "./WatchContextMenu";
 import { QuickLogSheet } from "./QuickLogSheet";
+
+const SALE_REASONS: Record<'sold' | 'traded', string[]> = {
+  sold: [
+    "Funding a new purchase",
+    "No longer wearing it",
+    "Didn't like it anymore",
+    "Needed the cash",
+    "Upgrading",
+    "Doesn't fit my style",
+    "Other",
+  ],
+  traded: [
+    "Upgrading",
+    "Wanted a different style",
+    "Doesn't fit collection",
+    "Better value in trade",
+    "Other",
+  ],
+};
 
 interface WatchShowcaseCardProps {
   watch: {
@@ -41,15 +67,57 @@ interface WatchShowcaseCardProps {
 export const WatchShowcaseCard = ({ watch, totalDays, index, onDelete }: WatchShowcaseCardProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showRemoveDialog, setShowRemoveDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [showQuickLog, setShowQuickLog] = useState(false);
+  const [saleDialogMode, setSaleDialogMode] = useState<'sold' | 'traded' | null>(null);
+  const [salePrice, setSalePrice] = useState("");
+  const [saleReason, setSaleReason] = useState("");
+  const [saleNotes, setSaleNotes] = useState("");
+  const [isSubmittingSale, setIsSubmittingSale] = useState(false);
   const imageUrl = watch.ai_image_url || watch.image_url || watchHero;
 
   const { handlers: longPressHandlers, isLongPress } = useLongPress(() => {
     setShowContextMenu(true);
   });
+
+  const openSaleDialog = (status: 'sold' | 'traded') => {
+    setSaleDialogMode(status);
+    setSalePrice("");
+    setSaleReason("");
+    setSaleNotes("");
+    setShowRemoveDialog(false);
+  };
+
+  const handleMarkAsSoldOrTraded = async () => {
+    if (!saleDialogMode) return;
+    setIsSubmittingSale(true);
+    try {
+      const { error } = await supabase
+        .from("watches")
+        .update({
+          status: saleDialogMode,
+          collection_id: null,
+          sale_price: salePrice ? parseFloat(salePrice) : null,
+          sale_reason: saleReason || null,
+          sale_notes: saleNotes || null,
+          sold_at: new Date().toISOString(),
+        })
+        .eq("id", watch.id);
+      if (error) throw error;
+      toast({
+        title: saleDialogMode === 'sold' ? 'Marked as Sold' : 'Marked as Traded',
+        description: "Removed from collection. Historical data preserved.",
+      });
+      setSaleDialogMode(null);
+      onDelete?.();
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to update status", variant: "destructive" });
+    } finally {
+      setIsSubmittingSale(false);
+    }
+  };
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -77,7 +145,7 @@ export const WatchShowcaseCard = ({ watch, totalDays, index, onDelete }: WatchSh
       });
     } finally {
       setIsDeleting(false);
-      setShowDeleteDialog(false);
+      setShowRemoveDialog(false);
     }
   };
 
@@ -127,10 +195,10 @@ export const WatchShowcaseCard = ({ watch, totalDays, index, onDelete }: WatchSh
                     size="icon"
                     className="h-7 w-7 rounded-full shadow-lg opacity-80 hover:opacity-100 transition-opacity"
                     aria-label={`Delete ${watch.brand} ${watch.model}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowDeleteDialog(true);
-                    }}
+                     onClick={(e) => {
+                       e.stopPropagation();
+                       setShowRemoveDialog(true);
+                     }}
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </Button>
@@ -182,29 +250,118 @@ export const WatchShowcaseCard = ({ watch, totalDays, index, onDelete }: WatchSh
         </div>
       </motion.div>
 
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete {watch.brand} {watch.model}?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently remove this item and all its related data (wear logs, specs, etc.). This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              {isDeleting ? "Deleting..." : "Delete"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <Dialog open={showRemoveDialog} onOpenChange={setShowRemoveDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Remove {watch.brand} {watch.model}</DialogTitle>
+            <DialogDescription>
+              How would you like to remove this from your collection?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 pt-2">
+            <Button
+              variant="outline"
+              className="justify-start gap-3 h-auto py-3"
+              onClick={() => openSaleDialog('sold')}
+            >
+              <div className="flex flex-col items-start">
+                <span className="font-medium">Mark as Sold</span>
+                <span className="text-xs text-muted-foreground">Remove from collection, keep historical data</span>
+              </div>
+            </Button>
+            <Button
+              variant="outline"
+              className="justify-start gap-3 h-auto py-3"
+              onClick={() => openSaleDialog('traded')}
+            >
+              <div className="flex flex-col items-start">
+                <span className="font-medium">Mark as Traded</span>
+                <span className="text-xs text-muted-foreground">Remove from collection, keep historical data</span>
+              </div>
+            </Button>
+            <Button
+              variant="destructive"
+              className="justify-start gap-3 h-auto py-3"
+              onClick={handleDelete}
+              disabled={isDeleting}
+            >
+              <div className="flex flex-col items-start">
+                <span className="font-medium">{isDeleting ? 'Deleting…' : 'Delete Permanently'}</span>
+                <span className="text-xs opacity-80">Remove item and all related data forever</span>
+              </div>
+            </Button>
+            <Button variant="ghost" className="mt-1" onClick={() => setShowRemoveDialog(false)}>
+              Cancel
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={saleDialogMode !== null} onOpenChange={(o) => !o && setSaleDialogMode(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {saleDialogMode === 'sold' ? 'Sell' : 'Trade'} {watch.brand} {watch.model}
+            </DialogTitle>
+            <DialogDescription>
+              Add details about the {saleDialogMode === 'sold' ? 'sale' : 'trade'}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 pt-2">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="ws-sale-price">
+                {saleDialogMode === 'sold' ? 'Sale price (USD)' : 'Value received (USD)'}
+              </Label>
+              <Input
+                id="ws-sale-price"
+                type="number"
+                inputMode="decimal"
+                min="0"
+                step="0.01"
+                placeholder="0.00"
+                value={salePrice}
+                onChange={(e) => setSalePrice(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label>Reason</Label>
+              <Select value={saleReason} onValueChange={setSaleReason}>
+                <SelectTrigger><SelectValue placeholder="Select a reason" /></SelectTrigger>
+                <SelectContent>
+                  {(saleDialogMode ? SALE_REASONS[saleDialogMode] : []).map((r) => (
+                    <SelectItem key={r} value={r}>{r}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="ws-sale-notes">Notes (optional)</Label>
+              <Textarea
+                id="ws-sale-notes"
+                rows={3}
+                placeholder="Anything else worth remembering?"
+                value={saleNotes}
+                onChange={(e) => setSaleNotes(e.target.value)}
+              />
+            </div>
+            <div className="flex gap-2 pt-2">
+              <Button variant="ghost" className="flex-1" onClick={() => setSaleDialogMode(null)} disabled={isSubmittingSale}>
+                Cancel
+              </Button>
+              <Button className="flex-1" onClick={handleMarkAsSoldOrTraded} disabled={isSubmittingSale}>
+                {isSubmittingSale ? 'Saving…' : (saleDialogMode === 'sold' ? 'Mark as Sold' : 'Mark as Traded')}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <WatchContextMenu
         open={showContextMenu}
         onOpenChange={setShowContextMenu}
         watch={watch}
         onLogWear={() => setShowQuickLog(true)}
-        onDelete={() => setShowDeleteDialog(true)}
+        onDelete={() => setShowRemoveDialog(true)}
       />
 
       <QuickLogSheet
