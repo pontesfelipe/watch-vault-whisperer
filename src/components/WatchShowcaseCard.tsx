@@ -3,15 +3,22 @@ import { Eye, Calendar, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,6 +26,25 @@ import { useToast } from "@/hooks/use-toast";
 import watchHero from "@/assets/watch-hero.jpg";
 import { WatchContextMenu, useLongPress } from "./WatchContextMenu";
 import { QuickLogSheet } from "./QuickLogSheet";
+
+const SALE_REASONS: Record<'sold' | 'traded', string[]> = {
+  sold: [
+    "Funding a new purchase",
+    "No longer wearing it",
+    "Didn't like it anymore",
+    "Needed the cash",
+    "Upgrading",
+    "Doesn't fit my style",
+    "Other",
+  ],
+  traded: [
+    "Upgrading",
+    "Wanted a different style",
+    "Doesn't fit collection",
+    "Better value in trade",
+    "Other",
+  ],
+};
 
 interface WatchShowcaseCardProps {
   watch: {
@@ -41,15 +67,57 @@ interface WatchShowcaseCardProps {
 export const WatchShowcaseCard = ({ watch, totalDays, index, onDelete }: WatchShowcaseCardProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showRemoveDialog, setShowRemoveDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [showQuickLog, setShowQuickLog] = useState(false);
+  const [saleDialogMode, setSaleDialogMode] = useState<'sold' | 'traded' | null>(null);
+  const [salePrice, setSalePrice] = useState("");
+  const [saleReason, setSaleReason] = useState("");
+  const [saleNotes, setSaleNotes] = useState("");
+  const [isSubmittingSale, setIsSubmittingSale] = useState(false);
   const imageUrl = watch.ai_image_url || watch.image_url || watchHero;
 
   const { handlers: longPressHandlers, isLongPress } = useLongPress(() => {
     setShowContextMenu(true);
   });
+
+  const openSaleDialog = (status: 'sold' | 'traded') => {
+    setSaleDialogMode(status);
+    setSalePrice("");
+    setSaleReason("");
+    setSaleNotes("");
+    setShowRemoveDialog(false);
+  };
+
+  const handleMarkAsSoldOrTraded = async () => {
+    if (!saleDialogMode) return;
+    setIsSubmittingSale(true);
+    try {
+      const { error } = await supabase
+        .from("watches")
+        .update({
+          status: saleDialogMode,
+          collection_id: null,
+          sale_price: salePrice ? parseFloat(salePrice) : null,
+          sale_reason: saleReason || null,
+          sale_notes: saleNotes || null,
+          sold_at: new Date().toISOString(),
+        })
+        .eq("id", watch.id);
+      if (error) throw error;
+      toast({
+        title: saleDialogMode === 'sold' ? 'Marked as Sold' : 'Marked as Traded',
+        description: "Removed from collection. Historical data preserved.",
+      });
+      setSaleDialogMode(null);
+      onDelete?.();
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to update status", variant: "destructive" });
+    } finally {
+      setIsSubmittingSale(false);
+    }
+  };
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -77,7 +145,7 @@ export const WatchShowcaseCard = ({ watch, totalDays, index, onDelete }: WatchSh
       });
     } finally {
       setIsDeleting(false);
-      setShowDeleteDialog(false);
+      setShowRemoveDialog(false);
     }
   };
 
