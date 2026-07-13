@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, RotateCcw, Trash2, DollarSign, MessageSquare } from "lucide-react";
+import { Calendar, RotateCcw, Trash2, DollarSign, MessageSquare, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
@@ -12,6 +12,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useCollection } from "@/contexts/CollectionContext";
 import { ItemTypeIcon } from "@/components/ItemTypeIcon";
 
@@ -43,6 +53,39 @@ export const PastWatchCard = ({ watch, totalDays, onUpdate, collectionId }: Past
   const [showRestoreDialog, setShowRestoreDialog] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editStatus, setEditStatus] = useState<'sold' | 'traded'>(
+    (watch.status as 'sold' | 'traded') || 'sold'
+  );
+  const [editPrice, setEditPrice] = useState<string>(
+    watch.sale_price != null ? String(watch.sale_price) : ""
+  );
+  const [editReason, setEditReason] = useState<string>(watch.sale_reason || "");
+  const [editNotes, setEditNotes] = useState<string>(watch.sale_notes || "");
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+
+  const handleSaveEdit = async () => {
+    setIsSavingEdit(true);
+    try {
+      const { error } = await supabase
+        .from("watches")
+        .update({
+          status: editStatus,
+          sale_price: editPrice ? parseFloat(editPrice) : null,
+          sale_reason: editReason || null,
+          sale_notes: editNotes || null,
+        })
+        .eq("id", watch.id);
+      if (error) throw error;
+      toast({ title: "Updated", description: `${watch.brand} ${watch.model} details saved` });
+      setShowEditDialog(false);
+      onUpdate();
+    } catch (e) {
+      toast({ title: "Error", description: "Failed to update details", variant: "destructive" });
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
 
   const handleRestore = async () => {
     setIsRestoring(true);
@@ -185,6 +228,21 @@ export const PastWatchCard = ({ watch, totalDays, onUpdate, collectionId }: Past
               <Button
                 variant="outline"
                 className="justify-start gap-3 h-auto py-3 border-borderSubtle"
+                onClick={() => {
+                  setShowRestoreDialog(false);
+                  setShowEditDialog(true);
+                }}
+                disabled={isRestoring || isDeleting}
+              >
+                <Pencil className="w-4 h-4" />
+                <div className="flex flex-col items-start">
+                  <span className="font-medium">Edit Details</span>
+                  <span className="text-xs text-textMuted">Update price, reason, notes or status</span>
+                </div>
+              </Button>
+              <Button
+                variant="outline"
+                className="justify-start gap-3 h-auto py-3 border-borderSubtle"
                 onClick={handleRestore}
                 disabled={isRestoring || isDeleting}
               >
@@ -214,6 +272,71 @@ export const PastWatchCard = ({ watch, totalDays, onUpdate, collectionId }: Past
               >
                 Cancel
               </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+          <DialogContent className="bg-surface border-borderSubtle sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-textMain">Edit Past {singularLabel}</DialogTitle>
+              <DialogDescription className="text-textSoft">
+                Update details for {watch.brand} {watch.model}.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-4 pt-2">
+              <div className="flex flex-col gap-2">
+                <Label>Status</Label>
+                <Select value={editStatus} onValueChange={(v) => setEditStatus(v as 'sold' | 'traded')}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="sold">Sold</SelectItem>
+                    <SelectItem value="traded">Traded</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="edit-price">
+                  {editStatus === 'sold' ? 'Sale price (USD)' : 'Value received (USD)'}
+                </Label>
+                <Input
+                  id="edit-price"
+                  type="number"
+                  inputMode="decimal"
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={editPrice}
+                  onChange={(e) => setEditPrice(e.target.value)}
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="edit-reason">Reason</Label>
+                <Input
+                  id="edit-reason"
+                  placeholder="Reason"
+                  value={editReason}
+                  onChange={(e) => setEditReason(e.target.value)}
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="edit-notes">Notes</Label>
+                <Textarea
+                  id="edit-notes"
+                  rows={3}
+                  placeholder="Notes"
+                  value={editNotes}
+                  onChange={(e) => setEditNotes(e.target.value)}
+                />
+              </div>
+              <div className="flex gap-2 pt-2">
+                <Button variant="ghost" className="flex-1" onClick={() => setShowEditDialog(false)} disabled={isSavingEdit}>
+                  Cancel
+                </Button>
+                <Button className="flex-1" onClick={handleSaveEdit} disabled={isSavingEdit}>
+                  {isSavingEdit ? 'Saving…' : 'Save Changes'}
+                </Button>
+              </div>
             </div>
           </DialogContent>
         </Dialog>
