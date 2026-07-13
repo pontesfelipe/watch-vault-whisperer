@@ -25,6 +25,25 @@ import {
 import { useCollection } from "@/contexts/CollectionContext";
 import { ItemTypeIcon } from "@/components/ItemTypeIcon";
 
+const SALE_REASONS: Record<'sold' | 'traded', string[]> = {
+  sold: [
+    "Funding a new purchase",
+    "No longer wearing it",
+    "Didn't like it anymore",
+    "Needed the cash",
+    "Upgrading",
+    "Doesn't fit my style",
+    "Other",
+  ],
+  traded: [
+    "Upgrading",
+    "Wanted a different style",
+    "Doesn't fit collection",
+    "Better value in trade",
+    "Other",
+  ],
+};
+
 interface PastWatchCardProps {
   watch: {
     id: string;
@@ -312,12 +331,16 @@ export const PastWatchCard = ({ watch, totalDays, onUpdate, collectionId }: Past
               </div>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="edit-reason">Reason</Label>
-                <Input
-                  id="edit-reason"
-                  placeholder="Reason"
-                  value={editReason}
-                  onChange={(e) => setEditReason(e.target.value)}
-                />
+                <Select value={editReason} onValueChange={setEditReason}>
+                  <SelectTrigger id="edit-reason">
+                    <SelectValue placeholder="Select a reason" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SALE_REASONS[editStatus].map((r) => (
+                      <SelectItem key={r} value={r}>{r}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="edit-notes">Notes</Label>
