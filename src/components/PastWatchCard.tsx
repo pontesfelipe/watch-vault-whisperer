@@ -210,6 +210,20 @@ export const PastWatchCard = ({ watch, totalDays, onUpdate, collectionId }: Past
               <span className="text-textSoft text-right">{watch.sale_reason}</span>
             </div>
           )}
+          {watch.sale_price != null && watch.cost != null && totalDays > 0 && (
+            (() => {
+              const net = Number(watch.cost) - Number(watch.sale_price);
+              const perWear = net / totalDays;
+              return (
+                <div className="flex items-center justify-between text-xs pt-1 border-t border-borderSubtle">
+                  <span className="text-textMuted">Cost per {usageNoun}</span>
+                  <span className={`font-semibold ${perWear >= 0 ? 'text-textMain' : 'text-primary'}`}>
+                    {perWear < 0 ? '+' : ''}${Math.abs(perWear).toFixed(2)}
+                  </span>
+                </div>
+              );
+            })()
+          )}
           {watch.sale_notes && (
             <div className="flex items-start gap-1 text-xs text-textSoft pt-1 border-t border-borderSubtle">
               <MessageSquare className="w-3 h-3 mt-0.5 shrink-0 text-textMuted" />
