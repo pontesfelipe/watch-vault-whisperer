@@ -59,6 +59,7 @@ serve(async (req) => {
       purseSpecsResult,
       insightsResult,
       preferencesResult,
+      pastWatchesResult,
     ] = await Promise.all([
       supabaseClient
         .from("watches")
@@ -116,6 +117,12 @@ serve(async (req) => {
         .select("taste_description")
         .eq("user_id", user.id)
         .maybeSingle(),
+      supabaseClient
+        .from("watches")
+        .select("*")
+        .eq("user_id", user.id)
+        .in("status", ["sold", "traded", "deleted"])
+        .order("updated_at", { ascending: false }),
     ]);
 
     const watches = watchesResult.data || [];
@@ -130,6 +137,37 @@ serve(async (req) => {
     const purseSpecs = purseSpecsResult.data || [];
     const collectionInsights = insightsResult.data?.insights || "";
     const tastePreferences = preferencesResult.data?.taste_description || "";
+    const pastWatches = pastWatchesResult.data || [];
+
+    // Past items (sold / traded / deleted) with all captured data
+    const pastSummary = pastWatches.map((w: any) => {
+      const wearDaysForItem = wearEntries
+        .filter((e: any) => e.watch_id === w.id)
+        .reduce((s: number, e: any) => s + (e.days || 1), 0);
+      const parts: string[] = [];
+      parts.push(`${w.brand} ${w.model}${w.dial_color ? ` (${w.dial_color})` : ""} [${w.status}]`);
+      if (w.type) parts.push(`  Type: ${w.type}`);
+      if (w.cost) parts.push(`  Cost paid: $${Number(w.cost).toLocaleString()}`);
+      if (w.sale_price != null) parts.push(`  Sale price: $${Number(w.sale_price).toLocaleString()}`);
+      if (w.cost && w.sale_price != null) {
+        const netCost = Number(w.cost) - Number(w.sale_price);
+        parts.push(`  Net cost: $${netCost.toLocaleString()}${wearDaysForItem > 0 ? ` ($${(netCost / wearDaysForItem).toFixed(2)}/day used)` : ""}`);
+      }
+      if (w.when_bought) parts.push(`  Bought: ${w.when_bought}`);
+      if (w.sold_at) parts.push(`  Sold/traded: ${w.sold_at}`);
+      if (w.sale_reason) parts.push(`  Reason: ${w.sale_reason}`);
+      if (w.sale_notes) parts.push(`  Sale notes: ${w.sale_notes}`);
+      if (wearDaysForItem > 0) parts.push(`  Total days used: ${wearDaysForItem}`);
+      if (w.why_bought) parts.push(`  Why bought: ${w.why_bought}`);
+      if (w.what_i_like) parts.push(`  Liked: ${w.what_i_like}`);
+      if (w.what_i_dont_like) parts.push(`  Disliked: ${w.what_i_dont_like}`);
+      if (w.sentiment) parts.push(`  Sentiment: ${w.sentiment}`);
+      return parts.join("\n");
+    }).join("\n\n");
+
+    const soldCount = pastWatches.filter((w: any) => w.status === "sold").length;
+    const tradedCount = pastWatches.filter((w: any) => w.status === "traded").length;
+    const deletedCount = pastWatches.filter((w: any) => w.status === "deleted").length;
 
     // Build comprehensive context
     const collectionLabel = collectionType === "sneakers" ? "sneakers" : 
@@ -282,6 +320,9 @@ ${collectionInsights}` : ""}
 
 ${tastePreferences ? `TASTE PREFERENCES:
 ${tastePreferences}` : ""}
+
+PAST ${collectionLabel.toUpperCase()} (SOLD / TRADED / DELETED — ${pastWatches.length} total: ${soldCount} sold, ${tradedCount} traded, ${deletedCount} deleted):
+${pastSummary || "No past items recorded."}
 
 INSTRUCTIONS:
 - Answer questions ONLY about THIS user's own collection using the data above.
