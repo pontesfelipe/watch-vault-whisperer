@@ -7,6 +7,7 @@ interface DepreciationCardProps {
   marketValue: number;
   depreciation: number;
   depreciationPercent: number;
+  missingMSRPCount?: number;
 }
 
 export const DepreciationCard = ({
@@ -15,6 +16,7 @@ export const DepreciationCard = ({
   marketValue,
   depreciation,
   depreciationPercent,
+  missingMSRPCount = 0,
 }: DepreciationCardProps) => {
   const isAppreciation = depreciation < 0;
   const formatCurrency = (value: number) => {
@@ -41,6 +43,11 @@ export const DepreciationCard = ({
             <p className="text-xl font-bold text-foreground">
               {totalMSRP > 0 ? formatCurrency(totalMSRP) : "N/A"}
             </p>
+            {missingMSRPCount > 0 && (
+              <p className="text-xs text-muted-foreground mt-1">
+                {missingMSRPCount} without MSRP — price paid used
+              </p>
+            )}
           </div>
           <div>
             <p className="text-sm text-muted-foreground mb-1">Price Paid</p>

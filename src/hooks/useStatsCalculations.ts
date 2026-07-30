@@ -220,7 +220,15 @@ export const useStatsCalculations = (
 
     // Depreciation Analysis
     const totalCollectionValue = watches.reduce((sum, watch) => sum + (watch.cost || 0), 0);
-    const totalMSRP = watches.reduce((sum, watch) => sum + (watch.msrp || 0), 0);
+    // MSRP totals must cover the same watches as the price-paid total, otherwise
+    // the comparison is apples-to-oranges (watches missing an MSRP would silently
+    // drop out and make MSRP look lower than what was actually paid).
+    // Watches without a recorded MSRP fall back to their cost.
+    const totalMSRP = watches.reduce(
+      (sum, watch) => sum + (watch.msrp && watch.msrp > 0 ? watch.msrp : (watch.cost || 0)),
+      0
+    );
+    const watchesMissingMSRPCount = watches.filter((w) => !w.msrp || w.msrp <= 0).length;
     
     // Include every watch with a cost so newly added watches always appear in
     // canvas value totals. Watches without a recorded resale price fall back
@@ -278,6 +286,7 @@ export const useStatsCalculations = (
       mostWornThisYearDays,
       // Depreciation stats
       totalMSRP,
+      watchesMissingMSRPCount,
       totalCollectionValue,
       currentMarketValue,
       totalDepreciation,
