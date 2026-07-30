@@ -91,7 +91,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: "You are a watch market analyst specialized in precise model identification. Search for current resale prices from multiple sources (Chrono24, WatchCharts, eBay, etc.) and provide an average market price in USD. CRITICAL: Pay extremely close attention to the EXACT model variant, dial color, case size, movement type, and crystal material - these specifications dramatically impact pricing. Limited editions and special variants command different prices than standard models. Be precise and only return numerical data."
+            content: "You are a watch market analyst specialized in precise model identification. Search for current resale prices from multiple sources (Chrono24, WatchCharts, eBay, etc.) and provide an average market price in USD. You also research the official retail price (MSRP / list price) from the manufacturer's own website or authorized dealers. CRITICAL: Pay extremely close attention to the EXACT model variant, dial color, case size, movement type, and crystal material - these specifications dramatically impact pricing. Limited editions and special variants command different prices than standard models. Be precise and only return numerical data."
           },
           {
             role: "user",
@@ -101,7 +101,9 @@ CRITICAL SPECIFICATIONS TO MATCH:
 - Brand: ${brand}
 - Model: ${model}${reference ? `\n- Reference number: ${reference} (MUST match this exact reference — different references have very different prices)` : ''}${dialColor ? `\n- Dial Color: ${dialColor} (MUST match this exact color)` : ''}${caseSize ? `\n- Case Size: ${caseSize}` : ''}${movement ? `\n- Movement: ${movement}` : ''}${hasSapphire ? `\n- Crystal: Sapphire` : ''}${year ? `\n- Production Year: ${year} (search for pre-owned prices of this specific year — older generations often differ significantly from current models)` : ''}
 
-Search multiple marketplaces (Chrono24, WatchCharts, eBay) for this EXACT specification combination. If this is a limited edition or special variant (e.g., "Coulson", "Limited", special dial color), make sure to search for that specific version, NOT the standard model. Provide a single average price. Only respond with the number, no currency symbols or text.`
+Search multiple marketplaces (Chrono24, WatchCharts, eBay) for this EXACT specification combination. If this is a limited edition or special variant (e.g., "Coulson", "Limited", special dial color), make sure to search for that specific version, NOT the standard model.
+
+ALSO report the official retail price (MSRP) in USD for this exact reference, taken from the manufacturer's official website (e.g. tagheuer.com, jaeger-lecoultre.com, rolex.com) or an authorized dealer. If the model is discontinued, report its retail price at the time it was last sold new. Omit the MSRP entirely if you cannot find a credible official retail price — never guess it from resale listings.`
           }
         ],
         tools: [
@@ -125,6 +127,10 @@ Search multiple marketplaces (Chrono24, WatchCharts, eBay) for this EXACT specif
                   sources: {
                     type: "string",
                     description: "Brief note about data sources used"
+                  },
+                  msrp: {
+                    type: "number",
+                    description: "Official retail price (MSRP) in USD from the manufacturer or an authorized dealer. Omit if not credibly known."
                   }
                 },
                 required: ["price", "confidence"],
@@ -180,9 +186,24 @@ Search multiple marketplaces (Chrono24, WatchCharts, eBay) for this EXACT specif
       const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
       const supabase = createClient(supabaseUrl, supabaseKey);
 
+      const updates: Record<string, number> = { average_resale_price: averagePrice };
+
+      // Only fill MSRP when the watch doesn't already have one, so a
+      // user-entered retail price is never overwritten by the AI estimate.
+      if (typeof priceData.msrp === "number" && priceData.msrp > 0) {
+        const { data: existing } = await supabase
+          .from("watches")
+          .select("msrp")
+          .eq("id", watchId)
+          .maybeSingle();
+        if (!existing?.msrp || existing.msrp <= 0) {
+          updates.msrp = priceData.msrp;
+        }
+      }
+
       const { error: updateError } = await supabase
         .from("watches")
-        .update({ average_resale_price: averagePrice })
+        .update(updates)
         .eq("id", watchId);
 
       if (updateError) {
@@ -196,6 +217,7 @@ Search multiple marketplaces (Chrono24, WatchCharts, eBay) for this EXACT specif
     return new Response(
       JSON.stringify({ 
         price: averagePrice,
+        msrp: priceData.msrp ?? null,
         confidence: priceData.confidence,
         sources: priceData.sources,
         brand,
