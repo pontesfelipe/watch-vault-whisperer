@@ -19,6 +19,10 @@ export const DepreciationCard = ({
   missingMSRPCount = 0,
 }: DepreciationCardProps) => {
   const isAppreciation = depreciation < 0;
+  // Price paid is the reference amount for both comparisons.
+  const msrpVsPaidPercent =
+    pricePaid > 0 ? ((totalMSRP - pricePaid) / pricePaid) * 100 : 0;
+  const paidBelowMsrp = msrpVsPaidPercent >= 0;
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -64,26 +68,29 @@ export const DepreciationCard = ({
         </div>
         
         <div className="pt-4 border-t border-border space-y-3">
-          {totalMSRP > 0 && (
+          {totalMSRP > 0 && pricePaid > 0 && (
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                {marketValue >= totalMSRP ? (
+                {paidBelowMsrp ? (
                   <TrendingUp className="w-5 h-5 text-green-500" />
                 ) : (
                   <TrendingDown className="w-5 h-5 text-red-500" />
                 )}
                 <span className="text-sm text-muted-foreground">
-                  From MSRP
+                  MSRP vs Price Paid
                 </span>
               </div>
               <div className="text-right">
                 <p
                   className={`text-xl font-bold ${
-                    marketValue >= totalMSRP ? "text-green-500" : "text-red-500"
+                    paidBelowMsrp ? "text-green-500" : "text-red-500"
                   }`}
                 >
-                  {marketValue >= totalMSRP ? "+" : "-"}
-                  {Math.abs(((marketValue - totalMSRP) / totalMSRP) * 100).toFixed(1)}%
+                  {paidBelowMsrp ? "+" : "-"}
+                  {Math.abs(msrpVsPaidPercent).toFixed(1)}%
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {paidBelowMsrp ? "paid below MSRP" : "paid above MSRP"}
                 </p>
               </div>
             </div>
@@ -97,7 +104,7 @@ export const DepreciationCard = ({
                 <TrendingDown className="w-5 h-5 text-red-500" />
               )}
               <span className="text-sm text-muted-foreground">
-                From Price Paid
+                Market Value vs Price Paid
               </span>
             </div>
             <div className="text-right">
@@ -107,6 +114,9 @@ export const DepreciationCard = ({
                 }`}
               >
                 {isAppreciation ? "+" : "-"}{Math.abs(depreciationPercent).toFixed(1)}%
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {isAppreciation ? "above what you paid" : "below what you paid"}
               </p>
             </div>
           </div>
