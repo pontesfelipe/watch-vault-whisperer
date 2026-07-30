@@ -254,6 +254,7 @@ const Dashboard = () => {
                 marketValue={stats.currentMarketValue}
                 depreciation={stats.totalDepreciation}
                 depreciationPercent={stats.depreciationPercentage}
+                missingMSRPCount={stats.watchesMissingMSRPCount}
               />
               <StatsCard
                 title="Most Depreciated"
