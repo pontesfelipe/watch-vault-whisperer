@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Shield, Users, MessageSquare, Calendar, Award } from "lucide-react";
+import { Shield, Users, Calendar, Award } from "lucide-react";
 
 interface ReputationData {
   reputation_score: number;
