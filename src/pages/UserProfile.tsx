@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserAvatar } from "@/components/UserAvatar";
-import { Loader2, ArrowLeft, Lock, UserPlus, MessageCircle, Watch, FileText } from "lucide-react";
+import { Loader2, ArrowLeft, Lock, UserPlus, MessageCircle, Watch } from "lucide-react";
 import { toast } from "sonner";
 import { useEdgeSwipeBack } from "@/hooks/useEdgeSwipeBack";
 
