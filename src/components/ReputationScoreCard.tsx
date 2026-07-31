@@ -66,10 +66,6 @@ export function ReputationScoreCard({ userId }: ReputationScoreCardProps) {
           <span>{data.account_age_days} days active</span>
         </div>
         <div className="flex items-center gap-2 text-muted-foreground">
-          <MessageSquare className="h-3.5 w-3.5" />
-          <span>{data.post_count} posts</span>
-        </div>
-        <div className="flex items-center gap-2 text-muted-foreground">
           <Shield className="h-3.5 w-3.5" />
           <span>{data.completed_trades} trades</span>
         </div>
