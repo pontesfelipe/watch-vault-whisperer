@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, UserPlus, Heart, MessageSquare, AtSign } from "lucide-react";
+import { Bell, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
@@ -13,13 +13,13 @@ import { formatDistanceToNow, parseISO } from "date-fns";
 
 interface NotificationItem {
   id: string;
-  type: "friend_request" | "post_interaction" | "mention";
+  type: "friend_request";
   title: string;
   description: string;
   timestamp: string;
   isRead: boolean;
   link?: string;
-  icon: "friend" | "like" | "comment" | "mention";
+  icon: "friend";
 }
 
 export function NotificationBell() {
