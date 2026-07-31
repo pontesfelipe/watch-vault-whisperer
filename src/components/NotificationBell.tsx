@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, UserPlus, Heart, MessageSquare, AtSign } from "lucide-react";
+import { Bell, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
@@ -13,13 +13,13 @@ import { formatDistanceToNow, parseISO } from "date-fns";
 
 interface NotificationItem {
   id: string;
-  type: "friend_request" | "post_interaction" | "mention";
+  type: "friend_request";
   title: string;
   description: string;
   timestamp: string;
   isRead: boolean;
   link?: string;
-  icon: "friend" | "like" | "comment" | "mention";
+  icon: "friend";
 }
 
 export function NotificationBell() {
@@ -84,13 +84,7 @@ export function NotificationBell() {
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
-  const handleMarkMentionsRead = async () => {
-    if (!user) return;
-    await supabase
-      .from("mention_notifications")
-      .update({ is_read: true })
-      .eq("user_id", user.id)
-      .eq("is_read", false);
+  const handleMarkAllRead = async () => {
     fetchNotifications();
   };
 
@@ -99,14 +93,9 @@ export function NotificationBell() {
     if (item.link) navigate(item.link);
   };
 
-  const getIcon = (icon: NotificationItem["icon"]) => {
-    switch (icon) {
-      case "friend": return <UserPlus className="h-4 w-4 text-blue-500" />;
-      case "like": return <Heart className="h-4 w-4 text-red-500" />;
-      case "comment": return <MessageSquare className="h-4 w-4 text-amber-500" />;
-      case "mention": return <AtSign className="h-4 w-4 text-purple-500" />;
-    }
-  };
+  const getIcon = (_icon: NotificationItem["icon"]) => (
+    <UserPlus className="h-4 w-4 text-blue-500" />
+  );
 
   const hasNotifications = unreadCount > 0;
 
@@ -135,7 +124,7 @@ export function NotificationBell() {
         <div className="flex items-center justify-between px-4 py-3 border-b border-borderSubtle">
           <h3 className="font-semibold text-sm">Notifications</h3>
           {unreadCount > 0 && (
-            <Button variant="ghost" size="sm" className="text-xs h-7" onClick={handleMarkMentionsRead}>
+            <Button variant="ghost" size="sm" className="text-xs h-7" onClick={handleMarkAllRead}>
               Mark all read
             </Button>
           )}

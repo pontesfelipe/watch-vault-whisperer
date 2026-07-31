@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Shield, Users, MessageSquare, Calendar, Award } from "lucide-react";
+import { Shield, Users, Calendar, Award } from "lucide-react";
 
 interface ReputationData {
   reputation_score: number;
@@ -64,10 +64,6 @@ export function ReputationScoreCard({ userId }: ReputationScoreCardProps) {
         <div className="flex items-center gap-2 text-muted-foreground">
           <Calendar className="h-3.5 w-3.5" />
           <span>{data.account_age_days} days active</span>
-        </div>
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <MessageSquare className="h-3.5 w-3.5" />
-          <span>{data.post_count} posts</span>
         </div>
         <div className="flex items-center gap-2 text-muted-foreground">
           <Shield className="h-3.5 w-3.5" />

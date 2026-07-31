@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserAvatar } from "@/components/UserAvatar";
-import { Loader2, ArrowLeft, Lock, UserPlus, MessageCircle, Watch, FileText } from "lucide-react";
+import { Loader2, ArrowLeft, Lock, UserPlus, MessageCircle, Watch } from "lucide-react";
 import { toast } from "sonner";
 import { useEdgeSwipeBack } from "@/hooks/useEdgeSwipeBack";
 
@@ -37,10 +37,9 @@ export default function UserProfile() {
   const [profile, setProfile] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [watches, setWatches] = useState<PublicWatch[]>([]);
-  const [posts, setPosts] = useState<any[]>([]);
   const [isFriend, setIsFriend] = useState(false);
   const [friendRequestSent, setFriendRequestSent] = useState(false);
-  const [activeTab, setActiveTab] = useState("posts");
+  const [activeTab, setActiveTab] = useState("collection");
 
   const isOwnProfile = user?.id === id;
 
@@ -69,15 +68,6 @@ export default function UserProfile() {
           .maybeSingle();
         if (data) setProfile({ ...(data as any), full_name: null });
       }
-
-      // Load public posts
-      const { data: postsData } = await supabase
-        .from("posts")
-        .select("*")
-        .eq("user_id", id)
-        .order("created_at", { ascending: false })
-        .limit(20);
-      setPosts(postsData || []);
 
       // Load shared watches
       const { data: watchesData } = await supabase
@@ -209,42 +199,12 @@ export default function UserProfile() {
           </Card>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="posts" className="gap-2">
-                <FileText className="h-4 w-4" />
-                Posts
-              </TabsTrigger>
+            <TabsList className="grid w-full grid-cols-1">
               <TabsTrigger value="collection" className="gap-2">
                 <Watch className="h-4 w-4" />
                 Collection
               </TabsTrigger>
             </TabsList>
-
-            <TabsContent value="posts" className="mt-4">
-              {posts.length === 0 ? (
-                <Card className="p-8 text-center border-dashed border-borderSubtle">
-                  <FileText className="h-10 w-10 text-textMuted mx-auto mb-3" />
-                  <p className="text-sm text-textMuted">No posts yet</p>
-                </Card>
-              ) : (
-                <div className="space-y-3">
-                  {posts.map((post) => (
-                    <Card key={post.id} className="p-4">
-                      <h3 className="font-medium text-textMain">{post.title}</h3>
-                      {post.content && (
-                        <p className="text-sm text-textMuted mt-1 line-clamp-3">{post.content}</p>
-                      )}
-                      {post.image_url && (
-                        <img src={post.image_url} alt="" className="mt-2 rounded-lg max-h-48 object-cover w-full" />
-                      )}
-                      <p className="text-xs text-textMuted mt-2">
-                        {new Date(post.created_at).toLocaleDateString()}
-                      </p>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </TabsContent>
 
             <TabsContent value="collection" className="mt-4">
               {watches.length === 0 ? (

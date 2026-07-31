@@ -352,7 +352,7 @@ export function ProfileSettingsCard() {
             Profile Information
           </CardTitle>
           <CardDescription>
-            Your username is displayed in chats and forums to protect your privacy. You can change it anytime.
+            Your username is displayed in chats and messages to protect your privacy. You can change it anytime.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -366,7 +366,7 @@ export function ProfileSettingsCard() {
                 placeholder="Your public username"
               />
               <p className="text-xs text-muted-foreground">
-                This is shown in chats, forums, and messages
+                This is shown in chats and messages
               </p>
             </div>
             <div className="space-y-2">
