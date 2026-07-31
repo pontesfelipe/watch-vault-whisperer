@@ -84,13 +84,7 @@ export function NotificationBell() {
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
-  const handleMarkMentionsRead = async () => {
-    if (!user) return;
-    await supabase
-      .from("mention_notifications")
-      .update({ is_read: true })
-      .eq("user_id", user.id)
-      .eq("is_read", false);
+  const handleMarkAllRead = async () => {
     fetchNotifications();
   };
 
@@ -99,14 +93,9 @@ export function NotificationBell() {
     if (item.link) navigate(item.link);
   };
 
-  const getIcon = (icon: NotificationItem["icon"]) => {
-    switch (icon) {
-      case "friend": return <UserPlus className="h-4 w-4 text-blue-500" />;
-      case "like": return <Heart className="h-4 w-4 text-red-500" />;
-      case "comment": return <MessageSquare className="h-4 w-4 text-amber-500" />;
-      case "mention": return <AtSign className="h-4 w-4 text-purple-500" />;
-    }
-  };
+  const getIcon = (_icon: NotificationItem["icon"]) => (
+    <UserPlus className="h-4 w-4 text-blue-500" />
+  );
 
   const hasNotifications = unreadCount > 0;
 
