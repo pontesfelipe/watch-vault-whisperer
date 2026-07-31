@@ -523,6 +523,23 @@ const WatchDetail = () => {
                   </div>
                 </Card>
 
+                {watch.msrp ? (
+                  <Card className="border-border bg-card p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <p className="text-sm text-muted-foreground mb-1">MSRP (Retail)</p>
+                        {showCost ? (
+                          <p className="text-3xl font-bold text-foreground">${watch.msrp.toLocaleString()}</p>
+                        ) : (
+                          <p className="text-3xl font-bold text-muted-foreground">••••••</p>
+                        )}
+                        <p className="text-xs text-muted-foreground mt-1">Source: brand official retail price research</p>
+                      </div>
+                      <DollarSign className="w-8 h-8 text-primary" />
+                    </div>
+                  </Card>
+                ) : null}
+
                 {watch.average_resale_price && (
                   <Card className="border-border bg-card p-6">
                     <div className="flex items-center justify-between">
@@ -535,6 +552,10 @@ const WatchDetail = () => {
                             <p className="text-3xl font-bold text-muted-foreground">••••••</p>
                           )}
                         </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Source: US resale platforms
+                          {watch.updated_at ? ` · updated ${new Date(watch.updated_at).toLocaleDateString()}` : ""}
+                        </p>
                       </div>
                       <DollarSign className="w-8 h-8 text-primary" />
                     </div>
