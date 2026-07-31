@@ -48,7 +48,6 @@ export function PerformanceMetricsPanel() {
         { count: activeUsers7d },
         { count: totalWatches },
         { count: totalWearEntries },
-        { count: totalPosts },
         { count: totalConversations },
         { count: totalFeedback },
         { count: totalWishlist },
@@ -58,7 +57,6 @@ export function PerformanceMetricsPanel() {
           .gte('updated_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()),
         supabase.from('watches').select('*', { count: 'exact', head: true }),
         supabase.from('wear_entries').select('*', { count: 'exact', head: true }),
-        supabase.from('posts').select('*', { count: 'exact', head: true }),
         supabase.from('conversations').select('*', { count: 'exact', head: true }),
         supabase.from('feedback').select('*', { count: 'exact', head: true }),
         supabase.from('wishlist').select('*', { count: 'exact', head: true }),
@@ -66,7 +64,7 @@ export function PerformanceMetricsPanel() {
 
       const queryTime = performance.now() - start;
       const estimatedRows = (totalUsers || 0) + (totalWatches || 0) + (totalWearEntries || 0) +
-        (totalPosts || 0) + (totalConversations || 0) + (totalFeedback || 0) + (totalWishlist || 0);
+        (totalConversations || 0) + (totalFeedback || 0) + (totalWishlist || 0);
       const estimatedSizeBytes = estimatedRows * 2048;
       const dbSizeMB = estimatedSizeBytes / (1024 * 1024);
 
@@ -75,7 +73,7 @@ export function PerformanceMetricsPanel() {
         activeUsersLast7d: activeUsers7d || 0,
         totalWatches: totalWatches || 0,
         totalWearEntries: totalWearEntries || 0,
-        avgQueryTimeMs: Math.round(queryTime / 8),
+        avgQueryTimeMs: Math.round(queryTime / 7),
         dbSizeMB: Math.round(dbSizeMB * 100) / 100,
         dbUsagePercent: Math.min((dbSizeMB / DB_SIZE_LIMIT_MB) * 100, 100),
         connectionUsagePercent: Math.min(
