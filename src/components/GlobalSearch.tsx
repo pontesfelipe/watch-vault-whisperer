@@ -65,13 +65,13 @@ export function GlobalSearch() {
 
       try {
         const { data: profiles } = await supabase
-          .from("profiles")
+          .from("public_profiles" as any)
           .select("id, username, avatar_url")
           .ilike("username", `%${q}%`)
           .limit(5);
 
         if (profiles) {
-          profiles.forEach((p) => {
+          (profiles as any[]).forEach((p) => {
             if (p.id !== user?.id) {
               searchResults.push({
                 type: "user",
