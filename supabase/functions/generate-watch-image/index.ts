@@ -44,6 +44,44 @@ const COMPOSITION_RULES = [
   'Ultra high resolution, photorealistic, luxury catalog quality',
 ].join('. ');
 
+// Admin-editable prompt templates (public.ai_prompt_templates). Falls back to
+// the hardcoded defaults above/below when a row is missing or empty.
+type PromptTemplates = Record<string, string>;
+let promptTemplates: PromptTemplates = {};
+
+async function loadPromptTemplates(client: any): Promise<PromptTemplates> {
+  try {
+    const { data, error } = await client
+      .from('ai_prompt_templates')
+      .select('key, template')
+      .in('key', [
+        'watch_image_system',
+        'watch_image_composition_rules',
+        'watch_image_pure_generation',
+        'watch_image_reference_enhanced',
+      ]);
+    if (error) throw error;
+    const map: PromptTemplates = {};
+    for (const row of data ?? []) {
+      if (row.template && String(row.template).trim()) map[row.key] = String(row.template).trim();
+    }
+    return map;
+  } catch (e) {
+    console.error('Failed to load prompt templates, using defaults:', e);
+    return {};
+  }
+}
+
+function renderTemplate(template: string, vars: Record<string, string>): string {
+  return template.replace(/\{\{\s*(\w+)\s*\}\}/g, (_m, key) => vars[key] ?? '');
+}
+
+function compositionRules(): string {
+  return promptTemplates['watch_image_composition_rules'] || COMPOSITION_RULES;
+}
+
+
+
 type IdentityProfile = {
   officialName: string;
   requiredElements: string;
