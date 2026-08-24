@@ -240,6 +240,11 @@ export default function Admin() {
             <FeatureMatrixTab />
           </TabsContent>
 
+          <TabsContent value="prompts" className="space-y-4">
+            <AIPromptsTab />
+          </TabsContent>
+
+
           <TabsContent value="feedback" className="space-y-4">
             <Card>
               <CardHeader>
