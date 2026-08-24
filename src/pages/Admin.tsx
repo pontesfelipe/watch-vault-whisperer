@@ -204,10 +204,15 @@ export default function Admin() {
               <ToggleRight className="h-3.5 w-3.5" />
               Features
             </TabsTrigger>
+            <TabsTrigger value="prompts" className="flex items-center gap-1.5 text-xs px-3 py-2 whitespace-nowrap">
+              <Sparkles className="h-3.5 w-3.5" />
+              AI Prompts
+            </TabsTrigger>
             <TabsTrigger value="feedback" className="flex items-center gap-1.5 text-xs px-3 py-2 whitespace-nowrap">
               <MessageSquarePlus className="h-3.5 w-3.5" />
               Feedback
             </TabsTrigger>
+
             <TabsTrigger value="methodology" className="flex items-center gap-1.5 text-xs px-3 py-2 whitespace-nowrap">
               <BookOpen className="h-3.5 w-3.5" />
               Methodology
