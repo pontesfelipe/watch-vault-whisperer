@@ -309,7 +309,7 @@ async function normalizeImageComposition(
                   `Retouch this image of ${identity} without changing model identity or design details`,
                   'DO NOT alter dial layout, hand style, bezel architecture, markers, case shape, bracelet type, or color palette',
                   'ONLY normalize composition and orientation',
-                  COMPOSITION_RULES,
+                  compositionRules(),
                   'Absolute target: watch case (excluding strap) must occupy exactly 60% of image width and 50% of image height, perfectly centered',
                 ].join('. ')
               },
