@@ -74,6 +74,45 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_prompt_templates: {
+        Row: {
+          created_at: string
+          default_template: string
+          description: string | null
+          id: string
+          key: string
+          label: string
+          placeholders: string[]
+          template: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          default_template: string
+          description?: string | null
+          id?: string
+          key: string
+          label: string
+          placeholders?: string[]
+          template: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          default_template?: string
+          description?: string | null
+          id?: string
+          key?: string
+          label?: string
+          placeholders?: string[]
+          template?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       allowed_users: {
         Row: {
           added_at: string | null
