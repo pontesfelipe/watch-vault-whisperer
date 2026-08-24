@@ -428,7 +428,10 @@ serve(async (req) => {
 
     // supabaseClient already created above
 
+    promptTemplates = await loadPromptTemplates(supabaseClient);
+
     const identityProfile = getIdentityProfile(brand, model, type);
+
 
     // Only use user-provided reference images (no LLM URL search - those hallucinate)
     let referenceImages: string[] = [];
