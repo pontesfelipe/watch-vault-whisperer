@@ -15,10 +15,12 @@ import { FeatureMatrixTab } from "@/components/admin/FeatureMatrixTab";
 import { UserGroupsTab } from "@/components/admin/UserGroupsTab";
 import { EmailDispatchPanel } from "@/components/admin/EmailDispatchPanel";
 import { EmailSuppressionsTab } from "@/components/admin/EmailSuppressionsTab";
+import { AIPromptsTab } from "@/components/admin/AIPromptsTab";
 import { ExportWearLogsDialog } from "@/components/admin/ExportWearLogsDialog";
 import { ExportWatchInventoryDialog } from "@/components/admin/ExportWatchInventoryDialog";
 import { ExportAllDataDialog } from "@/components/admin/ExportAllDataDialog";
-import { Shield, Users, UserCog, Calendar, RefreshCw, Moon, Sun, BookOpen, FileText, FolderOpen, MessageSquarePlus, ToggleRight, ShieldAlert, UsersRound, Mail, Wrench, Trash2, ShieldOff } from "lucide-react";
+import { Shield, Users, UserCog, Calendar, RefreshCw, Moon, Sun, BookOpen, FileText, FolderOpen, MessageSquarePlus, ToggleRight, ShieldAlert, UsersRound, Mail, Wrench, Trash2, ShieldOff, Sparkles } from "lucide-react";
+
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
