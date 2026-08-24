@@ -191,6 +191,17 @@ function buildReferencePrompt(
   const cues = buildDetailCues(opts);
   const identity = buildIdentityConstraint(identityProfile);
 
+  const template = promptTemplates['watch_image_reference_enhanced'];
+  if (template) {
+    return renderTemplate(template, {
+      brand,
+      model: canonicalModel,
+      cues,
+      identity,
+      composition_rules: compositionRules(),
+    });
+  }
+
   return [
     'IMPORTANT: Use reference image(s) ONLY to identify design details (dial layout, hand style, bezel markings, bracelet pattern, crown shape)',
     'Do NOT copy framing, zoom level, angle, or proportions from references',
@@ -198,8 +209,9 @@ function buildReferencePrompt(
     cues,
     identity,
     `This is a ${brand} ${canonicalModel}`,
-    `CRITICAL OVERRIDE - IGNORE REFERENCE IMAGE FRAMING: ${COMPOSITION_RULES}`,
+    `CRITICAL OVERRIDE - IGNORE REFERENCE IMAGE FRAMING: ${compositionRules()}`,
   ].filter(Boolean).join('. ');
+
 }
 
 function buildPureGenerationPrompt(
