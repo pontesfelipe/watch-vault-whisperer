@@ -456,9 +456,16 @@ serve(async (req) => {
     const identitySystemMessage = identityProfile
       ? {
           role: "system",
-          content: `You are generating a product photo of EXACTLY ${identityProfile.officialName}. MUST INCLUDE: ${identityProfile.requiredElements}. MUST NOT INCLUDE: ${identityProfile.forbiddenElements}.`
+          content: promptTemplates['watch_image_system']
+            ? renderTemplate(promptTemplates['watch_image_system'], {
+                official_name: identityProfile.officialName,
+                required_elements: identityProfile.requiredElements,
+                forbidden_elements: identityProfile.forbiddenElements,
+              })
+            : `You are generating a product photo of EXACTLY ${identityProfile.officialName}. MUST INCLUDE: ${identityProfile.requiredElements}. MUST NOT INCLUDE: ${identityProfile.forbiddenElements}.`
         }
       : null;
+
 
     let messages: any[];
     let generationMethod: string;
