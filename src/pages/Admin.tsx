@@ -15,10 +15,12 @@ import { FeatureMatrixTab } from "@/components/admin/FeatureMatrixTab";
 import { UserGroupsTab } from "@/components/admin/UserGroupsTab";
 import { EmailDispatchPanel } from "@/components/admin/EmailDispatchPanel";
 import { EmailSuppressionsTab } from "@/components/admin/EmailSuppressionsTab";
+import { AIPromptsTab } from "@/components/admin/AIPromptsTab";
 import { ExportWearLogsDialog } from "@/components/admin/ExportWearLogsDialog";
 import { ExportWatchInventoryDialog } from "@/components/admin/ExportWatchInventoryDialog";
 import { ExportAllDataDialog } from "@/components/admin/ExportAllDataDialog";
-import { Shield, Users, UserCog, Calendar, RefreshCw, Moon, Sun, BookOpen, FileText, FolderOpen, MessageSquarePlus, ToggleRight, ShieldAlert, UsersRound, Mail, Wrench, Trash2, ShieldOff } from "lucide-react";
+import { Shield, Users, UserCog, Calendar, RefreshCw, Moon, Sun, BookOpen, FileText, FolderOpen, MessageSquarePlus, ToggleRight, ShieldAlert, UsersRound, Mail, Wrench, Trash2, ShieldOff, Sparkles } from "lucide-react";
+
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -202,10 +204,15 @@ export default function Admin() {
               <ToggleRight className="h-3.5 w-3.5" />
               Features
             </TabsTrigger>
+            <TabsTrigger value="prompts" className="flex items-center gap-1.5 text-xs px-3 py-2 whitespace-nowrap">
+              <Sparkles className="h-3.5 w-3.5" />
+              AI Prompts
+            </TabsTrigger>
             <TabsTrigger value="feedback" className="flex items-center gap-1.5 text-xs px-3 py-2 whitespace-nowrap">
               <MessageSquarePlus className="h-3.5 w-3.5" />
               Feedback
             </TabsTrigger>
+
             <TabsTrigger value="methodology" className="flex items-center gap-1.5 text-xs px-3 py-2 whitespace-nowrap">
               <BookOpen className="h-3.5 w-3.5" />
               Methodology
@@ -232,6 +239,11 @@ export default function Admin() {
           <TabsContent value="features" className="space-y-4">
             <FeatureMatrixTab />
           </TabsContent>
+
+          <TabsContent value="prompts" className="space-y-4">
+            <AIPromptsTab />
+          </TabsContent>
+
 
           <TabsContent value="feedback" className="space-y-4">
             <Card>

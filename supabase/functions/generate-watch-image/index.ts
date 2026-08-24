@@ -44,6 +44,44 @@ const COMPOSITION_RULES = [
   'Ultra high resolution, photorealistic, luxury catalog quality',
 ].join('. ');
 
+// Admin-editable prompt templates (public.ai_prompt_templates). Falls back to
+// the hardcoded defaults above/below when a row is missing or empty.
+type PromptTemplates = Record<string, string>;
+let promptTemplates: PromptTemplates = {};
+
+async function loadPromptTemplates(client: any): Promise<PromptTemplates> {
+  try {
+    const { data, error } = await client
+      .from('ai_prompt_templates')
+      .select('key, template')
+      .in('key', [
+        'watch_image_system',
+        'watch_image_composition_rules',
+        'watch_image_pure_generation',
+        'watch_image_reference_enhanced',
+      ]);
+    if (error) throw error;
+    const map: PromptTemplates = {};
+    for (const row of data ?? []) {
+      if (row.template && String(row.template).trim()) map[row.key] = String(row.template).trim();
+    }
+    return map;
+  } catch (e) {
+    console.error('Failed to load prompt templates, using defaults:', e);
+    return {};
+  }
+}
+
+function renderTemplate(template: string, vars: Record<string, string>): string {
+  return template.replace(/\{\{\s*(\w+)\s*\}\}/g, (_m, key) => vars[key] ?? '');
+}
+
+function compositionRules(): string {
+  return promptTemplates['watch_image_composition_rules'] || COMPOSITION_RULES;
+}
+
+
+
 type IdentityProfile = {
   officialName: string;
   requiredElements: string;
@@ -153,6 +191,17 @@ function buildReferencePrompt(
   const cues = buildDetailCues(opts);
   const identity = buildIdentityConstraint(identityProfile);
 
+  const template = promptTemplates['watch_image_reference_enhanced'];
+  if (template) {
+    return renderTemplate(template, {
+      brand,
+      model: canonicalModel,
+      cues,
+      identity,
+      composition_rules: compositionRules(),
+    });
+  }
+
   return [
     'IMPORTANT: Use reference image(s) ONLY to identify design details (dial layout, hand style, bezel markings, bracelet pattern, crown shape)',
     'Do NOT copy framing, zoom level, angle, or proportions from references',
@@ -160,8 +209,9 @@ function buildReferencePrompt(
     cues,
     identity,
     `This is a ${brand} ${canonicalModel}`,
-    `CRITICAL OVERRIDE - IGNORE REFERENCE IMAGE FRAMING: ${COMPOSITION_RULES}`,
+    `CRITICAL OVERRIDE - IGNORE REFERENCE IMAGE FRAMING: ${compositionRules()}`,
   ].filter(Boolean).join('. ');
+
 }
 
 function buildPureGenerationPrompt(
@@ -174,6 +224,17 @@ function buildPureGenerationPrompt(
   const cues = buildDetailCues(opts);
   const identity = buildIdentityConstraint(identityProfile);
 
+  const template = promptTemplates['watch_image_pure_generation'];
+  if (template) {
+    return renderTemplate(template, {
+      brand,
+      model: canonicalModel,
+      cues,
+      identity,
+      composition_rules: compositionRules(),
+    });
+  }
+
   return [
     `Create an ACCURATE photorealistic product photograph of the exact ${brand} ${canonicalModel} wristwatch`,
     'This must look like a real catalog product photo taken by a professional photographer in a studio',
@@ -181,8 +242,9 @@ function buildPureGenerationPrompt(
     `The watch MUST be recognizably a ${brand} ${canonicalModel} - get the dial layout, hand style, bezel, case shape, and branding exactly right`,
     cues,
     identity,
-    COMPOSITION_RULES,
+    compositionRules(),
   ].filter(Boolean).join('. ');
+
 }
 
 async function fetchImageAsBase64(imageUrl: string): Promise<string | null> {
@@ -247,7 +309,7 @@ async function normalizeImageComposition(
                   `Retouch this image of ${identity} without changing model identity or design details`,
                   'DO NOT alter dial layout, hand style, bezel architecture, markers, case shape, bracelet type, or color palette',
                   'ONLY normalize composition and orientation',
-                  COMPOSITION_RULES,
+                  compositionRules(),
                   'Absolute target: watch case (excluding strap) must occupy exactly 60% of image width and 50% of image height, perfectly centered',
                 ].join('. ')
               },
@@ -366,7 +428,10 @@ serve(async (req) => {
 
     // supabaseClient already created above
 
+    promptTemplates = await loadPromptTemplates(supabaseClient);
+
     const identityProfile = getIdentityProfile(brand, model, type);
+
 
     // Only use user-provided reference images (no LLM URL search - those hallucinate)
     let referenceImages: string[] = [];
@@ -391,9 +456,16 @@ serve(async (req) => {
     const identitySystemMessage = identityProfile
       ? {
           role: "system",
-          content: `You are generating a product photo of EXACTLY ${identityProfile.officialName}. MUST INCLUDE: ${identityProfile.requiredElements}. MUST NOT INCLUDE: ${identityProfile.forbiddenElements}.`
+          content: promptTemplates['watch_image_system']
+            ? renderTemplate(promptTemplates['watch_image_system'], {
+                official_name: identityProfile.officialName,
+                required_elements: identityProfile.requiredElements,
+                forbidden_elements: identityProfile.forbiddenElements,
+              })
+            : `You are generating a product photo of EXACTLY ${identityProfile.officialName}. MUST INCLUDE: ${identityProfile.requiredElements}. MUST NOT INCLUDE: ${identityProfile.forbiddenElements}.`
         }
       : null;
+
 
     let messages: any[];
     let generationMethod: string;
