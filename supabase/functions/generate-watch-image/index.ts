@@ -224,6 +224,17 @@ function buildPureGenerationPrompt(
   const cues = buildDetailCues(opts);
   const identity = buildIdentityConstraint(identityProfile);
 
+  const template = promptTemplates['watch_image_pure_generation'];
+  if (template) {
+    return renderTemplate(template, {
+      brand,
+      model: canonicalModel,
+      cues,
+      identity,
+      composition_rules: compositionRules(),
+    });
+  }
+
   return [
     `Create an ACCURATE photorealistic product photograph of the exact ${brand} ${canonicalModel} wristwatch`,
     'This must look like a real catalog product photo taken by a professional photographer in a studio',
@@ -231,8 +242,9 @@ function buildPureGenerationPrompt(
     `The watch MUST be recognizably a ${brand} ${canonicalModel} - get the dial layout, hand style, bezel, case shape, and branding exactly right`,
     cues,
     identity,
-    COMPOSITION_RULES,
+    compositionRules(),
   ].filter(Boolean).join('. ');
+
 }
 
 async function fetchImageAsBase64(imageUrl: string): Promise<string | null> {
