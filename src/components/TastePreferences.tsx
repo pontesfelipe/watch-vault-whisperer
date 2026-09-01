@@ -16,17 +16,27 @@ export const TastePreferences = ({ onSuggest, isGenerating, remainingUsage }: Ta
   const [tasteDescription, setTasteDescription] = useState("");
   const [saved, setSaved] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     loadPreferences();
   }, []);
 
+  const getUserId = async () => {
+    const { data } = await supabase.auth.getUser();
+    return data.user?.id ?? null;
+  };
+
   const loadPreferences = async () => {
     try {
+      const userId = await getUserId();
+      if (!userId) return;
+
       const { data, error } = await supabase
         .from("user_preferences")
-        .select("*")
+        .select("taste_description")
+        .eq("user_id", userId)
         .limit(1)
         .maybeSingle();
 
@@ -41,12 +51,19 @@ export const TastePreferences = ({ onSuggest, isGenerating, remainingUsage }: Ta
   };
 
   const handleSave = async () => {
+    setIsSaving(true);
     try {
-      const { data: existing } = await supabase
+      const userId = await getUserId();
+      if (!userId) throw new Error("You must be signed in to save preferences");
+
+      const { data: existing, error: existingError } = await supabase
         .from("user_preferences")
         .select("id")
+        .eq("user_id", userId)
         .limit(1)
         .maybeSingle();
+
+      if (existingError) throw existingError;
 
       if (existing) {
         const { error } = await supabase
@@ -57,7 +74,7 @@ export const TastePreferences = ({ onSuggest, isGenerating, remainingUsage }: Ta
       } else {
         const { error } = await supabase
           .from("user_preferences")
-          .insert([{ taste_description: tasteDescription }]);
+          .insert([{ taste_description: tasteDescription, user_id: userId }]);
         if (error) throw error;
       }
 
@@ -66,15 +83,18 @@ export const TastePreferences = ({ onSuggest, isGenerating, remainingUsage }: Ta
         title: "Preferences saved",
         description: "Your taste preferences have been saved",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving preferences:", error);
       toast({
         title: "Error",
-        description: "Failed to save preferences",
+        description: error?.message || "Failed to save preferences",
         variant: "destructive",
       });
+    } finally {
+      setIsSaving(false);
     }
   };
+
 
   const handleAnalyzeCollection = async () => {
     setIsAnalyzing(true);
