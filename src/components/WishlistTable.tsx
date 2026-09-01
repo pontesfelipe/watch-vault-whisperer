@@ -112,7 +112,7 @@ export const WishlistTable = ({ items, onDelete, showAISuggested = false, showDe
                 <TableCell className="font-medium text-sm">{item.brand}</TableCell>
                 <TableCell className="text-sm">{item.model}</TableCell>
                 <TableCell className="hidden sm:table-cell text-sm">{item.dial_colors}</TableCell>
-                <TableCell className="hidden md:table-cell max-w-xs truncate text-sm">
+                <TableCell className="hidden md:table-cell max-w-sm text-sm whitespace-normal break-words">
                   {item.notes || "-"}
                 </TableCell>
                 {showDeleteButton && (
