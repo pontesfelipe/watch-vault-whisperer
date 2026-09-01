@@ -159,7 +159,7 @@ export const FeatureUsageAnalytics = () => {
                   />
                   <YAxis className="text-xs" />
                   <Tooltip 
-                    labelFormatter={(value) => format(new Date(value), 'MMMM d, yyyy')}
+                    labelFormatter={(value) => format(new Date(value as string | number), 'MMMM d, yyyy')}
                     formatter={(value: number) => [value, 'Events']}
                   />
                   <Area 
