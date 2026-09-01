@@ -238,7 +238,16 @@ const Collection = () => {
       }
 
       const { data, error } = await supabase.functions.invoke("suggest-watches", {
-        body: { tasteDescription },
+        body: {
+          tasteDescription,
+          collection: (watches || []).slice(0, 200).map((w: any) => ({
+            brand: w.brand,
+            model: w.model,
+            dial_color: w.dial_color,
+            type: w.type,
+            cost: typeof w.cost === 'number' ? w.cost : undefined,
+          })),
+        },
       });
 
       if (error) throw error;
