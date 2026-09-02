@@ -33,17 +33,24 @@ serve(async (req) => {
 
     console.log(`Analyzing collection of ${watches.length} watches...`);
 
-    // Build detailed collection summary
-    const collectionSummary = watches.map((w: any) => 
-      `${w.brand} ${w.model} (${w.dial_color}, ${w.type}${w.cost ? `, $${w.cost}` : ''})`
-    ).join('\n');
+    const fmt = (w: any) =>
+      `${w.brand} ${w.model} (${w.dial_color}, ${w.type}${w.cost ? `, $${w.cost}` : ''})`;
+
+    const owned = watches.filter((w: any) => (w.status ?? 'active') === 'active');
+    const past = watches.filter((w: any) => (w.status ?? 'active') !== 'active');
+
+    // Build detailed collection summary (current collection only)
+    const collectionSummary = (owned.length ? owned : watches).map(fmt).join('\n');
+    const pastSummary = past
+      .map((w: any) => `${fmt(w)} - ${w.status === 'traded' ? 'TRADED AWAY' : 'SOLD'}${w.sale_reason ? `, reason: ${w.sale_reason}` : ''}`)
+      .join('\n');
 
     // Get brand frequency
     const brandCount: Record<string, number> = {};
     const typeCount: Record<string, number> = {};
     const colorCount: Record<string, number> = {};
     
-    watches.forEach((w: any) => {
+    (owned.length ? owned : watches).forEach((w: any) => {
       brandCount[w.brand] = (brandCount[w.brand] || 0) + 1;
       typeCount[w.type] = (typeCount[w.type] || 0) + 1;
       colorCount[w.dial_color] = (colorCount[w.dial_color] || 0) + 1;
@@ -69,8 +76,9 @@ serve(async (req) => {
 
     const prompt = `You are a watch expert and collector analyst. Analyze this watch collection and provide personalized insights about the owner's taste, collecting style, and preferences.
 
-Collection (${watches.length} watches):
+CURRENT COLLECTION - these are owned right now (${(owned.length ? owned : watches).length} watches):
 ${collectionSummary}
+${past.length ? `\nPAST WATCHES - these were SOLD or TRADED and are NO LONGER OWNED. Use them only as background context about how the collector's taste evolved. Never describe them as part of the current collection, and always mark them clearly as former pieces if you mention them:\n${pastSummary}\n` : ''}
 
 Statistics:
 - Top Brands: ${topBrands}
@@ -83,6 +91,8 @@ Provide a warm, insightful analysis covering:
 3. Unique patterns or themes in the collection
 4. What this collection says about the collector's personality
 5. Potential collection strengths or interesting characteristics
+
+Base your description of the collection on the CURRENT COLLECTION only. Past (sold/traded) watches may inform how taste evolved, but must be referred to in the past tense as pieces the collector no longer owns.
 
 Write in second person ("you", "your") as if speaking directly to the collector. Be warm, insightful, and specific. Keep it conversational and engaging.
 
