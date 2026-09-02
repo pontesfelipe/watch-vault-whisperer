@@ -111,12 +111,13 @@ const VaultPal = () => {
       const { data: watches, error: watchesError } = await supabase
         .from("watches")
         .select("*")
-        .eq("user_id", user.id)
-        .eq("status", "active");
+        .eq("user_id", user.id);
       
       if (watchesError) throw watchesError;
+
+      const activeCount = (watches || []).filter((w: any) => (w.status ?? "active") === "active").length;
       
-      if (!watches || watches.length < 3) {
+      if (!watches || activeCount < 3) {
         toast.info("Need at least 3 items in your collection for AI insights");
         setIsRefreshingInsights(false);
         return;
