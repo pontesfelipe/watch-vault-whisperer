@@ -96,7 +96,7 @@ Base your description of the collection on the CURRENT COLLECTION only. Past (so
 
 Write in second person ("you", "your") as if speaking directly to the collector. Be warm, insightful, and specific. Keep it conversational and engaging.
 
-STRICT LENGTH LIMIT: Your entire response MUST be 500 characters or fewer (including spaces and punctuation). Be concise and prioritize the most meaningful observations.`;
+STRICT LENGTH LIMIT: Your entire response MUST be 480 characters or fewer (including spaces and punctuation), and MUST end with a complete sentence. Never stop mid-sentence. Be concise and prioritize the most meaningful observations.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -134,7 +134,9 @@ STRICT LENGTH LIMIT: Your entire response MUST be 500 characters or fewer (inclu
     const data = await response.json();
     let insights = data.choices[0].message.content ?? "";
     if (insights.length > 500) {
-      insights = insights.slice(0, 500);
+      const cut = insights.slice(0, 500);
+      const lastEnd = Math.max(cut.lastIndexOf(". "), cut.lastIndexOf("! "), cut.lastIndexOf("? "), cut.lastIndexOf("."), cut.lastIndexOf("!"), cut.lastIndexOf("?"));
+      insights = (lastEnd > 200 ? cut.slice(0, lastEnd + 1) : cut.slice(0, cut.lastIndexOf(" ")) + "...").trim();
     }
     
     console.log("Generated insights successfully");

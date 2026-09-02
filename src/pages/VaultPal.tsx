@@ -132,13 +132,18 @@ const VaultPal = () => {
 
       if (data?.insights) {
         // Save to database
-        await supabase
+        const { error: saveError } = await supabase
           .from("collection_insights")
           .upsert({
             user_id: user.id,
             insights: data.insights,
             updated_at: new Date().toISOString(),
           }, { onConflict: "user_id" });
+
+        if (saveError) {
+          console.error("Error saving insights:", saveError);
+          toast.error("Insights generated but could not be saved");
+        }
 
         setCollectionInsights(data.insights);
         toast.success("Collection insights updated!");
