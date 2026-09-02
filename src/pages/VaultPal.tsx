@@ -360,31 +360,9 @@ const VaultPal = () => {
                 <div className="flex items-start gap-3">
                   <Sparkles className="w-4 h-4 text-accent mt-0.5 shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <div 
-                      className={`text-sm text-textMuted leading-relaxed ${
-                        insightsExpanded ? "" : "line-clamp-2"
-                      }`}
-                    >
+                    <div className="text-sm text-textMuted leading-relaxed whitespace-pre-wrap break-words">
                       {collectionInsights}
                     </div>
-                    {collectionInsights.length > 150 && (
-                      <button
-                        onClick={() => setInsightsExpanded(!insightsExpanded)}
-                        className="flex items-center gap-1 mt-2 text-xs font-medium text-accent hover:text-accent/80 transition-colors"
-                      >
-                        {insightsExpanded ? (
-                          <>
-                            <ChevronUp className="w-3.5 h-3.5" />
-                            Show less
-                          </>
-                        ) : (
-                          <>
-                            <ChevronDown className="w-3.5 h-3.5" />
-                            Show more
-                          </>
-                        )}
-                      </button>
-                    )}
                   </div>
                   <Button
                     variant="ghost"
