@@ -114,29 +114,36 @@ export const DepreciationChart = ({ watches }: DepreciationChartProps) => {
         change: getCurrentValue(watch) - invested,
       }];
     } else {
-      // Show all watches with abbreviated names
-      const usedLabels = new Map<string, number>();
+      // Show all watches with short, readable and GUARANTEED-unique names.
+      // Uses whole model words (never 4-letter fragments) so two similar
+      // models can never render as the same bar label.
+      const usedLabels = new Set<string>();
       const makeLabel = (brand: string, model: string) => {
         const abbrevBrand = abbreviateBrand(brand);
-        const words = model.trim().split(/\s+/).filter(Boolean);
-        // Start with the first model word, then add further words until the
-        // label is unique (e.g. "OME-Seam Aqua" vs "OME-Seam Diver").
+        const words = (model || "").trim().split(/\s+/).filter(Boolean);
+        if (words.length === 0) {
+          let fallback = abbrevBrand;
+          let i = 2;
+          while (usedLabels.has(fallback)) fallback = `${abbrevBrand} ${i++}`;
+          usedLabels.add(fallback);
+          return fallback;
+        }
         for (let n = 1; n <= words.length; n++) {
-          const candidate = `${abbrevBrand}-${words
-            .slice(0, n)
-            .map((w, i) => (i === 0 ? w.substring(0, 4) : w.substring(0, 4)))
-            .join(" ")}`;
+          const candidate = `${abbrevBrand} ${words.slice(0, n).join(" ")}`;
           if (!usedLabels.has(candidate)) {
-            usedLabels.set(candidate, 1);
+            usedLabels.add(candidate);
             return candidate;
           }
         }
-        // Still colliding: append a counter.
-        const base = `${abbrevBrand}-${(words[0] || "").substring(0, 4)}`;
-        const count = (usedLabels.get(base) ?? 1) + 1;
-        usedLabels.set(base, count);
-        return `${base} ${count}`;
+        // Identical brand + model: append a counter.
+        const base = `${abbrevBrand} ${words.join(" ")}`;
+        let counter = 2;
+        while (usedLabels.has(`${base} (${counter})`)) counter++;
+        const unique = `${base} (${counter})`;
+        usedLabels.add(unique);
+        return unique;
       };
+
 
       return watchesWithResale
         .map((watch) => {
