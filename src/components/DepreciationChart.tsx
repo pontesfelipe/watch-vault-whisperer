@@ -115,15 +115,34 @@ export const DepreciationChart = ({ watches }: DepreciationChartProps) => {
       }];
     } else {
       // Show all watches with abbreviated names
+      const usedLabels = new Map<string, number>();
+      const makeLabel = (brand: string, model: string) => {
+        const abbrevBrand = abbreviateBrand(brand);
+        const words = model.trim().split(/\s+/).filter(Boolean);
+        // Start with the first model word, then add further words until the
+        // label is unique (e.g. "OME-Seam Aqua" vs "OME-Seam Diver").
+        for (let n = 1; n <= words.length; n++) {
+          const candidate = `${abbrevBrand}-${words
+            .slice(0, n)
+            .map((w, i) => (i === 0 ? w.substring(0, 4) : w.substring(0, 4)))
+            .join(" ")}`;
+          if (!usedLabels.has(candidate)) {
+            usedLabels.set(candidate, 1);
+            return candidate;
+          }
+        }
+        // Still colliding: append a counter.
+        const base = `${abbrevBrand}-${(words[0] || "").substring(0, 4)}`;
+        const count = (usedLabels.get(base) ?? 1) + 1;
+        usedLabels.set(base, count);
+        return `${base} ${count}`;
+      };
+
       return watchesWithResale
         .map((watch) => {
-          // Abbreviated axis label: known brand aliases (e.g. JLC) or
-          // first 3 letters of the brand, plus first token of the model.
-          const abbrevBrand = abbreviateBrand(watch.brand);
-          const abbrevModel = watch.model.split(' ')[0].substring(0, 4);
           const invested = getInvestedValue(watch);
           return {
-            name: `${abbrevBrand}-${abbrevModel}`,
+            name: makeLabel(watch.brand, watch.model),
             brand: watch.brand,
             model: watch.model,
             invested,
@@ -133,6 +152,7 @@ export const DepreciationChart = ({ watches }: DepreciationChartProps) => {
         })
         .sort((a, b) => b.change - a.change);
     }
+
   }, [watchesWithResale, filterType, selectedWatch, comparisonMode]);
 
   if (chartData.length === 0) {
