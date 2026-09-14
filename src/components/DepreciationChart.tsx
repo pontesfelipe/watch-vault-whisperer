@@ -237,9 +237,11 @@ export const DepreciationChart = ({ watches }: DepreciationChartProps) => {
               dataKey="name"
               angle={-45}
               textAnchor="end"
-              height={120}
-              tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+              height={150}
+              interval={0}
+              tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
             />
+
             <YAxis
               tick={{ fill: "hsl(var(--muted-foreground))" }}
               tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
