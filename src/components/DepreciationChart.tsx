@@ -3,26 +3,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState, useMemo } from "react";
 
-// Brand abbreviations for the chart X-axis. Falls back to the first
-// 3 letters of the brand name when the brand is not listed here.
-const BRAND_ABBREVIATIONS: Record<string, string> = {
-  "jaeger-lecoultre": "JLC",
-  "jaeger lecoultre": "JLC",
-  "jaeger": "JLC",
-  "a. lange & söhne": "ALS",
-  "a lange sohne": "ALS",
-  "audemars piguet": "AP",
-  "patek philippe": "PP",
-  "vacheron constantin": "VC",
-  "grand seiko": "GS",
-};
-
-const abbreviateBrand = (brand: string) => {
-  const key = brand.trim().toLowerCase();
-  return BRAND_ABBREVIATIONS[key] ?? brand.trim().substring(0, 3).toUpperCase();
-};
-
 interface Watch {
+  id: string;
   brand: string;
   model: string;
   cost: number;
@@ -55,7 +37,7 @@ export const DepreciationChart = ({ watches }: DepreciationChartProps) => {
 
   const individualWatches = useMemo(() => {
     return watchesWithResale.map(w => ({
-      id: `${w.brand}-${w.model}`,
+      id: w.id,
       label: `${w.brand} ${w.model}`,
       brand: w.brand,
       model: w.model
@@ -101,7 +83,7 @@ export const DepreciationChart = ({ watches }: DepreciationChartProps) => {
         .sort((a, b) => b.change - a.change);
     } else if (filterType === "watch" && selectedWatch) {
       // Show single selected watch
-      const watch = watchesWithResale.find(w => `${w.brand}-${w.model}` === selectedWatch);
+      const watch = watchesWithResale.find(w => w.id === selectedWatch);
       if (!watch) return [];
       
       const invested = getInvestedValue(watch);
@@ -114,42 +96,14 @@ export const DepreciationChart = ({ watches }: DepreciationChartProps) => {
         change: getCurrentValue(watch) - invested,
       }];
     } else {
-      // Show all watches with short, readable and GUARANTEED-unique names.
-      // Uses whole model words (never 4-letter fragments) so two similar
-      // models can never render as the same bar label.
-      const usedLabels = new Set<string>();
-      const makeLabel = (brand: string, model: string) => {
-        const abbrevBrand = abbreviateBrand(brand);
-        const words = (model || "").trim().split(/\s+/).filter(Boolean);
-        if (words.length === 0) {
-          let fallback = abbrevBrand;
-          let i = 2;
-          while (usedLabels.has(fallback)) fallback = `${abbrevBrand} ${i++}`;
-          usedLabels.add(fallback);
-          return fallback;
-        }
-        for (let n = 1; n <= words.length; n++) {
-          const candidate = `${abbrevBrand} ${words.slice(0, n).join(" ")}`;
-          if (!usedLabels.has(candidate)) {
-            usedLabels.add(candidate);
-            return candidate;
-          }
-        }
-        // Identical brand + model: append a counter.
-        const base = `${abbrevBrand} ${words.join(" ")}`;
-        let counter = 2;
-        while (usedLabels.has(`${base} (${counter})`)) counter++;
-        const unique = `${base} (${counter})`;
-        usedLabels.add(unique);
-        return unique;
-      };
-
-
+      // Always show the full model. Shortened labels made distinct Omega
+      // watches look like a duplicate because both rendered as "OME-Seam".
       return watchesWithResale
         .map((watch) => {
           const invested = getInvestedValue(watch);
           return {
-            name: makeLabel(watch.brand, watch.model),
+            name: watch.model.trim() || watch.brand.trim(),
+            watchId: watch.id,
             brand: watch.brand,
             model: watch.model,
             invested,
@@ -231,13 +185,13 @@ export const DepreciationChart = ({ watches }: DepreciationChartProps) => {
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={400}>
-          <BarChart data={chartData}>
+          <BarChart data={chartData} margin={{ bottom: 24 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
             <XAxis
               dataKey="name"
               angle={-45}
               textAnchor="end"
-              height={150}
+              height={180}
               interval={0}
               tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
             />
