@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { PAST_STATUSES } from "@/lib/itemStatus";
 
 interface PastWatch {
   id: string;
@@ -40,12 +41,12 @@ export const usePastWatchData = () => {
 
     setLoading(true);
     try {
-      // Fetch watches with status 'sold' or 'traded'
+      // Fetch former items while preserving their historical usage.
       const { data: watchesData, error: watchesError } = await supabase
         .from('watches')
         .select('*')
         .eq('user_id', user.id)
-        .in('status', ['sold', 'traded'])
+        .in('status', [...PAST_STATUSES])
         .order('updated_at', { ascending: false });
 
       if (watchesError) throw watchesError;

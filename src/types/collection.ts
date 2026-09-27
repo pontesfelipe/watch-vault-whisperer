@@ -1,4 +1,5 @@
 // Collection Type System for Multi-Collection Support
+import type { PastStatus } from "@/lib/itemStatus";
 
 export type CollectionType = 'watches' | 'sneakers' | 'purses';
 
@@ -10,7 +11,7 @@ export interface BaseItem {
   cost: number;
   msrp: number | null;
   average_resale_price: number | null;
-  status: 'active' | 'sold' | 'traded';
+  status: 'active' | PastStatus;
   sort_order: number;
   collection_id: string | null;
   user_id: string | null;
