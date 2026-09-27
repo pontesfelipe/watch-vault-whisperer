@@ -16,6 +16,8 @@ interface Watch {
   created_at: string;
   sentiment?: string;
   sentiment_analyzed_at?: string;
+  status: string;
+  sale_reason?: string | null;
 }
 
 interface PersonalNotesTableProps {
@@ -52,7 +54,17 @@ export function PersonalNotesTable({ watches, onEdit }: PersonalNotesTableProps)
           {watches.map((watch) => (
             <TableRow key={watch.id}>
               <TableCell className="font-medium">{watch.brand}</TableCell>
-              <TableCell>{watch.model}</TableCell>
+              <TableCell>
+                {watch.model}
+                {(watch.status === "sold" || watch.status === "traded") && (
+                  <span className="ml-2 inline-flex items-center rounded-sm border border-borderSubtle px-1.5 py-0.5 text-xs font-semibold uppercase text-textMuted">
+                    {watch.status}
+                  </span>
+                )}
+                {watch.sale_reason && (watch.status === "sold" || watch.status === "traded") && (
+                  <span className="block text-xs text-textMuted">{watch.sale_reason}</span>
+                )}
+              </TableCell>
               <TableCell>
                 {watch.sentiment ? (
                   <Badge variant={getSentimentVariant(watch.sentiment)}>

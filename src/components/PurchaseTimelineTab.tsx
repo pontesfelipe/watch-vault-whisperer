@@ -10,6 +10,8 @@ interface Watch {
   when_bought?: string;
   why_bought?: string;
   created_at: string;
+  status: string;
+  sale_reason?: string | null;
 }
 
 interface PurchaseTimelineTabProps {
@@ -54,7 +56,15 @@ export function PurchaseTimelineTab({ watches }: PurchaseTimelineTabProps) {
                     <div>
                       <h3 className="font-semibold text-lg">
                         {watch.brand} {watch.model}
+                        {(watch.status === "sold" || watch.status === "traded") && (
+                          <span className="ml-2 inline-flex align-middle rounded-sm border border-borderSubtle px-1.5 py-0.5 text-xs font-semibold uppercase text-textMuted">
+                            {watch.status}
+                          </span>
+                        )}
                       </h3>
+                      {watch.sale_reason && (watch.status === "sold" || watch.status === "traded") && (
+                        <p className="text-xs text-textMuted">{watch.sale_reason}</p>
+                      )}
                       {watch.when_bought && (
                         <p className="text-sm text-muted-foreground flex items-center gap-1">
                           <Calendar className="h-3 w-3" />

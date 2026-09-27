@@ -35,6 +35,14 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import { useVoiceInput } from "@/hooks/useVoiceInput";
 
+type FormerWatch = {
+  id: string;
+  brand: string;
+  model: string;
+  status: string;
+  sale_reason: string | null;
+};
+
 const VaultPal = () => {
   useEdgeSwipeBack();
   const {
@@ -56,6 +64,7 @@ const VaultPal = () => {
   const { user } = useAuth();
   const [input, setInput] = useState("");
   const [collectionInsights, setCollectionInsights] = useState<string | null>(null);
+  const [formerWatches, setFormerWatches] = useState<FormerWatch[]>([]);
   const [insightsExpanded, setInsightsExpanded] = useState(false);
   const [isRefreshingInsights, setIsRefreshingInsights] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -81,6 +90,26 @@ const VaultPal = () => {
 
   const itemLabel = currentCollectionType ? getItemLabel(currentCollectionType, true) : "items";
 
+  const loadFormerWatches = useCallback(async () => {
+    if (!user) {
+      setFormerWatches([]);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("watches")
+      .select("id, brand, model, status, sale_reason")
+      .eq("user_id", user.id)
+      .in("status", ["sold", "traded"])
+      .order("updated_at", { ascending: false });
+
+    if (error) {
+      console.error("Error loading former items for insights:", error);
+      return;
+    }
+    setFormerWatches(data ?? []);
+  }, [user]);
+
   // Load collection insights
   const loadInsights = useCallback(async () => {
     if (!user) return;
@@ -100,6 +129,10 @@ const VaultPal = () => {
   useEffect(() => {
     loadInsights();
   }, [loadInsights]);
+
+  useEffect(() => {
+    void loadFormerWatches();
+  }, [loadFormerWatches]);
 
   // Refresh insights when watches change
   const refreshInsights = useCallback(async () => {
@@ -146,6 +179,7 @@ const VaultPal = () => {
         }
 
         setCollectionInsights(data.insights);
+        await loadFormerWatches();
         toast.success("Collection insights updated!");
       }
     } catch (error) {
@@ -154,7 +188,7 @@ const VaultPal = () => {
     } finally {
       setIsRefreshingInsights(false);
     }
-  }, [user, isRefreshingInsights]);
+  }, [user, isRefreshingInsights, loadFormerWatches]);
 
   // Subscribe to watch changes for auto-refresh
   useEffect(() => {
@@ -369,6 +403,22 @@ const VaultPal = () => {
                     <div className="text-sm text-textMuted leading-relaxed whitespace-pre-wrap break-words">
                       {collectionInsights}
                     </div>
+                      {formerWatches.length > 0 && (
+                        <div className="mt-3 border-t border-borderSubtle pt-3">
+                          <p className="mb-2 text-xs font-semibold text-textMain">Previously owned</p>
+                          <ul className="space-y-2">
+                            {formerWatches.map((watch) => (
+                              <li key={watch.id} className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm text-textMuted">
+                                <span className="break-words">{watch.brand} {watch.model}</span>
+                                <span className="shrink-0 rounded-sm border border-borderSubtle px-1.5 py-0.5 text-xs font-semibold uppercase text-textMain">
+                                  {watch.status === "traded" ? "Traded" : "Sold"}
+                                </span>
+                                {watch.sale_reason && <span className="break-words text-xs">{watch.sale_reason}</span>}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                   </div>
                   <Button
                     variant="ghost"

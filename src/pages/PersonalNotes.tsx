@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { usePasscode } from "@/contexts/PasscodeContext";
 import { useCollection } from "@/contexts/CollectionContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,19 +28,22 @@ interface Watch {
   sentiment?: string;
   sentiment_analyzed_at?: string;
   warranty_date?: string | null;
+  status: string;
+  sale_reason?: string | null;
 }
 
 export default function PersonalNotes() {
   useEdgeSwipeBack();
   const { isVerified, requestVerification } = usePasscode();
   const { selectedCollectionId } = useCollection();
+  const { user } = useAuth();
   const [watches, setWatches] = useState<Watch[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingWatch, setEditingWatch] = useState<Watch | null>(null);
   const [analyzingSentiment, setAnalyzingSentiment] = useState(false);
 
   const fetchWatches = async () => {
-    if (!selectedCollectionId) {
+    if (!selectedCollectionId || !user) {
       setWatches([]);
       setLoading(false);
       return;
@@ -47,14 +51,17 @@ export default function PersonalNotes() {
     
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("watches")
-        .select("id, brand, model, cost, why_bought, when_bought, what_i_like, what_i_dont_like, created_at, sentiment, sentiment_analyzed_at, warranty_date")
-        .eq("collection_id", selectedCollectionId)
-        .order("created_at", { ascending: true });
+      const columns = "id, brand, model, cost, why_bought, when_bought, what_i_like, what_i_dont_like, created_at, sentiment, sentiment_analyzed_at, warranty_date, status, sale_reason";
+      const [collectionResult, legacyPastResult] = await Promise.all([
+        supabase.from("watches").select(columns).eq("collection_id", selectedCollectionId),
+        // Older sold/traded watches were detached from collections when archived.
+        supabase.from("watches").select(columns).eq("user_id", user.id).is("collection_id", null).in("status", ["sold", "traded"]),
+      ]);
 
-      if (error) throw error;
-      setWatches((data as any) || []);
+      if (collectionResult.error) throw collectionResult.error;
+      if (legacyPastResult.error) throw legacyPastResult.error;
+      setWatches([...(collectionResult.data ?? []), ...(legacyPastResult.data ?? [])]
+        .sort((a, b) => a.created_at.localeCompare(b.created_at)) as Watch[]);
     } catch (error) {
       console.error("Error fetching watches:", error);
       toast.error("Failed to load watches");
@@ -114,7 +121,7 @@ export default function PersonalNotes() {
     if (isVerified && selectedCollectionId) {
       fetchWatches();
     }
-  }, [isVerified, selectedCollectionId]);
+  }, [isVerified, selectedCollectionId, user?.id]);
 
   const handleUnlock = () => {
     requestVerification(() => {
@@ -151,7 +158,7 @@ export default function PersonalNotes() {
       <Card className="border-borderSubtle bg-surface shadow-card">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <div>
+              <div className="min-w-0">
               <CardTitle className="text-textMain">Collection Insights</CardTitle>
               <CardDescription className="text-textMuted">
                 Your private thoughts, memories, and spending analytics
@@ -162,6 +169,7 @@ export default function PersonalNotes() {
                 onClick={handleAnalyzeSentiment}
                 disabled={analyzingSentiment}
                 variant="outline"
+                 className="shrink-0"
               >
                 <RefreshCw className={`mr-2 h-4 w-4 ${analyzingSentiment ? 'animate-spin' : ''}`} />
                 {analyzingSentiment ? 'Analyzing...' : 'Analyze Sentiment'}
@@ -176,11 +184,11 @@ export default function PersonalNotes() {
             <div className="text-center py-8 text-muted-foreground">No watches found</div>
           ) : (
             <Tabs defaultValue="notes" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="notes">Personal Notes</TabsTrigger>
-                <TabsTrigger value="timeline">Purchase Timeline</TabsTrigger>
-                <TabsTrigger value="analytics">Spending Analytics</TabsTrigger>
-                <TabsTrigger value="warranty">Warranty Status</TabsTrigger>
+              <TabsList className="grid h-auto w-full grid-cols-2 gap-1 sm:grid-cols-4">
+                <TabsTrigger className="min-w-0 whitespace-normal text-center" value="notes">Personal Notes</TabsTrigger>
+                <TabsTrigger className="min-w-0 whitespace-normal text-center" value="timeline">Purchase Timeline</TabsTrigger>
+                <TabsTrigger className="min-w-0 whitespace-normal text-center" value="analytics">Spending Analytics</TabsTrigger>
+                <TabsTrigger className="min-w-0 whitespace-normal text-center" value="warranty">Warranty Status</TabsTrigger>
               </TabsList>
               
               <TabsContent value="notes" className="mt-6">
@@ -199,7 +207,7 @@ export default function PersonalNotes() {
               </TabsContent>
 
               <TabsContent value="warranty" className="mt-6">
-                <WarrantyStatusTab watches={watches} />
+                <WarrantyStatusTab watches={watches.filter((watch) => watch.status === "active")} />
               </TabsContent>
             </Tabs>
           )}
