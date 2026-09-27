@@ -98,6 +98,7 @@ function AppContent() {
           <RouteLogger />
           <Routes>
             <Route path="/auth" element={<Auth />} />
+            <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
             <Route path="/" element={<ProtectedRoute><AppLayout><PageTransition><Home /></PageTransition></AppLayout></ProtectedRoute>} />
             <Route path="/canvas" element={<ProtectedRoute><AppLayout><PageTransition><Dashboard /></PageTransition></AppLayout></ProtectedRoute>} />
             <Route path="/vault-pal" element={<ProtectedRoute><AppLayout><PageTransition><VaultPal /></PageTransition></AppLayout></ProtectedRoute>} />
