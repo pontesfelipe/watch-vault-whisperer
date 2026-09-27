@@ -3,6 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Pencil } from "lucide-react";
 import { formatPurchaseDateForDisplay, parsePurchaseDate } from "@/lib/date";
+import { isPastStatus, PAST_STATUS_LABELS } from "@/lib/itemStatus";
 
 interface Watch {
   id: string;
@@ -56,12 +57,12 @@ export function PersonalNotesTable({ watches, onEdit }: PersonalNotesTableProps)
               <TableCell className="font-medium">{watch.brand}</TableCell>
               <TableCell>
                 {watch.model}
-                {(watch.status === "sold" || watch.status === "traded") && (
+                {isPastStatus(watch.status) && (
                   <span className="ml-2 inline-flex items-center rounded-sm border border-borderSubtle px-1.5 py-0.5 text-xs font-semibold uppercase text-textMuted">
-                    {watch.status}
+                    {PAST_STATUS_LABELS[watch.status]}
                   </span>
                 )}
-                {watch.sale_reason && (watch.status === "sold" || watch.status === "traded") && (
+                {watch.sale_reason && isPastStatus(watch.status) && (
                   <span className="block text-xs text-textMuted">{watch.sale_reason}</span>
                 )}
               </TableCell>

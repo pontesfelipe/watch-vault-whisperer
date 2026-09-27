@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { TrendingUp, DollarSign, Calendar } from "lucide-react";
 import { useCollection } from "@/contexts/CollectionContext";
 import { ItemTypeIcon } from "@/components/ItemTypeIcon";
+import { PAST_STATUSES, PAST_STATUS_LABELS } from "@/lib/itemStatus";
 
 interface PastItem {
   id: string;
@@ -31,8 +32,6 @@ export const PastWatchesStats = ({ pastWatches, wearEntries }: PastWatchesStatsP
   const itemLabel = currentCollectionConfig.singularLabel.toLowerCase();
   
   const totalPastItems = pastWatches.length;
-  const soldCount = pastWatches.filter(w => w.status === 'sold').length;
-  const tradedCount = pastWatches.filter(w => w.status === 'traded').length;
   
   const totalValue = pastWatches.reduce((sum, w) => sum + (w.cost || 0), 0);
   const totalWearDays = wearEntries.length;
@@ -73,7 +72,9 @@ export const PastWatchesStats = ({ pastWatches, wearEntries }: PastWatchesStatsP
         </div>
         <p className="text-2xl font-bold text-textMain">{totalPastItems}</p>
         <p className="text-xs text-textMuted mt-1">
-          {soldCount} sold · {tradedCount} traded
+           {PAST_STATUSES.filter((status) => pastWatches.some((w) => w.status === status))
+             .map((status) => `${pastWatches.filter((w) => w.status === status).length} ${PAST_STATUS_LABELS[status].toLowerCase()}`)
+             .join(' · ')}
         </p>
       </Card>
 

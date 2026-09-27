@@ -42,7 +42,7 @@ serve(async (req) => {
     // Build detailed collection summary (current collection only)
     const collectionSummary = (owned.length ? owned : watches).map(fmt).join('\n');
     const pastSummary = past
-      .map((w: any) => `${fmt(w)} - ${w.status === 'traded' ? 'TRADED AWAY' : 'SOLD'}${w.sale_reason ? `, reason: ${w.sale_reason}` : ''}`)
+      .map((w: any) => `${fmt(w)} - ${String(w.status).replaceAll('_', ' ').toUpperCase()}${w.sale_reason ? `, reason: ${w.sale_reason}` : ''}`)
       .join('\n');
 
     // Get brand frequency
@@ -78,7 +78,7 @@ serve(async (req) => {
 
 CURRENT COLLECTION - these are owned right now (${(owned.length ? owned : watches).length} watches):
 ${collectionSummary}
-${past.length ? `\nPAST WATCHES - these were SOLD or TRADED and are NO LONGER OWNED. Use them only as background context about how the collector's taste evolved. Never describe them as part of the current collection, and always mark them clearly as former pieces if you mention them:\n${pastSummary}\n` : ''}
+${past.length ? `\nPAST WATCHES - these were sold, traded, lost, stolen, or given away and are NO LONGER OWNED. Use them only as background context about how the collector's taste evolved. Never describe them as part of the current collection, and always mark them clearly as former pieces if you mention them:\n${pastSummary}\n` : ''}
 
 Statistics:
 - Top Brands: ${topBrands}
@@ -92,7 +92,7 @@ Provide a warm, insightful analysis covering:
 4. What this collection says about the collector's personality
 5. Potential collection strengths or interesting characteristics
 
-Base your description of the collection on the CURRENT COLLECTION only. Past (sold/traded) watches may inform how taste evolved, but must be referred to in the past tense as pieces the collector no longer owns.
+Base your description of the collection on the CURRENT COLLECTION only. Past watches may inform how taste evolved, but must be referred to in the past tense as pieces the collector no longer owns. Do not imply a lost or stolen watch was sold.
 
 Write in second person ("you", "your") as if speaking directly to the collector. Be warm, insightful, and specific. Keep it conversational and engaging.
 

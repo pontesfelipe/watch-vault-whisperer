@@ -121,7 +121,7 @@ serve(async (req) => {
         .from("watches")
         .select("*")
         .eq("user_id", user.id)
-        .in("status", ["sold", "traded", "deleted"])
+        .in("status", ["sold", "traded", "lost", "stolen", "gave_away", "deleted"])
         .order("updated_at", { ascending: false }),
     ]);
 
@@ -139,7 +139,7 @@ serve(async (req) => {
     const tastePreferences = preferencesResult.data?.taste_description || "";
     const pastWatches = pastWatchesResult.data || [];
 
-    // Past items (sold / traded / deleted) with all captured data
+    // Past items with all captured data
     const pastSummary = pastWatches.map((w: any) => {
       const wearDaysForItem = wearEntries
         .filter((e: any) => e.watch_id === w.id)
@@ -148,15 +148,15 @@ serve(async (req) => {
       parts.push(`${w.brand} ${w.model}${w.dial_color ? ` (${w.dial_color})` : ""} [${w.status}]`);
       if (w.type) parts.push(`  Type: ${w.type}`);
       if (w.cost) parts.push(`  Cost paid: $${Number(w.cost).toLocaleString()}`);
-      if (w.sale_price != null) parts.push(`  Sale price: $${Number(w.sale_price).toLocaleString()}`);
-      if (w.cost && w.sale_price != null) {
+      if (w.sale_price != null && (w.status === "sold" || w.status === "traded")) parts.push(`  ${w.status === "sold" ? "Sale price" : "Trade value"}: $${Number(w.sale_price).toLocaleString()}`);
+      if (w.cost && w.sale_price != null && (w.status === "sold" || w.status === "traded")) {
         const netCost = Number(w.cost) - Number(w.sale_price);
         parts.push(`  Net cost: $${netCost.toLocaleString()}${wearDaysForItem > 0 ? ` ($${(netCost / wearDaysForItem).toFixed(2)}/day used)` : ""}`);
       }
       if (w.when_bought) parts.push(`  Bought: ${w.when_bought}`);
-      if (w.sold_at) parts.push(`  Sold/traded: ${w.sold_at}`);
+      if (w.sold_at) parts.push(`  Left collection: ${w.sold_at}`);
       if (w.sale_reason) parts.push(`  Reason: ${w.sale_reason}`);
-      if (w.sale_notes) parts.push(`  Sale notes: ${w.sale_notes}`);
+      if (w.sale_notes) parts.push(`  Notes: ${w.sale_notes}`);
       if (wearDaysForItem > 0) parts.push(`  Total days used: ${wearDaysForItem}`);
       if (w.why_bought) parts.push(`  Why bought: ${w.why_bought}`);
       if (w.what_i_like) parts.push(`  Liked: ${w.what_i_like}`);
@@ -165,9 +165,9 @@ serve(async (req) => {
       return parts.join("\n");
     }).join("\n\n");
 
-    const soldCount = pastWatches.filter((w: any) => w.status === "sold").length;
-    const tradedCount = pastWatches.filter((w: any) => w.status === "traded").length;
-    const deletedCount = pastWatches.filter((w: any) => w.status === "deleted").length;
+    const pastCounts = ["sold", "traded", "lost", "stolen", "gave_away", "deleted"]
+      .map((status) => `${pastWatches.filter((w: any) => w.status === status).length} ${status.replaceAll("_", " ")}`)
+      .join(", ");
 
     // Build comprehensive context
     const collectionLabel = collectionType === "sneakers" ? "sneakers" : 
@@ -321,7 +321,7 @@ ${collectionInsights}` : ""}
 ${tastePreferences ? `TASTE PREFERENCES:
 ${tastePreferences}` : ""}
 
-PAST ${collectionLabel.toUpperCase()} (SOLD / TRADED / DELETED — ${pastWatches.length} total: ${soldCount} sold, ${tradedCount} traded, ${deletedCount} deleted):
+PAST ${collectionLabel.toUpperCase()} (NO LONGER OWNED — ${pastWatches.length} total: ${pastCounts}):
 ${pastSummary || "No past items recorded."}
 
 INSTRUCTIONS:

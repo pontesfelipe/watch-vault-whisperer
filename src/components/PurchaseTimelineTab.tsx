@@ -1,6 +1,7 @@
 import { Calendar, DollarSign } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatPurchaseDateForDisplay, parsePurchaseDate } from "@/lib/date";
+import { isPastStatus, PAST_STATUS_LABELS } from "@/lib/itemStatus";
 
 interface Watch {
   id: string;
@@ -56,13 +57,13 @@ export function PurchaseTimelineTab({ watches }: PurchaseTimelineTabProps) {
                     <div>
                       <h3 className="font-semibold text-lg">
                         {watch.brand} {watch.model}
-                        {(watch.status === "sold" || watch.status === "traded") && (
+                        {isPastStatus(watch.status) && (
                           <span className="ml-2 inline-flex align-middle rounded-sm border border-borderSubtle px-1.5 py-0.5 text-xs font-semibold uppercase text-textMuted">
-                            {watch.status}
+                            {PAST_STATUS_LABELS[watch.status]}
                           </span>
                         )}
                       </h3>
-                      {watch.sale_reason && (watch.status === "sold" || watch.status === "traded") && (
+                       {watch.sale_reason && isPastStatus(watch.status) && (
                         <p className="text-xs text-textMuted">{watch.sale_reason}</p>
                       )}
                       {watch.when_bought && (
