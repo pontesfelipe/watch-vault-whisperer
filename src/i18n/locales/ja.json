@@ -720,7 +720,7 @@
     "noMatchFilters": "フィルターに一致する{{type}}がありません",
     "noItemsYet": "まだ{{type}}がありません。最初の{{singular}}を追加しましょう！",
     "pastItems": "過去の{{type}}",
-    "pastItemsDesc": "売却または交換した{{type}}。履歴の{{noun}}データは保持されます。",
+    "pastItemsDesc": "コレクションからなくなった{{type}}。履歴の{{noun}}データは保持されます。",
     "myWishlist": "マイウィッシュリスト",
     "trackItemsDesc": "コレクションに追加したい{{type}}を追跡",
     "addToWishlist": "リストに追加",
