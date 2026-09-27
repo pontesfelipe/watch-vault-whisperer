@@ -1,0 +1,141 @@
+{
+  "version": 1,
+  "sdk_version": "3.0.4",
+  "path": "/functions/v1/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://thrwpxiahqgubjkjnkgt.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "sora-vault",
+      "version": "0.1.0",
+      "title": "Sora Vault"
+    },
+    "tools": [
+      {
+        "name": "list_collections",
+        "title": "List collections",
+        "description": "List the signed-in user's collections (watches, sneakers, purses).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_items",
+        "title": "List collection items",
+        "description": "List items (watches, sneakers, purses) the signed-in user owns, optionally filtered by collection or status.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "collection_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Only items in this collection."
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "active",
+                "sold",
+                "traded"
+              ],
+              "description": "Filter by item status."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_wears",
+        "title": "List recent wears",
+        "description": "List the signed-in user's recent wear log entries, newest first.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "days_back": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 365,
+              "default": 30,
+              "description": "How many days back to include."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "log_wear",
+        "title": "Log a wear",
+        "description": "Record that the signed-in user wore/carried one of their items on a date.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "item_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID of the item (from list_items)."
+            },
+            "date": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "description": "Date in YYYY-MM-DD."
+            },
+            "days": {
+              "type": "number",
+              "enum": [
+                0.25,
+                0.5,
+                1
+              ],
+              "default": 1,
+              "description": "Portion of the day: 0.25, 0.5 or 1."
+            },
+            "notes": {
+              "type": "string",
+              "maxLength": 500
+            }
+          },
+          "required": [
+            "item_id",
+            "date"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
