@@ -21,6 +21,7 @@ import { logAccess } from "@/utils/accessLog";
 // Eagerly loaded (critical path)
 import Home from "./pages/Home";
 import Auth from "./pages/Auth";
+import OAuthConsent from "./pages/OAuthConsent";
 
 // Lazy-loaded
 const Dashboard = lazy(() => import("./pages/Dashboard"));
