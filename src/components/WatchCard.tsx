@@ -17,6 +17,7 @@ import { isSneakerCollection, isPurseCollection } from "@/types/collection";
 import watchHero from "@/assets/watch-hero.jpg";
 import sneakerHero from "@/assets/sneaker-hero.jpg";
 import purseHero from "@/assets/purse-hero.jpg";
+import { PAST_STATUSES, PAST_STATUS_LABELS, PAST_STATUS_REASONS, type PastStatus } from "@/lib/itemStatus";
 import {
   Dialog,
   DialogContent,
@@ -34,25 +35,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-const SALE_REASONS: Record<'sold' | 'traded', string[]> = {
-  sold: [
-    "Funding a new purchase",
-    "No longer wearing it",
-    "Didn't like it anymore",
-    "Needed the cash",
-    "Upgrading",
-    "Doesn't fit my style",
-    "Other",
-  ],
-  traded: [
-    "Upgrading",
-    "Wanted a different style",
-    "Doesn't fit collection",
-    "Better value in trade",
-    "Other",
-  ],
-};
 
 interface WatchCardProps {
   watch: {
@@ -93,7 +75,7 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isFetchingPrice, setIsFetchingPrice] = useState(false);
   const [showReasoningDialog, setShowReasoningDialog] = useState(false);
-  const [saleDialogMode, setSaleDialogMode] = useState<'sold' | 'traded' | null>(null);
+  const [saleDialogMode, setSaleDialogMode] = useState<PastStatus | null>(null);
   const [salePrice, setSalePrice] = useState("");
   const [saleReason, setSaleReason] = useState("");
   const [saleNotes, setSaleNotes] = useState("");
@@ -171,7 +153,7 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
     }
   };
 
-  const openSaleDialog = (status: 'sold' | 'traded') => {
+  const openSaleDialog = (status: PastStatus) => {
     setSaleDialogMode(status);
     setSalePrice("");
     setSaleReason("");
@@ -188,7 +170,7 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
         .update({
           status: saleDialogMode,
           collection_id: null,
-          sale_price: salePrice ? parseFloat(salePrice) : null,
+          sale_price: (saleDialogMode === 'sold' || saleDialogMode === 'traded') && salePrice ? parseFloat(salePrice) : null,
           sale_reason: saleReason || null,
           sale_notes: saleNotes || null,
           sold_at: new Date().toISOString(),
@@ -198,7 +180,7 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
       if (error) throw error;
 
       toast({
-        title: saleDialogMode === 'sold' ? `${singularLabel} Marked as Sold` : `${singularLabel} Marked as Traded`,
+        title: `${singularLabel} Marked as ${PAST_STATUS_LABELS[saleDialogMode]}`,
         description: "Removed from collection. Historical data preserved.",
       });
 
@@ -494,26 +476,11 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
                 </DialogDescription>
               </DialogHeader>
               <div className="flex flex-col gap-3 pt-4">
-                <Button
-                  variant="outline"
-                  className="justify-start gap-3 h-auto py-3 border-borderSubtle hover:bg-surfaceMuted"
-                  onClick={() => openSaleDialog('sold')}
-                >
-                  <div className="flex flex-col items-start">
-                    <span className="font-medium">Mark as Sold</span>
-                    <span className="text-xs text-textMuted">Remove from collection, keep historical wear data</span>
-                  </div>
-                </Button>
-                <Button
-                  variant="outline"
-                  className="justify-start gap-3 h-auto py-3 border-borderSubtle hover:bg-surfaceMuted"
-                  onClick={() => openSaleDialog('traded')}
-                >
-                  <div className="flex flex-col items-start">
-                    <span className="font-medium">Mark as Traded</span>
-                    <span className="text-xs text-textMuted">Remove from collection, keep historical wear data</span>
-                  </div>
-                </Button>
+                {PAST_STATUSES.map((status) => (
+                  <Button key={status} variant="outline" className="justify-start gap-3 h-auto min-h-11 py-2 border-borderSubtle hover:bg-surfaceMuted" onClick={() => openSaleDialog(status)}>
+                    <span className="font-medium">Mark as {PAST_STATUS_LABELS[status]}</span>
+                  </Button>
+                ))}
                 <Button
                   variant="destructive"
                   className="justify-start gap-3 h-auto py-3"
@@ -539,15 +506,14 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
             <DialogContent className="bg-surface border-borderSubtle sm:max-w-md">
               <DialogHeader>
                 <DialogTitle className="text-textMain">
-                  {saleDialogMode === 'sold' ? `Sell ${singularLabel}` : `Trade ${singularLabel}`}
+                   {saleDialogMode ? `Mark ${singularLabel} as ${PAST_STATUS_LABELS[saleDialogMode]}` : ''}
                 </DialogTitle>
                 <DialogDescription className="text-textSoft">
-                  Add details about {saleDialogMode === 'sold' ? 'the sale' : 'the trade'} of{' '}
-                  <span className="font-semibold">{watch.brand} {watch.model}</span>.
+                   Add details about <span className="font-semibold">{watch.brand} {watch.model}</span>.
                 </DialogDescription>
               </DialogHeader>
               <div className="flex flex-col gap-4 pt-2">
-                <div className="flex flex-col gap-2">
+                 {(saleDialogMode === 'sold' || saleDialogMode === 'traded') && <div className="flex flex-col gap-2">
                   <Label htmlFor="sale-price">
                     {saleDialogMode === 'sold' ? 'Sale price (USD)' : 'Value received (USD)'}
                   </Label>
@@ -561,7 +527,7 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
                     value={salePrice}
                     onChange={(e) => setSalePrice(e.target.value)}
                   />
-                </div>
+                 </div>}
                 <div className="flex flex-col gap-2">
                   <Label>Reason</Label>
                   <Select value={saleReason} onValueChange={setSaleReason}>
@@ -569,7 +535,7 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
                       <SelectValue placeholder="Select a reason" />
                     </SelectTrigger>
                     <SelectContent>
-                      {(saleDialogMode ? SALE_REASONS[saleDialogMode] : []).map((r) => (
+                       {(saleDialogMode ? PAST_STATUS_REASONS[saleDialogMode] : []).map((r) => (
                         <SelectItem key={r} value={r}>{r}</SelectItem>
                       ))}
                     </SelectContent>
@@ -599,7 +565,7 @@ export const WatchCard = ({ watch, totalDays, onDelete }: WatchCardProps) => {
                     onClick={handleMarkAsSoldOrTraded}
                     disabled={isSubmittingSale}
                   >
-                    {isSubmittingSale ? 'Saving…' : (saleDialogMode === 'sold' ? 'Mark as Sold' : 'Mark as Traded')}
+                     {isSubmittingSale ? 'Saving…' : saleDialogMode ? `Mark as ${PAST_STATUS_LABELS[saleDialogMode]}` : 'Save'}
                   </Button>
                 </div>
               </div>
