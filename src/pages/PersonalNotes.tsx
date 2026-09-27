@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { usePasscode } from "@/contexts/PasscodeContext";
 import { useCollection } from "@/contexts/CollectionContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,13 +36,14 @@ export default function PersonalNotes() {
   useEdgeSwipeBack();
   const { isVerified, requestVerification } = usePasscode();
   const { selectedCollectionId } = useCollection();
+  const { user } = useAuth();
   const [watches, setWatches] = useState<Watch[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingWatch, setEditingWatch] = useState<Watch | null>(null);
   const [analyzingSentiment, setAnalyzingSentiment] = useState(false);
 
   const fetchWatches = async () => {
-    if (!selectedCollectionId) {
+    if (!selectedCollectionId || !user) {
       setWatches([]);
       setLoading(false);
       return;
@@ -49,14 +51,17 @@ export default function PersonalNotes() {
     
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("watches")
-        .select("id, brand, model, cost, why_bought, when_bought, what_i_like, what_i_dont_like, created_at, sentiment, sentiment_analyzed_at, warranty_date, status, sale_reason")
-        .eq("collection_id", selectedCollectionId)
-        .order("created_at", { ascending: true });
+      const columns = "id, brand, model, cost, why_bought, when_bought, what_i_like, what_i_dont_like, created_at, sentiment, sentiment_analyzed_at, warranty_date, status, sale_reason";
+      const [collectionResult, legacyPastResult] = await Promise.all([
+        supabase.from("watches").select(columns).eq("collection_id", selectedCollectionId),
+        // Older sold/traded watches were detached from collections when archived.
+        supabase.from("watches").select(columns).eq("user_id", user.id).is("collection_id", null).in("status", ["sold", "traded"]),
+      ]);
 
-      if (error) throw error;
-      setWatches((data as any) || []);
+      if (collectionResult.error) throw collectionResult.error;
+      if (legacyPastResult.error) throw legacyPastResult.error;
+      setWatches([...(collectionResult.data ?? []), ...(legacyPastResult.data ?? [])]
+        .sort((a, b) => a.created_at.localeCompare(b.created_at)) as Watch[]);
     } catch (error) {
       console.error("Error fetching watches:", error);
       toast.error("Failed to load watches");
@@ -116,7 +121,7 @@ export default function PersonalNotes() {
     if (isVerified && selectedCollectionId) {
       fetchWatches();
     }
-  }, [isVerified, selectedCollectionId]);
+  }, [isVerified, selectedCollectionId, user?.id]);
 
   const handleUnlock = () => {
     requestVerification(() => {
