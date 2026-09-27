@@ -27,6 +27,8 @@ interface Watch {
   sentiment?: string;
   sentiment_analyzed_at?: string;
   warranty_date?: string | null;
+  status: string;
+  sale_reason?: string | null;
 }
 
 export default function PersonalNotes() {
@@ -49,7 +51,7 @@ export default function PersonalNotes() {
     try {
       const { data, error } = await supabase
         .from("watches")
-        .select("id, brand, model, cost, why_bought, when_bought, what_i_like, what_i_dont_like, created_at, sentiment, sentiment_analyzed_at, warranty_date")
+        .select("id, brand, model, cost, why_bought, when_bought, what_i_like, what_i_dont_like, created_at, sentiment, sentiment_analyzed_at, warranty_date, status, sale_reason")
         .eq("collection_id", selectedCollectionId)
         .order("created_at", { ascending: true });
 
@@ -199,7 +201,7 @@ export default function PersonalNotes() {
               </TabsContent>
 
               <TabsContent value="warranty" className="mt-6">
-                <WarrantyStatusTab watches={watches} />
+                <WarrantyStatusTab watches={watches.filter((watch) => watch.status === "active")} />
               </TabsContent>
             </Tabs>
           )}

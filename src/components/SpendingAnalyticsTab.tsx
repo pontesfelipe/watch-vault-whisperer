@@ -13,6 +13,8 @@ interface Item {
   cost: number;
   when_bought?: string;
   created_at: string;
+  status: string;
+  sale_reason?: string | null;
 }
 
 interface SpendingAnalyticsTabProps {
@@ -182,7 +184,17 @@ export function SpendingAnalyticsTab({ watches }: SpendingAnalyticsTabProps) {
                       {items.map((item) => (
                         <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg">
                           <div>
-                            <p className="font-semibold">{item.brand} {item.model}</p>
+                             <p className="font-semibold">
+                               {item.brand} {item.model}
+                               {(item.status === "sold" || item.status === "traded") && (
+                                 <span className="ml-2 inline-flex align-middle rounded-sm border border-borderSubtle px-1.5 py-0.5 text-xs font-semibold uppercase text-textMuted">
+                                   {item.status}
+                                 </span>
+                               )}
+                             </p>
+                             {item.sale_reason && (item.status === "sold" || item.status === "traded") && (
+                               <p className="text-xs text-textMuted">{item.sale_reason}</p>
+                             )}
                             <p className="text-xs text-muted-foreground">
                               {(() => {
                                 const parsed = parsePurchaseDate(item.when_bought, item.created_at);
