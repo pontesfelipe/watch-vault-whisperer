@@ -21,6 +21,7 @@ import { logAccess } from "@/utils/accessLog";
 // Eagerly loaded (critical path)
 import Home from "./pages/Home";
 import Auth from "./pages/Auth";
+import OAuthConsent from "./pages/OAuthConsent";
 
 // Lazy-loaded
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -98,6 +99,7 @@ function AppContent() {
           <RouteLogger />
           <Routes>
             <Route path="/auth" element={<Auth />} />
+            <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
             <Route path="/" element={<ProtectedRoute><AppLayout><PageTransition><Home /></PageTransition></AppLayout></ProtectedRoute>} />
             <Route path="/canvas" element={<ProtectedRoute><AppLayout><PageTransition><Dashboard /></PageTransition></AppLayout></ProtectedRoute>} />
             <Route path="/vault-pal" element={<ProtectedRoute><AppLayout><PageTransition><VaultPal /></PageTransition></AppLayout></ProtectedRoute>} />
