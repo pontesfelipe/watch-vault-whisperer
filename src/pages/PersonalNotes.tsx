@@ -158,7 +158,7 @@ export default function PersonalNotes() {
       <Card className="border-borderSubtle bg-surface shadow-card">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <div>
+              <div className="min-w-0">
               <CardTitle className="text-textMain">Collection Insights</CardTitle>
               <CardDescription className="text-textMuted">
                 Your private thoughts, memories, and spending analytics
@@ -169,6 +169,7 @@ export default function PersonalNotes() {
                 onClick={handleAnalyzeSentiment}
                 disabled={analyzingSentiment}
                 variant="outline"
+                 className="shrink-0"
               >
                 <RefreshCw className={`mr-2 h-4 w-4 ${analyzingSentiment ? 'animate-spin' : ''}`} />
                 {analyzingSentiment ? 'Analyzing...' : 'Analyze Sentiment'}
@@ -183,11 +184,11 @@ export default function PersonalNotes() {
             <div className="text-center py-8 text-muted-foreground">No watches found</div>
           ) : (
             <Tabs defaultValue="notes" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="notes">Personal Notes</TabsTrigger>
-                <TabsTrigger value="timeline">Purchase Timeline</TabsTrigger>
-                <TabsTrigger value="analytics">Spending Analytics</TabsTrigger>
-                <TabsTrigger value="warranty">Warranty Status</TabsTrigger>
+              <TabsList className="grid h-auto w-full grid-cols-2 gap-1 sm:grid-cols-4">
+                <TabsTrigger className="min-w-0 whitespace-normal text-center" value="notes">Personal Notes</TabsTrigger>
+                <TabsTrigger className="min-w-0 whitespace-normal text-center" value="timeline">Purchase Timeline</TabsTrigger>
+                <TabsTrigger className="min-w-0 whitespace-normal text-center" value="analytics">Spending Analytics</TabsTrigger>
+                <TabsTrigger className="min-w-0 whitespace-normal text-center" value="warranty">Warranty Status</TabsTrigger>
               </TabsList>
               
               <TabsContent value="notes" className="mt-6">
