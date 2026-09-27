@@ -963,21 +963,27 @@ export type Database = {
         Row: {
           category: string | null
           created_at: string
+          created_by: string | null
           id: string
+          is_global: boolean
           name: string
           usage_count: number | null
         }
         Insert: {
           category?: string | null
           created_at?: string
+          created_by?: string | null
           id?: string
+          is_global?: boolean
           name: string
           usage_count?: number | null
         }
         Update: {
           category?: string | null
           created_at?: string
+          created_by?: string | null
           id?: string
+          is_global?: boolean
           name?: string
           usage_count?: number | null
         }
