@@ -724,7 +724,7 @@
     "noMatchFilters": "Nenhum {{type}} corresponde aos seus filtros",
     "noItemsYet": "Nenhum {{type}} ainda. Adicione seu primeiro {{singular}}!",
     "pastItems": "{{type}} anteriores",
-    "pastItemsDesc": "{{type}} que você vendeu ou trocou. Dados históricos de {{noun}} são preservados.",
+    "pastItemsDesc": "{{type}} que não estão mais na sua coleção. Os dados históricos de {{noun}} são preservados.",
     "myWishlist": "Minha lista de desejos",
     "trackItemsDesc": "Acompanhe {{type}} que você adoraria adicionar à sua coleção",
     "addToWishlist": "Adicionar à lista",

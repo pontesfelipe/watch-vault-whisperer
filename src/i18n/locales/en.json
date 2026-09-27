@@ -725,7 +725,7 @@
     "noMatchFilters": "No {{type}} match your filters",
     "noItemsYet": "No {{type}} yet. Add your first {{singular}}!",
     "pastItems": "Past {{type}}",
-    "pastItemsDesc": "{{type}} you've sold or traded. Historical {{noun}} data is preserved.",
+    "pastItemsDesc": "{{type}} no longer in your collection. Historical {{noun}} data is preserved.",
     "myWishlist": "My Wishlist",
     "trackItemsDesc": "Track {{type}} you'd love to add to your collection",
     "addToWishlist": "Add to Wishlist",

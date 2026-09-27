@@ -720,7 +720,7 @@
     "noMatchFilters": "没有{{type}}匹配您的筛选条件",
     "noItemsYet": "还没有{{type}}。添加您的第一个{{singular}}吧！",
     "pastItems": "过去的{{type}}",
-    "pastItemsDesc": "您已出售或交换的{{type}}。历史{{noun}}数据已保留。",
+    "pastItemsDesc": "不再属于您收藏的{{type}}。历史{{noun}}数据已保留。",
     "myWishlist": "我的心愿单",
     "trackItemsDesc": "追踪您想添加到收藏中的{{type}}",
     "addToWishlist": "添加到心愿单",

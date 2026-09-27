@@ -5,6 +5,7 @@ import { DollarSign, TrendingUp, Calendar, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 import { formatPurchaseDateForDisplay, parsePurchaseDate } from "@/lib/date";
 import { useCollection } from "@/contexts/CollectionContext";
+import { isPastStatus, PAST_STATUS_LABELS } from "@/lib/itemStatus";
 
 interface Item {
   id: string;
@@ -186,13 +187,13 @@ export function SpendingAnalyticsTab({ watches }: SpendingAnalyticsTabProps) {
                           <div>
                              <p className="font-semibold">
                                {item.brand} {item.model}
-                               {(item.status === "sold" || item.status === "traded") && (
+                                {isPastStatus(item.status) && (
                                  <span className="ml-2 inline-flex align-middle rounded-sm border border-borderSubtle px-1.5 py-0.5 text-xs font-semibold uppercase text-textMuted">
-                                   {item.status}
+                                    {PAST_STATUS_LABELS[item.status]}
                                  </span>
                                )}
                              </p>
-                             {item.sale_reason && (item.status === "sold" || item.status === "traded") && (
+                              {item.sale_reason && isPastStatus(item.status) && (
                                <p className="text-xs text-textMuted">{item.sale_reason}</p>
                              )}
                             <p className="text-xs text-muted-foreground">

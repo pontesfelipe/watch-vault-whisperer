@@ -24,25 +24,7 @@ import {
 } from "@/components/ui/select";
 import { useCollection } from "@/contexts/CollectionContext";
 import { ItemTypeIcon } from "@/components/ItemTypeIcon";
-
-const SALE_REASONS: Record<'sold' | 'traded', string[]> = {
-  sold: [
-    "Funding a new purchase",
-    "No longer wearing it",
-    "Didn't like it anymore",
-    "Needed the cash",
-    "Upgrading",
-    "Doesn't fit my style",
-    "Other",
-  ],
-  traded: [
-    "Upgrading",
-    "Wanted a different style",
-    "Doesn't fit collection",
-    "Better value in trade",
-    "Other",
-  ],
-};
+import { PAST_STATUSES, PAST_STATUS_LABELS, PAST_STATUS_REASONS, isPastStatus, type PastStatus } from "@/lib/itemStatus";
 
 interface PastWatchCardProps {
   watch: {
@@ -73,9 +55,7 @@ export const PastWatchCard = ({ watch, totalDays, onUpdate, collectionId }: Past
   const [isRestoring, setIsRestoring] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
-  const [editStatus, setEditStatus] = useState<'sold' | 'traded'>(
-    (watch.status as 'sold' | 'traded') || 'sold'
-  );
+  const [editStatus, setEditStatus] = useState<PastStatus>(isPastStatus(watch.status) ? watch.status : 'sold');
   const [editPrice, setEditPrice] = useState<string>(
     watch.sale_price != null ? String(watch.sale_price) : ""
   );
@@ -90,7 +70,7 @@ export const PastWatchCard = ({ watch, totalDays, onUpdate, collectionId }: Past
         .from("watches")
         .update({
           status: editStatus,
-          sale_price: editPrice ? parseFloat(editPrice) : null,
+          sale_price: (editStatus === 'sold' || editStatus === 'traded') && editPrice ? parseFloat(editPrice) : null,
           sale_reason: editReason || null,
           sale_notes: editNotes || null,
         })
@@ -180,7 +160,7 @@ export const PastWatchCard = ({ watch, totalDays, onUpdate, collectionId }: Past
             variant={watch.status === 'sold' ? 'secondary' : 'outline'} 
             className="text-xs capitalize"
           >
-            {watch.status}
+             {isPastStatus(watch.status) ? PAST_STATUS_LABELS[watch.status] : watch.status}
           </Badge>
         </div>
 
@@ -193,7 +173,7 @@ export const PastWatchCard = ({ watch, totalDays, onUpdate, collectionId }: Past
             <span className="text-textMuted">{currentCollectionConfig.typeLabel}</span>
             <span className="text-textSoft">{watch.type}</span>
           </div>
-          {watch.sale_price != null && (
+           {(watch.status === 'sold' || watch.status === 'traded') && watch.sale_price != null && (
             <div className="flex items-center justify-between text-xs">
               <span className="text-textMuted flex items-center gap-1">
                 <DollarSign className="w-3 h-3" />
@@ -210,7 +190,7 @@ export const PastWatchCard = ({ watch, totalDays, onUpdate, collectionId }: Past
               <span className="text-textSoft text-right">{watch.sale_reason}</span>
             </div>
           )}
-          {watch.sale_price != null && watch.cost != null && totalDays > 0 && (
+           {watch.sale_price != null && watch.cost != null && totalDays > 0 && (watch.status === 'sold' || watch.status === 'traded') && (
             (() => {
               const net = Number(watch.cost) - Number(watch.sale_price);
               const perWear = net / totalDays;
@@ -320,15 +300,14 @@ export const PastWatchCard = ({ watch, totalDays, onUpdate, collectionId }: Past
             <div className="flex flex-col gap-4 pt-2">
               <div className="flex flex-col gap-2">
                 <Label>Status</Label>
-                <Select value={editStatus} onValueChange={(v) => setEditStatus(v as 'sold' | 'traded')}>
+                 <Select value={editStatus} onValueChange={(v) => { setEditStatus(v as PastStatus); setEditReason(''); setEditPrice(''); }}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="sold">Sold</SelectItem>
-                    <SelectItem value="traded">Traded</SelectItem>
+                     {PAST_STATUSES.map((status) => <SelectItem key={status} value={status}>{PAST_STATUS_LABELS[status]}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex flex-col gap-2">
+               {(editStatus === 'sold' || editStatus === 'traded') && <div className="flex flex-col gap-2">
                 <Label htmlFor="edit-price">
                   {editStatus === 'sold' ? 'Sale price (USD)' : 'Value received (USD)'}
                 </Label>
@@ -342,7 +321,7 @@ export const PastWatchCard = ({ watch, totalDays, onUpdate, collectionId }: Past
                   value={editPrice}
                   onChange={(e) => setEditPrice(e.target.value)}
                 />
-              </div>
+               </div>}
               <div className="flex flex-col gap-2">
                 <Label htmlFor="edit-reason">Reason</Label>
                 <Select value={editReason} onValueChange={setEditReason}>
@@ -350,7 +329,7 @@ export const PastWatchCard = ({ watch, totalDays, onUpdate, collectionId }: Past
                     <SelectValue placeholder="Select a reason" />
                   </SelectTrigger>
                   <SelectContent>
-                    {SALE_REASONS[editStatus].map((r) => (
+                     {PAST_STATUS_REASONS[editStatus].map((r) => (
                       <SelectItem key={r} value={r}>{r}</SelectItem>
                     ))}
                   </SelectContent>

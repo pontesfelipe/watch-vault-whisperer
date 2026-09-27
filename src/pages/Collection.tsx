@@ -519,7 +519,7 @@ const Collection = () => {
               {showPastWatches && (
                 <>
                   <p className="text-sm text-textMuted mb-4">
-                    {currentCollectionConfig.pluralLabel} you've sold or traded. Historical {currentCollectionConfig.usageNoun} data is preserved.
+                     {currentCollectionConfig.pluralLabel} no longer in your collection. Historical {currentCollectionConfig.usageNoun} data is preserved.
                   </p>
                   <PastWatchesStats pastWatches={pastWatches} wearEntries={pastWearEntries} />
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">

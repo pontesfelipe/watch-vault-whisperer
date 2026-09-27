@@ -87,7 +87,7 @@ var list_items_default = defineTool2({
   description: "List items (watches, sneakers, purses) the signed-in user owns, optionally filtered by collection or status.",
   inputSchema: {
     collection_id: z.string().uuid().optional().describe("Only items in this collection."),
-    status: z.enum(["active", "sold", "traded"]).optional().describe("Filter by item status.")
+    status: z.enum(["active", "sold", "traded", "lost", "stolen", "gave_away"]).optional().describe("Filter by item status.")
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ collection_id, status }, ctx) => {

@@ -14,6 +14,7 @@ import { PurchaseTimelineTab } from "@/components/PurchaseTimelineTab";
 import { SpendingAnalyticsTab } from "@/components/SpendingAnalyticsTab";
 import { WarrantyStatusTab } from "@/components/WarrantyStatusTab";
 import { useEdgeSwipeBack } from "@/hooks/useEdgeSwipeBack";
+import { PAST_STATUSES } from "@/lib/itemStatus";
 
 interface Watch {
   id: string;
@@ -54,8 +55,8 @@ export default function PersonalNotes() {
       const columns = "id, brand, model, cost, why_bought, when_bought, what_i_like, what_i_dont_like, created_at, sentiment, sentiment_analyzed_at, warranty_date, status, sale_reason";
       const [collectionResult, legacyPastResult] = await Promise.all([
         supabase.from("watches").select(columns).eq("collection_id", selectedCollectionId),
-        // Older sold/traded watches were detached from collections when archived.
-        supabase.from("watches").select(columns).eq("user_id", user.id).is("collection_id", null).in("status", ["sold", "traded"]),
+        // Former watches are detached from collections when archived.
+        supabase.from("watches").select(columns).eq("user_id", user.id).is("collection_id", null).in("status", [...PAST_STATUSES]),
       ]);
 
       if (collectionResult.error) throw collectionResult.error;

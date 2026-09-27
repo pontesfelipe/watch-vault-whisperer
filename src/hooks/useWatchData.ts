@@ -60,7 +60,7 @@ export const useWatchData = (collectionId?: string | null) => {
     try {
       let watchesQuery: any = (supabase.from('watches' as any) as any).select('*');
       
-      // Only show active watches (not sold/traded)
+      // Only show items still in the collection.
       watchesQuery = watchesQuery.eq('status', 'active');
       
       // Always filter by collection_id when provided

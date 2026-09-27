@@ -720,7 +720,7 @@
     "noMatchFilters": "Aucun {{type}} ne correspond à vos filtres",
     "noItemsYet": "Pas encore de {{type}}. Ajoutez votre premier {{singular}} !",
     "pastItems": "{{type}} passés",
-    "pastItemsDesc": "{{type}} que vous avez vendus ou échangés. Les données historiques de {{noun}} sont conservées.",
+    "pastItemsDesc": "{{type}} qui ne font plus partie de votre collection. Les données historiques de {{noun}} sont conservées.",
     "myWishlist": "Ma liste de souhaits",
     "trackItemsDesc": "Suivez les {{type}} que vous aimeriez ajouter à votre collection",
     "addToWishlist": "Ajouter à la liste",

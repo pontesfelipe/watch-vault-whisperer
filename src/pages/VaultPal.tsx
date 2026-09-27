@@ -34,6 +34,7 @@ import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import { useVoiceInput } from "@/hooks/useVoiceInput";
+import { PAST_STATUSES, PAST_STATUS_LABELS, isPastStatus } from "@/lib/itemStatus";
 
 type FormerWatch = {
   id: string;
@@ -100,7 +101,7 @@ const VaultPal = () => {
       .from("watches")
       .select("id, brand, model, status, sale_reason")
       .eq("user_id", user.id)
-      .in("status", ["sold", "traded"])
+       .in("status", [...PAST_STATUSES])
       .order("updated_at", { ascending: false });
 
     if (error) {
@@ -411,7 +412,7 @@ const VaultPal = () => {
                               <li key={watch.id} className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm text-textMuted">
                                 <span className="break-words">{watch.brand} {watch.model}</span>
                                 <span className="shrink-0 rounded-sm border border-borderSubtle px-1.5 py-0.5 text-xs font-semibold uppercase text-textMain">
-                                  {watch.status === "traded" ? "Traded" : "Sold"}
+                                   {isPastStatus(watch.status) ? PAST_STATUS_LABELS[watch.status] : watch.status}
                                 </span>
                                 {watch.sale_reason && <span className="break-words text-xs">{watch.sale_reason}</span>}
                               </li>

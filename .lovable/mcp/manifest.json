@@ -55,7 +55,10 @@
               "enum": [
                 "active",
                 "sold",
-                "traded"
+                "traded",
+                "lost",
+                "stolen",
+                "gave_away"
               ],
               "description": "Filter by item status."
             }
