@@ -1,4 +1,4 @@
-import { Watch, Calendar, TrendingUp, Target, Palette, Shirt, Flame, Plane, Droplets, TrendingDown, DollarSign, Footprints, ShoppingBag, CalendarRange } from "lucide-react";
+import { Watch, Calendar, TrendingUp, Target, Palette, Shirt, Flame, Plane, Droplets, TrendingDown, DollarSign, Footprints, ShoppingBag, CalendarRange, CalendarDays } from "lucide-react";
 import { StatsCard } from "@/components/StatsCard";
 import { UsageChart } from "@/components/UsageChart";
 import { QuickAddWearDialog } from "@/components/QuickAddWearDialog";
@@ -194,6 +194,14 @@ const Dashboard = () => {
             icon={CalendarRange}
             variant="compact"
             itemId={stats.mostWornThisYearWatch?.id}
+          />
+          <StatsCard
+            title={`Most ${config.usageVerbPast.charAt(0).toUpperCase() + config.usageVerbPast.slice(1)} on Weekends (${new Date().getFullYear()})`}
+            value={stats.mostWornWeekendWatch ? `${stats.mostWornWeekendWatch.brand} ${stats.mostWornWeekendWatch.model}` : "N/A"}
+            subtitle={stats.mostWornWeekendDays ? `${stats.mostWornWeekendDays} weekend day${stats.mostWornWeekendDays !== 1 ? 's' : ''}` : undefined}
+            icon={CalendarDays}
+            variant="compact"
+            itemId={stats.mostWornWeekendWatch?.id}
           />
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { parseLocalDate } from "@/lib/date";
 
 interface Watch {
   id: string;
@@ -130,6 +131,20 @@ export const useStatsCalculations = (
       ? watches.find((w) => w.id === mostWornThisYearEntry[0])
       : undefined;
     const mostWornThisYearDays = mostWornThisYearEntry ? mostWornThisYearEntry[1] : 0;
+
+    // Use the calendar date of each wear (not UTC parsing) so Saturday and
+    // Sunday are counted correctly in the collector's local calendar.
+    const currentYear = new Date().getFullYear();
+    const weekendWearCounts = wearEntries.reduce((acc, entry) => {
+      const date = parseLocalDate(entry.wear_date);
+      if (date.getFullYear() === currentYear && (date.getDay() === 0 || date.getDay() === 6) && collectionWatchIds.has(entry.watch_id)) {
+        acc[entry.watch_id] = (acc[entry.watch_id] || 0) + (entry.days || 1);
+      }
+      return acc;
+    }, {} as Record<string, number>);
+    const mostWornWeekendEntry = Object.entries(weekendWearCounts).sort(([, a], [, b]) => b - a)[0];
+    const mostWornWeekendWatch = watches.find((watch) => watch.id === mostWornWeekendEntry?.[0]);
+    const mostWornWeekendDays = mostWornWeekendEntry?.[1] ?? 0;
 
     // Top trip watch - count from linkedWatches, only for watches in current collection
     const tripWatchCounts = trips.reduce(
@@ -284,6 +299,8 @@ export const useStatsCalculations = (
       trendingDownCount: trendingDownWatches.length,
       mostWornThisYearWatch,
       mostWornThisYearDays,
+      mostWornWeekendWatch,
+      mostWornWeekendDays,
       // Depreciation stats
       totalMSRP,
       watchesMissingMSRPCount,
