@@ -194,7 +194,7 @@ export default function PersonalNotes() {
               
               <TabsContent value="notes" className="mt-6">
                 <PersonalNotesTable 
-                  watches={watches} 
+                  watches={watches.filter((watch) => watch.status === "active")} 
                   onEdit={setEditingWatch}
                 />
               </TabsContent>
