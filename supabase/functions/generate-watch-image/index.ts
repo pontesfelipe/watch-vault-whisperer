@@ -36,6 +36,7 @@ const COMPOSITION_RULES = [
   'Maximum 3-5 degree tilt for minimal depth perception - the full dial must be completely visible and readable',
   'The watch must be UPRIGHT with 12 o\'clock at the top and strap/bracelet running vertically (top-to-bottom), never horizontal/sideways',
   'For rectangular watches, long axis must be vertical, crown at 3 o\'clock side, no 90-degree rotation',
+  'For digital watches, LCD digits, brand name and bezel lettering must read left-to-right with their tops pointing toward the top edge of the image; the strap exits at 12 and 6 o\'clock, never at 3 and 9',
   'Show a small portion of the bracelet/strap extending from both lugs (about 1-2 links or 2cm of strap)',
   'DARK background: smooth gradient from charcoal (#2a2a2a) at edges to near-black (#111111) at center',
   'Professional studio lighting: soft diffused main light from upper-left, subtle fill light from right',
@@ -117,6 +118,14 @@ function getIdentityProfile(brand: string, model: string, type?: string): Identi
   const brandLc = brand.toLowerCase();
   const modelLc = normalizeModelForSearch(model).toLowerCase();
   const typeLc = (type || '').toLowerCase();
+
+  if (brandLc.includes('casio') && modelLc.includes('dw-h5600')) {
+    return {
+      officialName: `Casio G-SHOCK ${normalizeModelForSearch(model)}`,
+      requiredElements: 'Square G-SHOCK digital LCD face, recognizable G-SHOCK bezel and resin strap, Casio branding and the correct colourway for the specified reference. The digital time and all bezel text must read left-to-right upright, with the strap attached at the TOP and BOTTOM of the square case',
+      forbiddenElements: 'NO sideways or rotated display, NO bracelet extending left and right, NO analog hands, NO round case, NO invented buttons or altered model identity',
+    };
+  }
 
   if (brandLc.includes('casio') && modelLc.includes('databank')) {
     return {
@@ -431,6 +440,9 @@ serve(async (req) => {
     promptTemplates = await loadPromptTemplates(supabaseClient);
 
     const identityProfile = getIdentityProfile(brand, model, type);
+    // Admin templates and custom prompts are editable; keep this non-negotiable
+    // orientation instruction at the end of every generation request.
+    const uprightRule = 'FINAL COMPOSITION CHECK: The physical watch, dial text and digital numerals must be upright and readable left-to-right. The 12 o’clock end of the watch and upper strap must point to the TOP edge of the square image; the 6 o’clock end and lower strap must point to the BOTTOM. Never lay the watch on its side with the strap going left-to-right. For digital watches do not apply an analog 10:10 hands instruction.';
 
 
     // Only use user-provided reference images (no LLM URL search - those hallucinate)
@@ -482,7 +494,7 @@ serve(async (req) => {
         {
           role: "user",
           content: [
-            { type: "text", text: prompt },
+            { type: "text", text: `${prompt}\n\n${uprightRule}` },
             ...referenceImages.map((url) => ({ type: "image_url", image_url: { url } })),
           ],
         },
@@ -496,7 +508,7 @@ serve(async (req) => {
       );
       messages = [
         ...(identitySystemMessage ? [identitySystemMessage] : []),
-        { role: "user", content: prompt },
+        { role: "user", content: `${prompt}\n\n${uprightRule}` },
       ];
     }
 
