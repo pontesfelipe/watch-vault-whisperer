@@ -237,12 +237,25 @@ serve(async (req) => {
       `${idx + 1}. ${w.brand} ${w.model} (${w.dial_colors})${w.notes ? ` - ${w.notes}` : ""}${w.is_ai_suggested ? " [AI suggested]" : ""}`
     ).join("\n");
 
-    // Purchase timeline
-    const purchaseTimeline = watches
+    // Purchase timeline (current + past items, so buying trends are complete)
+    const purchaseTimeline = [...watches, ...pastWatches]
       .filter((w: any) => w.when_bought)
       .sort((a: any, b: any) => new Date(b.when_bought).getTime() - new Date(a.when_bought).getTime())
-      .map((w: any) => `${w.when_bought}: ${w.brand} ${w.model} - $${(w.cost || 0).toLocaleString()}`)
+      .map((w: any) => `${w.when_bought}: ${w.brand} ${w.model} - $${(w.cost || 0).toLocaleString()}${w.status !== "active" ? ` [now ${w.status}${w.sold_at ? ` on ${String(w.sold_at).slice(0, 10)}` : ""}]` : ""}`)
       .join("\n");
+
+    // Value, reference and warranty per current item
+    const valueWarrantySummary = watches.map((w: any) => {
+      const bits = [`${w.brand} ${w.model}`];
+      if (w.reference) bits.push(`ref ${w.reference}`);
+      if (w.year) bits.push(`year ${w.year}`);
+      if (w.cost) bits.push(`paid $${Number(w.cost).toLocaleString()}`);
+      if (w.msrp) bits.push(`MSRP $${Number(w.msrp).toLocaleString()}`);
+      if (w.average_resale_price) bits.push(`market $${Number(w.average_resale_price).toLocaleString()}`);
+      if (w.warranty_date) bits.push(`warranty until ${w.warranty_date}`);
+      if (w.available_for_trade) bits.push(`available for trade`);
+      return bits.join(", ");
+    }).join("\n");
 
     // Specs summary (for watches with detailed specs)
     const specsSummary = watchSpecs.map((s: any) => {
@@ -306,8 +319,11 @@ ${sportsSummary || "No sports activities recorded yet."}
 ${collectionType === "watches" ? `WATER USAGE:
 ${waterSummary || "No water usage recorded yet."}` : ""}
 
-PURCHASE TIMELINE:
+PURCHASE TIMELINE (current and past, for buying trends):
 ${purchaseTimeline || "No purchase dates recorded."}
+
+VALUE & WARRANTY (today is ${new Date().toISOString().slice(0, 10)}):
+${valueWarrantySummary || "No value or warranty data recorded."}
 
 ${specsSummary ? `DETAILED SPECIFICATIONS:
 ${specsSummary}` : ""}

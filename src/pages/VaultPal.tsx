@@ -404,22 +404,6 @@ const VaultPal = () => {
                     <div className="text-sm text-textMuted leading-relaxed whitespace-pre-wrap break-words">
                       {collectionInsights}
                     </div>
-                      {formerWatches.length > 0 && (
-                        <div className="mt-3 border-t border-borderSubtle pt-3">
-                          <p className="mb-2 text-xs font-semibold text-textMain">Previously owned</p>
-                          <ul className="space-y-2">
-                            {formerWatches.map((watch) => (
-                              <li key={watch.id} className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm text-textMuted">
-                                <span className="break-words">{watch.brand} {watch.model}</span>
-                                <span className="shrink-0 rounded-sm border border-borderSubtle px-1.5 py-0.5 text-xs font-semibold uppercase text-textMain">
-                                   {isPastStatus(watch.status) ? PAST_STATUS_LABELS[watch.status] : watch.status}
-                                </span>
-                                {watch.sale_reason && <span className="break-words text-xs">{watch.sale_reason}</span>}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
                   </div>
                   <Button
                     variant="ghost"
