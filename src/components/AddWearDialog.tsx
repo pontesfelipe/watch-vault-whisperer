@@ -15,6 +15,7 @@ import { format, subDays, parseISO } from "date-fns";
 import { toast as sonnerToast } from "sonner";
 import { WearTagSelector } from "@/components/WearTagSelector";
 import { syncWearEntryTags } from "@/utils/wearEntryTags";
+import { tripEventPrefill } from "@/lib/tripEventPrefill";
 
 
 const wearSchema = z.object({
@@ -34,6 +35,7 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
   const [tripLocation, setTripLocation] = useState("");
   const [tripNotes, setTripNotes] = useState("");
   const [eventLocation, setEventLocation] = useState("");
+  const [eventPurpose, setEventPurpose] = useState("");
   const [sportLocation, setSportLocation] = useState("");
   const [wearDate, setWearDate] = useState(new Date().toISOString().split('T')[0]);
   const [userProfileLocation, setUserProfileLocation] = useState("");
@@ -363,6 +365,7 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
       setTripLocation(userProfileLocation);
       setTripNotes("");
       setEventLocation(userProfileLocation);
+      setEventPurpose("");
       setSportLocation(userProfileLocation);
       setWearDate(new Date().toISOString().split('T')[0]);
       setSelectedTagIds([]);
@@ -523,7 +526,18 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
                 <Checkbox
                   id="isEvent"
                   checked={isEvent}
-                  onCheckedChange={(checked) => setIsEvent(checked as boolean)}
+                  onCheckedChange={(checked) => {
+                    const enabled = checked === true;
+                    if (enabled && isTrip) {
+                      const prefilled = tripEventPrefill(
+                        { location: tripLocation, notes: tripNotes },
+                        { location: eventLocation, purpose: eventPurpose },
+                      );
+                      setEventLocation(prefilled.location);
+                      setEventPurpose(prefilled.purpose);
+                    }
+                    setIsEvent(enabled);
+                  }}
                 />
                 <Label htmlFor="isEvent" className="flex items-center gap-2 cursor-pointer font-normal">
                   <Flag className="w-4 h-4 text-primary" />
@@ -547,6 +561,8 @@ export const AddWearDialog = ({ watchId, onSuccess }: { watchId: string; onSucce
                     <Input
                       id="eventPurpose"
                       name="eventPurpose"
+                      value={eventPurpose}
+                      onChange={(e) => setEventPurpose(e.target.value)}
                       placeholder="e.g., Wedding, Conference"
                       required={isEvent}
                       className="bg-background"

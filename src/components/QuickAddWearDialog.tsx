@@ -15,6 +15,7 @@ import { ResponsiveDialog } from "@/components/ResponsiveDialog";
 import { WearTagSelector } from "@/components/WearTagSelector";
 import { syncWearEntryTags } from "@/utils/wearEntryTags";
 import { format, parseISO, subDays } from "date-fns";
+import { tripEventPrefill } from "@/lib/tripEventPrefill";
 
 const wearSchema = z.object({
   watchId: z.string().uuid(),
@@ -52,6 +53,8 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
   const [tripLocation, setTripLocation] = useState("");
   const [tripPurpose, setTripPurpose] = useState("Business");
   const [tripNotes, setTripNotes] = useState("");
+  const [eventLocation, setEventLocation] = useState("");
+  const [eventPurpose, setEventPurpose] = useState("");
   const [sportLocation, setSportLocation] = useState("");
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const { toast } = useToast();
@@ -69,6 +72,8 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
     setTripLocation("");
     setTripPurpose("Business");
     setTripNotes("");
+    setEventLocation("");
+    setEventPurpose("");
   }, [open]);
 
   useEffect(() => {
@@ -345,6 +350,8 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
       setTripLocation("");
       setTripPurpose("Business");
       setTripNotes("");
+      setEventLocation("");
+      setEventPurpose("");
       setSportLocation("");
       setSelectedTagIds([]);
       onSuccess();
@@ -526,7 +533,18 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
                 type="checkbox"
                 id="isEvent"
                 checked={isEvent}
-                onChange={(e) => setIsEvent(e.target.checked)}
+                onChange={(e) => {
+                  const enabled = e.target.checked;
+                  if (enabled && isTrip) {
+                    const prefilled = tripEventPrefill(
+                      { location: tripLocation, notes: tripNotes },
+                      { location: eventLocation, purpose: eventPurpose },
+                    );
+                    setEventLocation(prefilled.location);
+                    setEventPurpose(prefilled.purpose);
+                  }
+                  setIsEvent(enabled);
+                }}
                 className="w-4 h-4"
               />
               <Label htmlFor="isEvent" className="cursor-pointer">Link to Event</Label>
@@ -539,6 +557,8 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
                   <Input
                     id="eventLocation"
                     name="eventLocation"
+                    value={eventLocation}
+                    onChange={(e) => setEventLocation(e.target.value)}
                     placeholder="e.g., Conference Center"
                     className="bg-background border-border"
                   />
@@ -548,6 +568,8 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
                   <Input
                     id="eventPurpose"
                     name="eventPurpose"
+                    value={eventPurpose}
+                    onChange={(e) => setEventPurpose(e.target.value)}
                     placeholder="e.g., Wedding, Conference"
                     className="bg-background border-border"
                   />
