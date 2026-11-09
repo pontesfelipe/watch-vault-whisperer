@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePasscode } from "@/contexts/PasscodeContext";
 import { useCollection } from "@/contexts/CollectionContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,6 +15,7 @@ import { SpendingAnalyticsTab } from "@/components/SpendingAnalyticsTab";
 import { WarrantyStatusTab } from "@/components/WarrantyStatusTab";
 import { useEdgeSwipeBack } from "@/hooks/useEdgeSwipeBack";
 import { PAST_STATUSES } from "@/lib/itemStatus";
+import { belongsToCollectionInsights } from "@/lib/collectionInsights";
 
 interface Watch {
   id: string;
@@ -38,36 +39,48 @@ export default function PersonalNotes() {
   const { isVerified, requestVerification } = usePasscode();
   const { selectedCollectionId } = useCollection();
   const { user } = useAuth();
-  const [watches, setWatches] = useState<Watch[]>([]);
+  const [watchData, setWatchData] = useState<{ collectionId: string; userId: string; items: Watch[] } | null>(null);
+  const watches = watchData?.collectionId === selectedCollectionId && watchData?.userId === user?.id
+    ? watchData.items : [];
+  const fetchVersion = useRef(0);
   const [loading, setLoading] = useState(true);
   const [editingWatch, setEditingWatch] = useState<Watch | null>(null);
   const [analyzingSentiment, setAnalyzingSentiment] = useState(false);
 
   const fetchWatches = async () => {
+    const version = ++fetchVersion.current;
     if (!selectedCollectionId || !user) {
-      setWatches([]);
+      setWatchData(null);
       setLoading(false);
       return;
     }
     
     setLoading(true);
     try {
-      const columns = "id, brand, model, cost, why_bought, when_bought, what_i_like, what_i_dont_like, created_at, sentiment, sentiment_analyzed_at, warranty_date, status, sale_reason";
-      const [collectionResult, legacyPastResult] = await Promise.all([
+      const columns = "id, brand, model, cost, why_bought, when_bought, what_i_like, what_i_dont_like, created_at, sentiment, sentiment_analyzed_at, warranty_date, status, sale_reason, collection_id, archived_collection_id, user_id";
+      const [collectionResult, archivedResult] = await Promise.all([
         supabase.from("watches").select(columns).eq("collection_id", selectedCollectionId),
-        // Former watches are detached from collections when archived.
-        supabase.from("watches").select(columns).eq("user_id", user.id).is("collection_id", null).in("status", [...PAST_STATUSES]),
+        supabase.from("watches").select(columns).eq("user_id", user.id)
+          .eq("archived_collection_id", selectedCollectionId).is("collection_id", null).in("status", [...PAST_STATUSES]),
       ]);
 
+      if (version !== fetchVersion.current) return;
       if (collectionResult.error) throw collectionResult.error;
-      if (legacyPastResult.error) throw legacyPastResult.error;
-      setWatches([...(collectionResult.data ?? []), ...(legacyPastResult.data ?? [])]
-        .sort((a, b) => a.created_at.localeCompare(b.created_at)) as Watch[]);
+      if (archivedResult.error) throw archivedResult.error;
+      setWatchData({
+        collectionId: selectedCollectionId,
+        userId: user.id,
+        items: [...(collectionResult.data ?? []), ...(archivedResult.data ?? [])]
+          .filter((item) => belongsToCollectionInsights(item, selectedCollectionId, user.id))
+          .sort((a, b) => a.created_at.localeCompare(b.created_at)) as Watch[],
+      });
     } catch (error) {
+      if (version !== fetchVersion.current) return;
+      setWatchData(null);
       console.error("Error fetching watches:", error);
       toast.error("Failed to load watches");
     } finally {
-      setLoading(false);
+      if (version === fetchVersion.current) setLoading(false);
     }
   };
 
@@ -122,6 +135,7 @@ export default function PersonalNotes() {
     if (isVerified && selectedCollectionId) {
       fetchWatches();
     }
+    return () => { fetchVersion.current++; };
   }, [isVerified, selectedCollectionId, user?.id]);
 
   const handleUnlock = () => {

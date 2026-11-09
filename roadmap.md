@@ -1,0 +1,5 @@
+- [x] Confirm Collection Insights mixes detached historical items across collections.
+- [x] Preserve archive origin without inferring unknown legacy origins.
+- [x] Scope Collection Insights to selected collection and prevent stale responses.
+- [x] Verify isolation tests, archive trigger and authenticated Insights flow.
+- [x] Resolve the claimed monitoring finding after verification.

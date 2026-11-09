@@ -1585,6 +1585,7 @@ export type Database = {
       watches: {
         Row: {
           ai_image_url: string | null
+          archived_collection_id: string | null
           available_for_trade: boolean
           average_resale_price: number | null
           brand: string
@@ -1628,6 +1629,7 @@ export type Database = {
         }
         Insert: {
           ai_image_url?: string | null
+          archived_collection_id?: string | null
           available_for_trade?: boolean
           average_resale_price?: number | null
           brand: string
@@ -1671,6 +1673,7 @@ export type Database = {
         }
         Update: {
           ai_image_url?: string | null
+          archived_collection_id?: string | null
           available_for_trade?: boolean
           average_resale_price?: number | null
           brand?: string
@@ -1713,6 +1716,13 @@ export type Database = {
           year?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "watches_archived_collection_id_fkey"
+            columns: ["archived_collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "watches_collection_id_fkey"
             columns: ["collection_id"]
