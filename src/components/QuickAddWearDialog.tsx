@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +15,7 @@ import { ResponsiveDialog } from "@/components/ResponsiveDialog";
 import { WearTagSelector } from "@/components/WearTagSelector";
 import { syncWearEntryTags } from "@/utils/wearEntryTags";
 import { format, parseISO, subDays } from "date-fns";
+import { tripEventPrefill } from "@/lib/tripEventPrefill";
 
 const wearSchema = z.object({
   watchId: z.string().uuid(),
@@ -52,6 +53,9 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
   const [tripLocation, setTripLocation] = useState("");
   const [tripPurpose, setTripPurpose] = useState("Business");
   const [tripNotes, setTripNotes] = useState("");
+  const [eventLocation, setEventLocation] = useState("");
+  const [eventPurpose, setEventPurpose] = useState("");
+  const tripEditVersion = useRef(0);
   const [sportLocation, setSportLocation] = useState("");
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const { toast } = useToast();
@@ -65,15 +69,19 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
   useEffect(() => {
     if (!open) return;
 
+    tripEditVersion.current++;
     setWearDate(getTodayDate());
     setTripLocation("");
     setTripPurpose("Business");
     setTripNotes("");
+    setEventLocation("");
+    setEventPurpose("");
   }, [open]);
 
   useEffect(() => {
     const prefillTripFromPreviousDay = async () => {
       if (!open || !isTrip || !wearDate || !user || tripLocation || tripNotes) return;
+      const editVersion = tripEditVersion.current;
 
       try {
         const previousDate = format(subDays(parseISO(wearDate), 1), 'yyyy-MM-dd');
@@ -85,7 +93,7 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
           .eq('start_date', previousDate)
           .maybeSingle();
 
-        if (previousTrip) {
+        if (previousTrip && editVersion === tripEditVersion.current) {
           setTripLocation(previousTrip.location || "");
           setTripPurpose(previousTrip.purpose || "Business");
           setTripNotes(previousTrip.notes || "");
@@ -345,6 +353,8 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
       setTripLocation("");
       setTripPurpose("Business");
       setTripNotes("");
+      setEventLocation("");
+      setEventPurpose("");
       setSportLocation("");
       setSelectedTagIds([]);
       onSuccess();
@@ -490,14 +500,20 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
                     id="tripLocation"
                     name="tripLocation"
                     value={tripLocation}
-                    onChange={(e) => setTripLocation(e.target.value)}
+                    onChange={(e) => {
+                      tripEditVersion.current++;
+                      setTripLocation(e.target.value);
+                    }}
                     placeholder="e.g., Tokyo, Japan"
                     className="bg-background border-border"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="tripPurpose">Purpose</Label>
-                  <Select name="tripPurpose" value={tripPurpose} onValueChange={setTripPurpose}>
+                  <Select name="tripPurpose" value={tripPurpose} onValueChange={(value) => {
+                    tripEditVersion.current++;
+                    setTripPurpose(value);
+                  }}>
                     <SelectTrigger className="bg-background border-border">
                       <SelectValue placeholder="Select purpose" />
                     </SelectTrigger>
@@ -512,7 +528,10 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
                   <Textarea
                     id="tripNotes"
                     value={tripNotes}
-                    onChange={(e) => setTripNotes(e.target.value)}
+                    onChange={(e) => {
+                      tripEditVersion.current++;
+                      setTripNotes(e.target.value);
+                    }}
                     placeholder="Add any notes about this trip..."
                     className="bg-background border-border resize-none"
                     rows={3}
@@ -526,7 +545,18 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
                 type="checkbox"
                 id="isEvent"
                 checked={isEvent}
-                onChange={(e) => setIsEvent(e.target.checked)}
+                onChange={(e) => {
+                  const enabled = e.target.checked;
+                  if (enabled && isTrip) {
+                    const prefilled = tripEventPrefill(
+                      { location: tripLocation, notes: tripNotes },
+                      { location: eventLocation, purpose: eventPurpose },
+                    );
+                    setEventLocation(prefilled.location);
+                    setEventPurpose(prefilled.purpose);
+                  }
+                  setIsEvent(enabled);
+                }}
                 className="w-4 h-4"
               />
               <Label htmlFor="isEvent" className="cursor-pointer">Link to Event</Label>
@@ -539,6 +569,8 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
                   <Input
                     id="eventLocation"
                     name="eventLocation"
+                    value={eventLocation}
+                    onChange={(e) => setEventLocation(e.target.value)}
                     placeholder="e.g., Conference Center"
                     className="bg-background border-border"
                   />
@@ -548,6 +580,8 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
                   <Input
                     id="eventPurpose"
                     name="eventPurpose"
+                    value={eventPurpose}
+                    onChange={(e) => setEventPurpose(e.target.value)}
                     placeholder="e.g., Wedding, Conference"
                     className="bg-background border-border"
                   />

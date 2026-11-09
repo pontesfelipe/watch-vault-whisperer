@@ -3,3 +3,5 @@
 - [x] Scope Collection Insights to selected collection and prevent stale responses.
 - [x] Verify isolation tests, archive trigger and authenticated Insights flow.
 - [x] Resolve the claimed monitoring finding after verification.
+- [x] Copy trip location and notes to event fields when adding a wrist check.
+- [x] Verify trip-to-event prefill tests and desktop/mobile logging forms.
