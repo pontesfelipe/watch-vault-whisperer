@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -55,6 +55,7 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
   const [tripNotes, setTripNotes] = useState("");
   const [eventLocation, setEventLocation] = useState("");
   const [eventPurpose, setEventPurpose] = useState("");
+  const tripEditVersion = useRef(0);
   const [sportLocation, setSportLocation] = useState("");
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const { toast } = useToast();
@@ -68,6 +69,7 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
   useEffect(() => {
     if (!open) return;
 
+    tripEditVersion.current++;
     setWearDate(getTodayDate());
     setTripLocation("");
     setTripPurpose("Business");
@@ -79,6 +81,7 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
   useEffect(() => {
     const prefillTripFromPreviousDay = async () => {
       if (!open || !isTrip || !wearDate || !user || tripLocation || tripNotes) return;
+      const editVersion = tripEditVersion.current;
 
       try {
         const previousDate = format(subDays(parseISO(wearDate), 1), 'yyyy-MM-dd');
@@ -90,7 +93,7 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
           .eq('start_date', previousDate)
           .maybeSingle();
 
-        if (previousTrip) {
+        if (previousTrip && editVersion === tripEditVersion.current) {
           setTripLocation(previousTrip.location || "");
           setTripPurpose(previousTrip.purpose || "Business");
           setTripNotes(previousTrip.notes || "");
@@ -497,14 +500,20 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
                     id="tripLocation"
                     name="tripLocation"
                     value={tripLocation}
-                    onChange={(e) => setTripLocation(e.target.value)}
+                    onChange={(e) => {
+                      tripEditVersion.current++;
+                      setTripLocation(e.target.value);
+                    }}
                     placeholder="e.g., Tokyo, Japan"
                     className="bg-background border-border"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="tripPurpose">Purpose</Label>
-                  <Select name="tripPurpose" value={tripPurpose} onValueChange={setTripPurpose}>
+                  <Select name="tripPurpose" value={tripPurpose} onValueChange={(value) => {
+                    tripEditVersion.current++;
+                    setTripPurpose(value);
+                  }}>
                     <SelectTrigger className="bg-background border-border">
                       <SelectValue placeholder="Select purpose" />
                     </SelectTrigger>
@@ -519,7 +528,10 @@ export const QuickAddWearDialog = ({ watches, onSuccess, collectionType: propTyp
                   <Textarea
                     id="tripNotes"
                     value={tripNotes}
-                    onChange={(e) => setTripNotes(e.target.value)}
+                    onChange={(e) => {
+                      tripEditVersion.current++;
+                      setTripNotes(e.target.value);
+                    }}
                     placeholder="Add any notes about this trip..."
                     className="bg-background border-border resize-none"
                     rows={3}
